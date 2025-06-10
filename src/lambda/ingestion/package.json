@@ -4,6 +4,6 @@
   "description": "Doc-Tales Ingestion Lambda Function",
   "main": "index.js",
   "dependencies": {
-    "aws-sdk": "^2.1500.0"
+    "aws-sdk": "^2.1692.0"
   }
 }
