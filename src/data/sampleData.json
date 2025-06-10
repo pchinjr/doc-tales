@@ -1,0 +1,407 @@
+{
+  "communications": [
+    {
+      "id": "email-001",
+      "type": "email",
+      "source": "gmail",
+      "timestamp": "2025-05-16T10:30:00Z",
+      "sender": {
+        "id": "contact-001",
+        "name": "Sarah Johnson",
+        "email": "sarah@realestate.com",
+        "organization": "City Homes Realty",
+        "role": "Real Estate Agent",
+        "projects": ["home-purchase"]
+      },
+      "recipients": [
+        {
+          "id": "contact-000",
+          "name": "Alex Morgan",
+          "email": "alex@example.com",
+          "projects": ["home-purchase", "career-change", "family-event"]
+        }
+      ],
+      "subject": "Available Properties in Westside Neighborhood",
+      "content": "Hi Alex, Based on our conversation, I've put together a list of properties that match your criteria in the Westside neighborhood. There are several great options within your budget range. Would you be available to view some of these properties this weekend? Let me know what times work for you. Best regards, Sarah",
+      "attachments": [
+        {
+          "id": "attachment-001",
+          "name": "westside_properties.pdf",
+          "type": "pdf",
+          "size": 2450000
+        }
+      ],
+      "metadata": {
+        "urgency": "medium",
+        "category": "real-estate",
+        "read": true,
+        "flagged": false
+      },
+      "entities": [
+        {
+          "id": "entity-001",
+          "type": "location",
+          "text": "Westside neighborhood"
+        }
+      ],
+      "relationships": [],
+      "project": "home-purchase"
+    },
+    {
+      "id": "email-002",
+      "type": "email",
+      "source": "gmail",
+      "timestamp": "2025-05-18T14:15:00Z",
+      "sender": {
+        "id": "contact-002",
+        "name": "Michael Chen",
+        "email": "michael@firstnational.com",
+        "organization": "First National Bank",
+        "role": "Mortgage Broker",
+        "projects": ["home-purchase"]
+      },
+      "recipients": [
+        {
+          "id": "contact-000",
+          "name": "Alex Morgan",
+          "email": "alex@example.com",
+          "projects": ["home-purchase", "career-change", "family-event"]
+        }
+      ],
+      "subject": "Mortgage Pre-Approval Confirmation",
+      "content": "Dear Alex, I'm pleased to inform you that you have been pre-approved for a mortgage loan of up to $450,000. This pre-approval is valid for 90 days from today. Please note that you will need to submit your final application by June 5th to ensure we can process everything in time for your desired closing date. Let me know if you have any questions. Regards, Michael Chen",
+      "attachments": [
+        {
+          "id": "attachment-002",
+          "name": "pre_approval_letter.pdf",
+          "type": "pdf",
+          "size": 1240000
+        }
+      ],
+      "metadata": {
+        "urgency": "high",
+        "category": "finance",
+        "read": true,
+        "flagged": true
+      },
+      "entities": [
+        {
+          "id": "entity-002",
+          "type": "money",
+          "text": "$450,000"
+        },
+        {
+          "id": "entity-003",
+          "type": "date",
+          "text": "June 5th"
+        }
+      ],
+      "relationships": [],
+      "project": "home-purchase"
+    },
+    {
+      "id": "email-003",
+      "type": "email",
+      "source": "gmail",
+      "timestamp": "2025-05-19T09:45:00Z",
+      "sender": {
+        "id": "contact-003",
+        "name": "TechCorp Recruiting",
+        "email": "recruiting@techcorp.com",
+        "organization": "TechCorp",
+        "role": "Recruiting Team",
+        "projects": ["career-change"]
+      },
+      "recipients": [
+        {
+          "id": "contact-000",
+          "name": "Alex Morgan",
+          "email": "alex@example.com",
+          "projects": ["home-purchase", "career-change", "family-event"]
+        }
+      ],
+      "subject": "Your Application to TechCorp - Next Steps",
+      "content": "Dear Alex, Thank you for applying to the Senior Developer position at TechCorp. We were impressed with your qualifications and would like to schedule a phone screening interview. Could you please provide your availability for next week? We look forward to speaking with you. Best regards, TechCorp Recruiting Team",
+      "attachments": [],
+      "metadata": {
+        "urgency": "high",
+        "category": "job-application",
+        "read": true,
+        "flagged": true
+      },
+      "entities": [
+        {
+          "id": "entity-004",
+          "type": "job-title",
+          "text": "Senior Developer"
+        }
+      ],
+      "relationships": [],
+      "project": "career-change"
+    },
+    {
+      "id": "document-001",
+      "type": "document",
+      "source": "dropbox",
+      "timestamp": "2025-05-20T16:30:00Z",
+      "sender": {
+        "id": "contact-000",
+        "name": "Alex Morgan",
+        "email": "alex@example.com",
+        "projects": ["home-purchase", "career-change", "family-event"]
+      },
+      "recipients": [],
+      "subject": "Property Comparison Spreadsheet",
+      "content": "Comparison of properties in Westside neighborhood including price, square footage, bedrooms, bathrooms, and distance to work.",
+      "attachments": [
+        {
+          "id": "attachment-003",
+          "name": "property_comparison.xlsx",
+          "type": "xlsx",
+          "size": 450000
+        }
+      ],
+      "metadata": {
+        "urgency": "medium",
+        "category": "real-estate",
+        "read": true,
+        "flagged": false
+      },
+      "entities": [
+        {
+          "id": "entity-005",
+          "type": "location",
+          "text": "Westside neighborhood"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "related-to",
+          "targetId": "email-001"
+        }
+      ],
+      "project": "home-purchase"
+    },
+    {
+      "id": "email-004",
+      "type": "email",
+      "source": "gmail",
+      "timestamp": "2025-05-22T11:20:00Z",
+      "sender": {
+        "id": "contact-004",
+        "name": "Lakeside Venue",
+        "email": "events@lakesidevenue.com",
+        "organization": "Lakeside Venue",
+        "role": "Event Coordinator",
+        "projects": ["family-event"]
+      },
+      "recipients": [
+        {
+          "id": "contact-000",
+          "name": "Alex Morgan",
+          "email": "alex@example.com",
+          "projects": ["home-purchase", "career-change", "family-event"]
+        }
+      ],
+      "subject": "Venue Availability for Family Reunion",
+      "content": "Dear Alex, Thank you for your inquiry about hosting your family reunion at Lakeside Venue. We have availability on June 25th as requested. The venue can accommodate up to 100 guests and includes tables, chairs, basic sound system, and access to the lakeside patio. Please note that we require confirmation by May 30th to secure this date. Let me know if you would like to schedule a visit to see the space. Best regards, Lakeside Venue Team",
+      "attachments": [
+        {
+          "id": "attachment-004",
+          "name": "lakeside_venue_info.pdf",
+          "type": "pdf",
+          "size": 3200000
+        }
+      ],
+      "metadata": {
+        "urgency": "medium",
+        "category": "event-planning",
+        "read": true,
+        "flagged": false
+      },
+      "entities": [
+        {
+          "id": "entity-006",
+          "type": "date",
+          "text": "June 25th"
+        },
+        {
+          "id": "entity-007",
+          "type": "date",
+          "text": "May 30th"
+        }
+      ],
+      "relationships": [],
+      "project": "family-event"
+    },
+    {
+      "id": "email-005",
+      "type": "email",
+      "source": "gmail",
+      "timestamp": "2025-05-23T15:45:00Z",
+      "sender": {
+        "id": "contact-003",
+        "name": "TechCorp Recruiting",
+        "email": "recruiting@techcorp.com",
+        "organization": "TechCorp",
+        "role": "Recruiting Team",
+        "projects": ["career-change"]
+      },
+      "recipients": [
+        {
+          "id": "contact-000",
+          "name": "Alex Morgan",
+          "email": "alex@example.com",
+          "projects": ["home-purchase", "career-change", "family-event"]
+        }
+      ],
+      "subject": "Phone Interview Scheduled - TechCorp",
+      "content": "Dear Alex, Thank you for providing your availability. We have scheduled your phone interview for May 25th at 10:00 AM EST. The interview will last approximately 45 minutes and will be conducted by our technical team lead, David Kim. Please confirm receipt of this email. Best regards, TechCorp Recruiting Team",
+      "attachments": [],
+      "metadata": {
+        "urgency": "high",
+        "category": "job-application",
+        "read": true,
+        "flagged": true
+      },
+      "entities": [
+        {
+          "id": "entity-008",
+          "type": "date",
+          "text": "May 25th"
+        },
+        {
+          "id": "entity-009",
+          "type": "time",
+          "text": "10:00 AM EST"
+        },
+        {
+          "id": "entity-010",
+          "type": "person",
+          "text": "David Kim"
+        }
+      ],
+      "relationships": [
+        {
+          "type": "reply-to",
+          "targetId": "email-003"
+        }
+      ],
+      "project": "career-change"
+    }
+  ],
+  "projects": [
+    {
+      "id": "home-purchase",
+      "name": "Home Purchase",
+      "description": "Communications related to buying a new home",
+      "timelineStart": "2025-05-15T00:00:00Z",
+      "timelineEnd": "2025-06-15T23:59:59Z",
+      "keyDates": [
+        {
+          "name": "Initial Property Viewings",
+          "date": "2025-05-20T09:00:00Z",
+          "urgency": "medium"
+        },
+        {
+          "name": "Mortgage Application Deadline",
+          "date": "2025-06-05T23:59:59Z",
+          "urgency": "high"
+        },
+        {
+          "name": "Home Inspection",
+          "date": "2025-06-10T13:00:00Z",
+          "urgency": "high"
+        }
+      ]
+    },
+    {
+      "id": "career-change",
+      "name": "Career Change",
+      "description": "Communications related to job applications and interviews",
+      "timelineStart": "2025-05-18T00:00:00Z",
+      "timelineEnd": "2025-06-20T23:59:59Z",
+      "keyDates": [
+        {
+          "name": "Phone Screening with TechCorp",
+          "date": "2025-05-25T10:00:00Z",
+          "urgency": "high"
+        },
+        {
+          "name": "In-person Interview with Innovate Inc.",
+          "date": "2025-06-02T14:00:00Z",
+          "urgency": "high"
+        },
+        {
+          "name": "Technical Assessment for Future Systems",
+          "date": "2025-06-08T09:00:00Z",
+          "urgency": "high"
+        }
+      ]
+    },
+    {
+      "id": "family-event",
+      "name": "Family Event",
+      "description": "Communications related to planning a family reunion",
+      "timelineStart": "2025-05-22T00:00:00Z",
+      "timelineEnd": "2025-06-25T23:59:59Z",
+      "keyDates": [
+        {
+          "name": "Venue Confirmation Deadline",
+          "date": "2025-05-30T23:59:59Z",
+          "urgency": "high"
+        },
+        {
+          "name": "Catering Selection Deadline",
+          "date": "2025-06-10T23:59:59Z",
+          "urgency": "medium"
+        },
+        {
+          "name": "RSVP Deadline",
+          "date": "2025-06-15T23:59:59Z",
+          "urgency": "medium"
+        }
+      ]
+    }
+  ],
+  "contacts": [
+    {
+      "id": "contact-000",
+      "name": "Alex Morgan",
+      "email": "alex@example.com",
+      "projects": ["home-purchase", "career-change", "family-event"]
+    },
+    {
+      "id": "contact-001",
+      "name": "Sarah Johnson",
+      "email": "sarah@realestate.com",
+      "organization": "City Homes Realty",
+      "role": "Real Estate Agent",
+      "projects": ["home-purchase"]
+    },
+    {
+      "id": "contact-002",
+      "name": "Michael Chen",
+      "email": "michael@firstnational.com",
+      "organization": "First National Bank",
+      "role": "Mortgage Broker",
+      "projects": ["home-purchase"]
+    },
+    {
+      "id": "contact-003",
+      "name": "TechCorp Recruiting",
+      "email": "recruiting@techcorp.com",
+      "organization": "TechCorp",
+      "role": "Recruiting Team",
+      "projects": ["career-change"]
+    },
+    {
+      "id": "contact-004",
+      "name": "Lakeside Venue",
+      "email": "events@lakesidevenue.com",
+      "organization": "Lakeside Venue",
+      "role": "Event Coordinator",
+      "projects": ["family-event"]
+    }
+  ]
+}
