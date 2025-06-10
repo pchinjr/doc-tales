@@ -10,60 +10,47 @@ The demo presents a pre-populated dataset of communications across multiple chan
 
 1. The transformation from chaotic information overload to organized, personalized communication management
 2. The system's ability to detect and adapt to their communication archetype
-3. The power of cross-channel relationship mapping
+3. The power of archetype-based organization for managing complex projects
 4. The value of personalized organization based on cognitive preferences
 
 ## Sample Dataset Design
 
+### Core Scenario
+
+The dataset represents a fictional user managing three simultaneous life projects:
+
+1. **Home Purchase Process**
+   - Property listings and viewings
+   - Mortgage and financing communications
+   - Inspection reports and negotiations
+
+2. **Career Change Process**
+   - Job applications and descriptions
+   - Interview scheduling and follow-ups
+   - Offer negotiations and decisions
+
+3. **Family Event Planning**
+   - Venue selection and booking
+   - Guest coordination and RSVPs
+   - Vendor communications and arrangements
+
 ### Timeline Structure
 
-The dataset represents a fictional two-week period containing:
+The dataset represents a fictional one-month period containing:
 
 - 25-30 emails
 - 10-15 document scans (invoices, contracts, letters)
 - 15-20 social media interactions
 - 5-7 calendar events
 
-### Narrative Scenarios
+### Cross-Project Elements
 
-The communications revolve around 3-4 realistic scenarios that most users can relate to:
+To demonstrate the value of different archetype views, the dataset includes:
 
-1. **Home Purchase Process**
-   - Mortgage pre-approval emails
-   - Property listing documents
-   - Agent communications
-   - Inspection reports
-   - Social media discussions about neighborhoods
-
-2. **Job Application Process**
-   - Job descriptions
-   - Application confirmation emails
-   - Interview scheduling
-   - Thank you notes
-   - Social media research on companies
-
-3. **Travel Planning**
-   - Flight confirmations
-   - Hotel reservations
-   - Activity recommendations
-   - Travel insurance documents
-   - Social media posts about destinations
-
-4. **Project Collaboration**
-   - Meeting notes
-   - Task assignments
-   - Progress updates
-   - Resource sharing
-   - Social media team discussions
-
-### Hidden Relationships
-
-The dataset includes non-obvious connections that showcase the system's relationship mapping:
-
-- A person mentioned in an email also appears in a social media post and a scanned document
-- A location referenced across multiple channels in different contexts
-- Timeline connections between seemingly unrelated communications
-- Conceptual links that aren't explicit but can be inferred
+1. **Scheduling Overlaps**: Events from different projects scheduled on the same day
+2. **Shared Contacts**: People involved in multiple projects
+3. **Location Relationships**: Geographical connections between project elements
+4. **Budget Considerations**: Financial decisions that span multiple projects
 
 ## Demo Flow
 
@@ -88,11 +75,11 @@ The dataset includes non-obvious connections that showcase the system's relation
   - **Visualizer**: Visual boards with spatial organization
   - **Analyst**: Detailed metadata view with logical hierarchies
 
-### 4. Relationship Discovery
+### 4. Project Management Enhancement
 
-- System highlights previously hidden connections between communications
-- "Aha moment" reveals a significant insight based on cross-channel analysis
-- User can explore the relationship graph interactively
+- System demonstrates how the archetype-specific view makes managing multiple projects easier
+- Shows how information that was previously scattered is now organized according to the user's cognitive style
+- Highlights how the same information looks different but more accessible in the personalized view
 
 ### 5. Comparative View
 

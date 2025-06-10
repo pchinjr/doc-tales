@@ -21,12 +21,12 @@ The Doc-Tales MVP will focus on delivering a compelling "Time Travel Inbox" demo
 - Pre-populated dataset with emails, documents, and social media content
 - Basic metadata extraction (dates, senders, subjects)
 - Simple relationship mapping between related communications
-- Content organized around 2-3 realistic scenarios
+- Content organized around 3 simultaneous life projects
 
 **Nice to Have:**
 - Advanced entity extraction
 - Sentiment analysis
-- Complex multi-hop relationships
+- Complex multi-project relationship mapping
 
 ### 2. Archetype Detection
 
@@ -54,18 +54,18 @@ The Doc-Tales MVP will focus on delivering a compelling "Time Travel Inbox" demo
 - Fine-grained component-level adaptation
 - Context-sensitive adaptations
 
-### 4. Relationship Visualization
+### 4. Project Organization
 
 **Must Have:**
-- Simple visualization of direct relationships
-- Ability to highlight related communications
-- Basic filtering by relationship type
-- One "hidden connection" revelation in the demo
+- Organization of communications by project
+- Visualization of cross-project elements
+- Ability to highlight scheduling overlaps
+- Basic filtering by project
 
 **Nice to Have:**
-- Interactive graph exploration
-- Multi-level relationship chains
-- Temporal relationship visualization
+- Interactive project timeline
+- Cross-project budget analysis
+- Location-based project visualization
 
 ## Technical Components
 
@@ -132,7 +132,7 @@ The Doc-Tales MVP will focus on delivering a compelling "Time Travel Inbox" demo
 ## Demo Flow for MVP
 
 1. **Introduction**
-   - Present the problem of communication overload
+   - Present the problem of managing multiple complex projects simultaneously
    - Introduce the concept of communication archetypes
    - Show the initial "overwhelmed" state of communications
 
@@ -146,15 +146,15 @@ The Doc-Tales MVP will focus on delivering a compelling "Time Travel Inbox" demo
    - Demonstrate how the organization changes to match cognitive preferences
    - Highlight key features of the archetype-specific view
 
-4. **Relationship Discovery**
-   - Reveal a non-obvious connection between communications
-   - Show how the system provides context across channels
-   - Demonstrate the value of unified communications processing
+4. **Project Management**
+   - Show how the archetype-specific view makes managing multiple projects easier
+   - Demonstrate how information is organized according to the user's cognitive style
+   - Highlight cross-project elements like scheduling overlaps
 
 5. **Comparison**
    - Briefly show how the same data would appear in other archetype views
    - Highlight the personalization aspect of the system
-   - Demonstrate switching between views
+   - Demonstrate switching between views for different tasks
 
 ## Success Criteria for MVP
 
