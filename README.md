@@ -34,10 +34,22 @@ The current implementation is a TypeScript-based React application that demonstr
 
 - **Adaptive Dashboard**: Changes the organization of information based on detected archetype
 
+- **Dimension-Based Data Model**: Extracts and utilizes four key dimensions from communications
+  - **Temporal**: Deadlines, urgency, chronology, follow-up dates
+  - **Relationship**: Connection strength, frequency, network position
+  - **Visual**: Document types, visual elements, spatial organization
+  - **Analytical**: Categories, tags, sentiment, structure
+
+- **Unified Data Ingestion API**: Standardizes data from multiple sources
+  - Source-specific adapters for email, documents, and social media
+  - Dimension extraction for personalized views
+  - Configuration UI for managing data sources
+
 ## Tech Stack
 
 - **Frontend**: React with TypeScript
-- **AWS Services**:
+- **Code Quality**: ESLint for code quality and consistency
+- **AWS Services** (planned):
   - Lambda for serverless processing
   - S3 for document storage
   - DynamoDB for metadata and user profiles
@@ -73,6 +85,11 @@ The current implementation is a TypeScript-based React application that demonstr
 
 4. Open your browser to `http://localhost:3000`
 
+5. Lint the code (optional):
+   ```bash
+   npm run lint
+   ```
+
 ## Project Structure
 
 ```
@@ -86,6 +103,7 @@ doc-tales/
 │   │   └── views/                 # Archetype-specific views
 │   ├── data/                      # Sample data
 │   ├── services/                  # Service layer
+│   │   └── adapters/              # Source-specific adapters
 │   └── types/                     # TypeScript type definitions
 └── infrastructure/                # Infrastructure as code (future)
 ```
@@ -105,6 +123,11 @@ doc-tales/
 - ✅ Created sample dataset with cross-project elements
 - ✅ Implemented interaction tracking and archetype detection
 - ✅ Built adaptive dashboard that changes based on archetype
+- ✅ Implemented dimension-based data model
+- ✅ Created unified data ingestion API with source adapters
+- ✅ Added configuration UI for data sources
+- ✅ Built interactive demo flow for onboarding
+- ✅ Set up ESLint for code quality
 
 ## Next Steps
 
@@ -123,17 +146,17 @@ doc-tales/
    - Implement relationship visualization with D3.js
    - Create project timeline visualization
 
-4. **Demo Flow**:
-   - Implement guided tour experience
-   - Create "Time Travel Inbox" demo
-   - Add demo state management
+4. **Demo Refinement**:
+   - Polish the guided tour experience
+   - Create "Time Travel Inbox" demo scenario
+   - Add more realistic sample data
 
 ## Development Notes
 
 - The current implementation uses a simplified rule-based approach for archetype detection instead of ML
-- Sample data is loaded from a local JSON file rather than AWS services
-- UI components are functional but need visual polish
-- Type assertions are used in DataService to handle JSON data
+- Mock adapters simulate connections to email, document, and social media sources
+- Dimension extraction uses simple pattern matching rather than advanced NLP
+- UI components are functional but could benefit from additional visual polish
 
 ## License
 
