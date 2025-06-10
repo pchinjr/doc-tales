@@ -108,11 +108,14 @@ doc-tales/
 └── infrastructure/                # Infrastructure as code (future)
 ```
 
-## Key Documentation
+## Documentation
 
 - [Hackathon Master Plan](docs/planning/hackathon-master-plan.md)
 - [Technical Architecture](docs/technical/technical-architecture.md)
 - [Demo Implementation Guide](docs/technical/demo-implementation-guide.md)
+- [Development Progress Report](docs/technical/development-progress.md)
+- [Architecture Improvements](docs/technical/architecture-improvements.md)
+- [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)
 
 ## Current Progress
 
@@ -128,13 +131,21 @@ doc-tales/
 - ✅ Added configuration UI for data sources
 - ✅ Built interactive demo flow for onboarding
 - ✅ Set up ESLint for code quality
+- ✅ **AWS Integration**:
+  - ✅ Created SAM template for infrastructure as code
+  - ✅ Implemented Lambda functions for document processing
+  - ✅ Created DynamoDB tables for user profiles and metadata
+  - ✅ Set up S3 buckets for document storage
+  - ✅ Deployed serverless backend to AWS
+  - ✅ Created comprehensive test scripts
 
 ## Next Steps
 
-1. **AWS Integration**:
-   - Implement Lambda functions for document processing
-   - Create DynamoDB tables for user profiles and metadata
-   - Set up S3 buckets for document storage
+1. **Backend Improvements**:
+   - Fix DynamoDB composite key handling in Lambda functions
+   - Refactor API Lambda into multiple single-purpose functions
+   - Implement Lambda Layers for shared code
+   - Add comprehensive error handling and logging
 
 2. **Enhanced Interaction Tracking**:
    - Improve archetype detection algorithm
@@ -145,6 +156,7 @@ doc-tales/
    - Add animations for archetype transitions
    - Implement relationship visualization with D3.js
    - Create project timeline visualization
+   - Connect frontend to deployed AWS backend
 
 4. **Demo Refinement**:
    - Polish the guided tour experience
