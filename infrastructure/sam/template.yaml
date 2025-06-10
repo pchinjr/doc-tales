@@ -85,12 +85,6 @@ Resources:
                 - comprehend:DetectSentiment
                 - comprehend:DetectKeyPhrases
               Resource: '*'
-      Events:
-        S3Event:
-          Type: S3
-          Properties:
-            Bucket: !Ref RawCommunicationsBucket
-            Events: s3:ObjectCreated:*
 
   NotificationFunction:
     Type: AWS::Serverless::Function
@@ -195,10 +189,6 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${AppName}-raw-communications-${Environment}-${AWS::AccountId}
-      NotificationConfiguration:
-        LambdaConfigurations:
-          - Event: s3:ObjectCreated:*
-            Function: !GetAtt DimensionExtractionFunction.Arn
       CorsConfiguration:
         CorsRules:
           - AllowedHeaders:
@@ -234,14 +224,38 @@ Resources:
     Properties:
       TopicName: !Sub ${AppName}-notifications-${Environment}
 
-# Lambda function permissions
+  # Lambda function permissions
   RawBucketPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref DimensionExtractionFunction
       Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
       SourceArn: !GetAtt RawCommunicationsBucket.Arn
+
+  # Custom resource to create S3 event notification after deployment
+  S3EventNotificationCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt SetupS3EventsFunction.Arn
+      BucketName: !Ref RawCommunicationsBucket
+      LambdaArn: !GetAtt DimensionExtractionFunction.Arn
+      Events: ["s3:ObjectCreated:*"]
+    DependsOn:
+      - RawBucketPermission
+
+  # Lambda function to set up S3 event notifications
+  SetupS3EventsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/lambda/setup-s3-events/
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Timeout: 60
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref RawCommunicationsBucket
 
 Outputs:
   ApiEndpoint:
