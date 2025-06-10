@@ -20,7 +20,7 @@ export class SocialAdapter extends BaseSourceAdapter {
       {
         id: 'social-001',
         platform: 'twitter',
-        content: 'Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome',
+        content: "Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome",
         author: {
           name: 'User',
           handle: '@user',
@@ -54,7 +54,7 @@ export class SocialAdapter extends BaseSourceAdapter {
       {
         id: 'social-002',
         platform: 'linkedin',
-        content: 'Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs',
+        content: "Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs",
         author: {
           name: 'User',
           handle: 'user-linkedin',
@@ -91,7 +91,7 @@ export class SocialAdapter extends BaseSourceAdapter {
       {
         id: 'social-003',
         platform: 'twitter',
-        content: '@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime',
+        content: "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
         author: {
           name: 'User',
           handle: '@user',

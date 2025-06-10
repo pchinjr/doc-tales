@@ -33,7 +33,7 @@ export class EmailAdapter extends BaseSourceAdapter {
           }
         ],
         date: '2025-06-05T10:30:00Z',
-        body: 'Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?',
+        body: "Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?",
         project: 'home-purchase',
         urgency: 'high',
         category: 'finance',
@@ -63,7 +63,7 @@ export class EmailAdapter extends BaseSourceAdapter {
           }
         ],
         date: '2025-06-07T14:15:00Z',
-        body: 'This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!',
+        body: "This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!",
         project: 'career-change',
         urgency: 'high',
         category: 'interviews',
@@ -91,7 +91,7 @@ export class EmailAdapter extends BaseSourceAdapter {
           }
         ],
         date: '2025-06-01T09:45:00Z',
-        body: 'Hi everyone! I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.',
+        body: "Hi everyone! I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.",
         project: 'family-event',
         urgency: 'medium',
         category: 'planning',
