@@ -14,9 +14,13 @@ Doc-Tales is a Smart Document & Feed Unification Processor developed for the AWS
 ## Key Technologies
 
 - **AWS Lambda**: Serverless functions for document and feed processing
-- **Event-Driven Architecture**: Responsive processing of documents and feeds
-- **Machine Learning/AI**: For document classification and prioritization
-- **Unified Dashboard**: Single interface for all document and feed sources
+- **Amazon S3**: Storage for documents and processing results
+- **Amazon DynamoDB**: Metadata storage and relationship mapping
+- **Amazon Comprehend**: Natural language processing for document analysis
+- **Amazon Textract**: Document text extraction and form processing
+- **Amazon EventBridge**: Event-driven architecture orchestration
+- **Amazon API Gateway**: RESTful API endpoints for the frontend
+- **React**: Frontend dashboard interface
 
 ## Repository Structure
 
@@ -38,6 +42,8 @@ doc-tales/
     └── amazon-q/                  # Amazon Q setup files
 ```
 
+For more details on the repository structure and organization guidelines, see [Repository Structure](repo-structure.md).
+
 ## Getting Started
 
 ### Prerequisites
@@ -57,20 +63,35 @@ doc-tales/
 
 2. Install dependencies:
    ```bash
-   # Instructions will be added as the project develops
+   npm install
    ```
 
-3. Deploy to AWS:
+3. Configure AWS credentials:
    ```bash
-   # Instructions will be added as the project develops
+   aws configure
+   ```
+
+4. Deploy to AWS:
+   ```bash
+   npm run deploy
    ```
 
 ## Development Workflow
 
 1. Create a feature branch from `main`
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
 2. Implement your changes
+
 3. Write tests for your changes
+   ```bash
+   npm test
+   ```
+
 4. Submit a pull request to `main`
+
 5. After review, merge your changes
 
 ## Key Documentation
@@ -78,6 +99,7 @@ doc-tales/
 - [Project Plan](docs/planning/lambda-hackathon-plan.md)
 - [Dynamic Architecture](docs/architecture/dynamic-architecture.md)
 - [Competitive Research](docs/research/competitive-research.md)
+- [Repository Structure](repo-structure.md)
 
 ## Amazon Q Integration
 
@@ -98,10 +120,28 @@ This project uses Amazon Q for development assistance. To set up Amazon Q:
    ./start-q.sh
    ```
 
+## Features in Development
+
+- **Document Processor**: Lambda function for processing uploaded documents
+- **Feed Connector**: Integration with email and social media APIs
+- **Unified Dashboard**: React-based frontend for viewing all communications
+- **Smart Categorization**: ML-based document and message categorization
+- **Workflow Automation**: Rule-based processing of incoming communications
+
 ## License
 
-[License information will be added]
+MIT License
 
 ## Contributors
 
 - Paul Chin Jr (@pchinjr)
+
+## How to Contribute
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
