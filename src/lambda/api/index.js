@@ -301,27 +301,37 @@ async function queryCommunications(filters) {
  * Get a specific communication by ID
  */
 async function getCommunicationData(id) {
-  // First, get the metadata from DynamoDB
-  const params = {
-    TableName: COMMUNICATIONS_TABLE,
-    Key: {
-      id: id
-    }
-  };
-  
-  const result = await dynamodb.get(params).promise();
-  
-  if (!result.Item) {
-    return null;
-  }
-  
-  // Get the full communication from S3
   try {
-    const fullCommunication = await getFullCommunicationFromS3(result.Item);
-    return fullCommunication;
+    // First, scan the table to find the item with the given ID
+    // This is a workaround since we don't know the timestamp (range key)
+    const scanParams = {
+      TableName: COMMUNICATIONS_TABLE,
+      FilterExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': id
+      }
+    };
+    
+    const scanResult = await dynamodb.scan(scanParams).promise();
+    
+    if (!scanResult.Items || scanResult.Items.length === 0) {
+      console.log(`No communication found with ID: ${id}`);
+      return null;
+    }
+    
+    const item = scanResult.Items[0];
+    
+    // Get the full communication from S3
+    try {
+      const fullCommunication = await getFullCommunicationFromS3(item);
+      return fullCommunication;
+    } catch (error) {
+      console.error(`Error getting full communication for ${id}:`, error);
+      return item;
+    }
   } catch (error) {
-    console.error(`Error getting full communication for ${id}:`, error);
-    return result.Item;
+    console.error(`Error getting communication data for ${id}:`, error);
+    throw error;
   }
 }
 

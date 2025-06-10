@@ -449,20 +449,40 @@ async function extractAnalyticalDimension(communication) {
  * Update DynamoDB with extracted dimensions
  */
 async function updateDynamoDBWithDimensions(communicationId, dimensions) {
-  const params = {
-    TableName: COMMUNICATIONS_TABLE,
-    Key: {
-      id: communicationId
-    },
-    UpdateExpression: 'set dimensions = :dimensions',
-    ExpressionAttributeValues: {
-      ':dimensions': dimensions
-    },
-    ReturnValues: 'UPDATED_NEW'
-  };
-  
-  await dynamodb.update(params).promise();
-  console.log(`Updated DynamoDB with dimensions for: ${communicationId}`);
+  try {
+    // First, get the full item to retrieve the timestamp
+    const getParams = {
+      TableName: COMMUNICATIONS_TABLE,
+      Key: {
+        id: communicationId
+      }
+    };
+    
+    const result = await dynamodb.get(getParams).promise();
+    if (!result.Item || !result.Item.timestamp) {
+      throw new Error(`Communication not found or missing timestamp: ${communicationId}`);
+    }
+    
+    // Now update with both hash and range keys
+    const updateParams = {
+      TableName: COMMUNICATIONS_TABLE,
+      Key: {
+        id: communicationId,
+        timestamp: result.Item.timestamp
+      },
+      UpdateExpression: 'set dimensions = :dimensions',
+      ExpressionAttributeValues: {
+        ':dimensions': dimensions
+      },
+      ReturnValues: 'UPDATED_NEW'
+    };
+    
+    await dynamodb.update(updateParams).promise();
+    console.log(`Updated DynamoDB with dimensions for: ${communicationId}`);
+  } catch (error) {
+    console.error(`Error updating DynamoDB: ${error}`);
+    throw error;
+  }
 }
 
 /**
