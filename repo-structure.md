@@ -63,16 +63,6 @@ As the project develops, consider implementing these enhancements to the reposit
    └── local-dev.sh
    ```
 
-5. **Enhance Amazon Q integration**: Organize Amazon Q setup files
-   ```
-   tools/amazon-q/
-   ├── q-context.txt
-   ├── q-setup.sh
-   ├── start-q.sh
-   ├── update-q-context.sh
-   └── Q-SETUP.md
-   ```
-
 ## Documentation Guidelines
 
 For all future documentation:

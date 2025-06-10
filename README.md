@@ -101,25 +101,6 @@ For more details on the repository structure and organization guidelines, see [R
 - [Competitive Research](docs/research/competitive-research.md)
 - [Repository Structure](repo-structure.md)
 
-## Amazon Q Integration
-
-This project uses Amazon Q for development assistance. To set up Amazon Q:
-
-1. Navigate to the tools directory:
-   ```bash
-   cd tools/amazon-q
-   ```
-
-2. Run the setup script:
-   ```bash
-   ./q-setup.sh
-   ```
-
-3. Start Amazon Q with project context:
-   ```bash
-   ./start-q.sh
-   ```
-
 ## Features in Development
 
 - **Document Processor**: Lambda function for processing uploaded documents
@@ -131,17 +112,3 @@ This project uses Amazon Q for development assistance. To set up Amazon Q:
 ## License
 
 MIT License
-
-## Contributors
-
-- Paul Chin Jr (@pchinjr)
-
-## How to Contribute
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
