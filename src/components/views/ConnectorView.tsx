@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Communication, Contact } from '../../types/communication';
 import { InteractionEvent } from '../../services/ArchetypeService';
-import { DataService } from '../../services/DataService';
 
 interface ConnectorViewProps {
   communications: Communication[];

@@ -22,9 +22,11 @@ export class DataService {
       // In a real implementation, this would load from API/AWS
       // For hackathon, we'll load from local JSON
       const data = await import('../data/sampleData.json');
-      this.communications = data.communications;
-      this.projects = data.projects;
-      this.contacts = data.contacts;
+      
+      // Type assertion to match our interfaces
+      this.communications = data.communications as unknown as Communication[];
+      this.projects = data.projects as unknown as Project[];
+      this.contacts = data.contacts as unknown as Contact[];
     } catch (error) {
       console.error('Failed to load sample data:', error);
       throw error;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Communication, ProjectType } from '../../types/communication';
+import { Communication } from '../../types/communication';
 import { InteractionEvent } from '../../services/ArchetypeService';
 
 interface AnalystViewProps {
