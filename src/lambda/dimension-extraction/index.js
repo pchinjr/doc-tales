@@ -93,18 +93,24 @@ async function processCommunication(communicationId, s3Key) {
 async function getCommunicationFromS3(communicationId, providedKey) {
   let key = providedKey;
   
-  // If key not provided, look up in DynamoDB first
+  // If key not provided, look up in DynamoDB first using the IdOnlyIndex
   if (!key) {
-    const dbResult = await dynamodb.get({
+    const queryParams = {
       TableName: COMMUNICATIONS_TABLE,
-      Key: { id: communicationId }
-    }).promise();
+      IndexName: 'IdOnlyIndex',
+      KeyConditionExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': communicationId
+      }
+    };
     
-    if (!dbResult.Item || !dbResult.Item.s3Key) {
+    const queryResult = await dynamodb.query(queryParams).promise();
+    
+    if (!queryResult.Items || queryResult.Items.length === 0 || !queryResult.Items[0].s3Key) {
       throw new Error(`Communication not found in DynamoDB: ${communicationId}`);
     }
     
-    key = dbResult.Item.s3Key;
+    key = queryResult.Items[0].s3Key;
   }
   
   // Get the object from S3

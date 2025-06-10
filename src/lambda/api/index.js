@@ -302,24 +302,24 @@ async function queryCommunications(filters) {
  */
 async function getCommunicationData(id) {
   try {
-    // First, scan the table to find the item with the given ID
-    // This is a workaround since we don't know the timestamp (range key)
-    const scanParams = {
+    // Use GSI to query by ID only
+    const queryParams = {
       TableName: COMMUNICATIONS_TABLE,
-      FilterExpression: 'id = :id',
+      IndexName: 'IdOnlyIndex',
+      KeyConditionExpression: 'id = :id',
       ExpressionAttributeValues: {
         ':id': id
       }
     };
     
-    const scanResult = await dynamodb.scan(scanParams).promise();
+    const queryResult = await dynamodb.query(queryParams).promise();
     
-    if (!scanResult.Items || scanResult.Items.length === 0) {
+    if (!queryResult.Items || queryResult.Items.length === 0) {
       console.log(`No communication found with ID: ${id}`);
       return null;
     }
     
-    const item = scanResult.Items[0];
+    const item = queryResult.Items[0];
     
     // Get the full communication from S3
     try {
