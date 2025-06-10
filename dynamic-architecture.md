@@ -1,104 +1,107 @@
-# Smart Document & Feed Unification Processor
+# Dynamic Architecture for Doc-Tales
 
-*Dynamic, self‑tuning architecture*
+## Core Principles
 
-> **Why this doc?**
-> To articulate how the solution stays easy to onboard **and** easy to change—every rule, threshold, and model weight is *data*, not code. User interactions act as signals that automatically trigger retraining or configuration updates.
+The Doc-Tales system is designed as a dynamic, adaptive platform that evolves through user interactions rather than requiring extensive manual configuration. This approach addresses key challenges in document processing systems:
 
----
+1. **Reduced Onboarding Friction**: Users can begin using the system immediately without complex setup
+2. **Continuous Improvement**: The system becomes more effective over time through learning
+3. **Personalization at Scale**: Each user's experience is tailored automatically
+4. **Future-Proofing**: The architecture adapts to new document types and communication channels
 
-## 1  Guiding Design Principles
+## Adaptive Learning Components
 
-| Principle                    | Manifestation                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Event‑driven decoupling**  | Every stage publishes a domain event on **Amazon EventBridge**; downstream consumers can be added or removed without redeploying producers. This pattern speeds change and isolates blast‑radius ([aws.amazon.com](https://aws.amazon.com/blogs/architecture/best-practices-for-implementing-event-driven-architectures-in-your-organization/?utm_source=chatgpt.com)).                                                                 |
-| **Config‑as‑data**           | Routing logic, feature flags, confidence thresholds, and even active model ARNs live in **AWS AppConfig** or **DynamoDB** so updates propagate instantly—no pipeline redeploy ([aws.amazon.com](https://aws.amazon.com/blogs/mt/improve-your-feature-flagging-with-aws-appconfig-version-labels/?utm_source=chatgpt.com), [aws.amazon.com](https://aws.amazon.com/blogs/mt/using-aws-appconfig-feature-flags/?utm_source=chatgpt.com)). |
-| **Continuous learning**      | User corrections are captured as annotations; once a nightly (or volume‑based) threshold is met, a Step Functions workflow fine‑tunes the active LLM in **Amazon Bedrock** ([aws.amazon.com](https://aws.amazon.com/blogs/aws/customize-models-in-amazon-bedrock-with-your-own-data-using-fine-tuning-and-continued-pre-training/?utm_source=chatgpt.com)).                                                                             |
-| **Human‑in‑the‑loop safety** | Low‑confidence extractions are routed to a validation UI; actions in that UI feed the learning loop, just like leading IDP vendors (Hyperscience, UiPath DU) ([docs.aws.amazon.com](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html?utm_source=chatgpt.com)).                                                                                                                                      |
-| **Pay‑per‑use economics**    | All compute is serverless (Lambda, Step Functions). Costs scale strictly with workload ([aws.amazon.com](https://aws.amazon.com/lambda/pricing/?utm_source=chatgpt.com), [wired.com](https://www.wired.com/story/promise-practically-serverless-computing?utm_source=chatgpt.com)).                                                                                                                                                     |
+### 1. User Interaction Tracking
 
----
+The system monitors how users interact with processed documents and feeds:
+- Which documents receive immediate attention vs. which are deferred
+- How users categorize or tag content
+- Time spent on different document types
+- Explicit actions (archiving, sharing, prioritizing)
 
-## 2  High‑Level Architecture
+### 2. Feedback Mechanisms
 
-```mermaid
-erDiagram
-    %% Core entities
-    InboundItem ||--o{ Classification : "classified as"
-    Classification ||--|{ Annotation : "corrected by"
-    UserPref ||--o{ Classification : "influences"
-```
+Two primary feedback loops drive system improvement:
+- **Implicit Feedback**: Derived from user behavior patterns
+- **Explicit Feedback**: Direct user input on classification accuracy and relevance
 
-![Architecture diagram placeholder](./assets/architecture_overview.png)
+### 3. Classification Evolution
 
-### Component Swim‑lane
+Document classification models continuously improve through:
+- Reinforcement learning based on user interactions
+- Transfer learning to adapt to new document types
+- Periodic retraining with anonymized user data
 
-| Flow step                     | Service                  | Notes                                                                                                                                                                                                                                                                                                                                                                       |
-| ----------------------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1 Ingestion**               | S3, SES, API Gateway     | E‑mail, scans, social posts land; `ingest.received` fired on EventBridge ([medium.com](https://medium.com/aws-lambda-serverless-developer-guide-with-hands/amazon-eventbridge-decouple-services-with-event-driven-architecture-9643b2f5290f?utm_source=chatgpt.com))                                                                                                        |
-| **2 Classification**          | Lambda (Classify)        | Reads latest config & model ID from AppConfig; stores `Classification` item in DynamoDB ([docs.aws.amazon.com](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html?utm_source=chatgpt.com))                                                                                                                                                |
-| **3 Human review (optional)** | Amplify/React web UI     | Users accept or correct predictions; UI emits `annotation.created` events                                                                                                                                                                                                                                                                                                   |
-| **4 Rule promoter**           | Lambda (PromoteRules)    | High‑confidence patterns auto‑draft rule JSON into AppConfig for admin approval                                                                                                                                                                                                                                                                                             |
-| **5 Nightly fine‑tune**       | Step Functions + Bedrock | Scheduled via EventBridge Scheduler; fine‑tunes foundation model with new annotations ([aws.amazon.com](https://aws.amazon.com/tutorials/scheduling-a-serverless-workflow-step-functions-amazon-eventbridge-scheduler/?utm_source=chatgpt.com), [medium.com](https://medium.com/%40abdullahiolaoye4/finetuning-llms-on-amazon-bedrock-887ebc547adc?utm_source=chatgpt.com)) |
-| **6 Feedback metrics**        | CloudWatch & QuickSight  | Drift and accuracy dashboards; alerts can trigger AppConfig rollback                                                                                                                                                                                                                                                                                                        |
+### 4. Workflow Adaptation
 
----
+Processing workflows evolve based on:
+- Common user-initiated action sequences
+- Timing patterns (when certain documents are processed)
+- Cross-user pattern recognition for organizational optimization
 
-## 3  Data & Configuration Model
+## AWS Implementation Architecture
 
-| Table / Store                 | Purpose                                        | Key schema                                                                                                                                                                        |
-| ----------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **DynamoDB `InboundItem`**    | Raw payload metadata                           | `PK = itemId`                                                                                                                                                                     |
-| **DynamoDB `Classification`** | Predicted category, priority, entities         | `PK = itemId`                                                                                                                                                                     |
-| **DynamoDB `Annotation`**     | User corrections                               | `PK = itemId • SK = ts`                                                                                                                                                           |
-| **AppConfig profile**         | Feature flags, routing rules, active model ARN | JSON doc with semantic version labels ([aws.amazon.com](https://aws.amazon.com/blogs/mt/improve-your-feature-flagging-with-aws-appconfig-version-labels/?utm_source=chatgpt.com)) |
+### Lambda Function Design
 
-Each Lambda fetches the current AppConfig version at cold‑start and caches it; SDK’s built‑in polling refreshes long‑running runtimes.
+1. **Event-Driven Processing**:
+   - Each user interaction triggers events that feed into learning models
+   - Document processing steps are decomposed into discrete Lambda functions
 
----
+2. **State Management**:
+   - DynamoDB stores user preferences and interaction history
+   - Step Functions orchestrate adaptive workflows
 
-## 4  Self‑Tuning Feedback Loop
+3. **Machine Learning Pipeline**:
+   - SageMaker endpoints for real-time classification
+   - Batch training jobs for model improvement
+   - Feature Store for tracking interaction patterns
 
-1. **Correction captured** – User changes category from *Bills*→*Taxes*.
-2. **Annotation stored** – Lambda logs the delta.
-3. **Threshold met** – Either ≥ 50 new annotations or daily schedule.
-4. **Fine‑tune job** – Step Functions submits training job to Bedrock.
-5. **Config update** – On success, Lambda writes new model ARN + bump in `modelVersion` to AppConfig.
-6. **Live traffic uses new model** – Next classification invokes updated model with zero downtime.
+4. **Feedback Processing**:
+   - Dedicated Lambda functions process and apply feedback
+   - A/B testing framework to validate improvements
 
----
+## Technical Implementation Considerations
 
-## 5  Onboarding & Change UX
+### 1. Modular Component Design
 
-* **Citizen‑developer rule builder** – Non‑technical users create “If X then route Y” rules via a visual editor that writes JSON directly to AppConfig (leveraging built‑in versioning/rollback).
-* **First‑run wizard** – Guides new orgs through connecting mailboxes/scanners, seeding initial priorities.
-* **Activation‑energy KPI** – Time‑to‑value target: live processing < **30 minutes** from first login.
+All system components are designed for dynamic reconfiguration:
+- Document processors can be added/modified without system changes
+- Classification rules are stored as configurable parameters
+- UI components adapt based on usage patterns
 
----
+### 2. Progressive Enhancement
 
-## 6  Future Enhancements
+The system starts with baseline functionality and enhances over time:
+- Initial generic document classification
+- Progressive specialization based on user document types
+- Workflow suggestions that become more accurate with use
 
-* **Realtime priority re‑scoring** using a Kinesis stream of org‑level context events.
-* **Embedded explainability** – Show token attributions for each extracted field so users understand *why* the model predicted a value (Gartner flags ModelOps transparency as critical ([hyperscience.ai](https://www.hyperscience.ai/resource/gartner-2024-market-guide-for-intelligent-document-processing-solutions/?utm_source=chatgpt.com))).
-* **Plug‑in enrichment hooks** – Drop‑in Lambda layers for tools like PII redaction, translation, or sentiment analysis.
+### 3. Privacy and Security
 
----
+User data drives improvement while maintaining privacy:
+- Federated learning approaches where possible
+- Anonymization of training data
+- User control over what data influences their experience
 
-### References
+### 4. Metrics and Evaluation
 
-1. Event‑driven best practices – AWS Architecture Blog ([aws.amazon.com](https://aws.amazon.com/blogs/architecture/best-practices-for-implementing-event-driven-architectures-in-your-organization/?utm_source=chatgpt.com))
-2. AppConfig version labels & rollback ([aws.amazon.com](https://aws.amazon.com/blogs/mt/improve-your-feature-flagging-with-aws-appconfig-version-labels/?utm_source=chatgpt.com))
-3. DynamoDB design best‑practices ([docs.aws.amazon.com](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/best-practices.html?utm_source=chatgpt.com))
-4. Bedrock fine‑tuning overview ([aws.amazon.com](https://aws.amazon.com/blogs/aws/customize-models-in-amazon-bedrock-with-your-own-data-using-fine-tuning-and-continued-pre-training/?utm_source=chatgpt.com))
-5. Scheduled Step Functions tutorial ([aws.amazon.com](https://aws.amazon.com/tutorials/scheduling-a-serverless-workflow-step-functions-amazon-eventbridge-scheduler/?utm_source=chatgpt.com))
-6. Amazon Textract service page ([aws.amazon.com](https://aws.amazon.com/textract/?utm_source=chatgpt.com))
-7. Lambda pay‑per‑use pricing ([aws.amazon.com](https://aws.amazon.com/lambda/pricing/?utm_source=chatgpt.com))
-8. Serverless market context ([wired.com](https://www.wired.com/story/promise-practically-serverless-computing?utm_source=chatgpt.com))
-9. EventBridge decoupling article ([medium.com](https://medium.com/aws-lambda-serverless-developer-guide-with-hands/amazon-eventbridge-decouple-services-with-event-driven-architecture-9643b2f5290f?utm_source=chatgpt.com))
-10. AppConfig feature flag blog ([aws.amazon.com](https://aws.amazon.com/blogs/mt/using-aws-appconfig-feature-flags/?utm_source=chatgpt.com))
-11. Bedrock fine‑tuning guide (Medium) ([medium.com](https://medium.com/%40abdullahiolaoye4/finetuning-llms-on-amazon-bedrock-887ebc547adc?utm_source=chatgpt.com))
-12. Gartner IDP Market Guide (Hyperscience) ([hyperscience.ai](https://www.hyperscience.ai/resource/gartner-2024-market-guide-for-intelligent-document-processing-solutions/?utm_source=chatgpt.com))
+Continuous evaluation ensures the system is improving:
+- Classification accuracy tracking
+- User efficiency metrics
+- Satisfaction scoring
+- Comparative analysis across similar users/organizations
 
----
+## Competitive Advantage
 
-*Last updated: 9 June 2025*
+This dynamic architecture differentiates Doc-Tales from competitors by:
+1. Minimizing configuration burden that plagues traditional document systems
+2. Creating a system that becomes more valuable over time
+3. Adapting to organizational needs without custom development
+4. Unifying multiple communication channels with consistent learning across all inputs
+
+## Next Steps
+
+1. Define core interaction tracking metrics
+2. Design initial feedback collection mechanisms
+3. Implement baseline classification with improvement pathways
+4. Create Lambda function architecture for adaptive processing
