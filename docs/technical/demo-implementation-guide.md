@@ -164,6 +164,16 @@ To demonstrate the value of different archetype views, we'll include:
 4. Generate metadata for classification and organization
 5. Store in S3 for easy access
 
+**Initial API for Data Ingestion**
+1. Define Dimension Schema - Create TypeScript interfaces for temporal, relationship, visual, and analytical dimensions
+2. Build Unified Communication Model - Extend current model to include dimension fields and source-specific attributes
+3. Implement Source Adapters - Create adapters for email, documents, and social media with dimension extraction
+4. Develop Dimension Extraction Utilities - Build simple rules-based extractors for each dimension type
+5. Create Mock Data Service - Implement a service that provides dimension-rich sample data for all sources
+6. Connect to Archetype Views - Update UI components to leverage dimension data in archetype-specific ways
+7. Add Simple Configuration UI - Create minimal UI for enabling/disabling sources and viewing extracted dimensions
+8. Build Demo Flow - Create a guided tour showing how the same data appears differently based on dimensions and archetypes
+
 **AWS Services:**
 - S3 for dataset storage
 - Lambda for dataset loading and processing
