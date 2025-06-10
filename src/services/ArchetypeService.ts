@@ -4,7 +4,7 @@ export interface InteractionEvent {
   type: string;
   target: string;
   timestamp: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 export class ArchetypeService {

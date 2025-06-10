@@ -135,7 +135,7 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
             </div>
             
             <p>
-              For this demo, we've pre-connected email, document, and social media sources
+              For this demo, we&apos;ve pre-connected email, document, and social media sources
               related to three life projects: Home Purchase, Career Change, and Family Event.
             </p>
           </div>
@@ -199,7 +199,7 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
           <div className="demo-step start-step">
             <h2>Ready to Experience Doc-Tales?</h2>
             <p>
-              You've selected the <strong>{selectedArchetype}</strong> archetype.
+              You&apos;ve selected the <strong>{selectedArchetype}</strong> archetype.
               Your dashboard will be optimized for this cognitive style.
             </p>
             <p>
@@ -212,7 +212,7 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
               </div>
             </div>
             <p>
-              Click "Start Experience" to begin exploring your unified communications.
+              Click &quot;Start Experience&quot; to begin exploring your unified communications.
             </p>
           </div>
         );

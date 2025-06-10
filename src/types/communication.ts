@@ -34,7 +34,7 @@ export interface Relationship {
 }
 
 // Import dimensions for Task 2: Build Unified Communication Model
-import { Dimensions, TemporalDimension, RelationshipDimension, VisualDimension, AnalyticalDimension } from "./dimensions";
+import { Dimensions } from "./dimensions";
 
 export interface Communication {
   id: string;
@@ -51,7 +51,7 @@ export interface Communication {
     category: string;
     read: boolean;
     flagged: boolean;
-    sourceSpecific?: Record<string, any>; // For source-specific attributes
+    sourceSpecific?: Record<string, unknown>; // For source-specific attributes
   };
   entities: Entity[];
   relationships: Relationship[];
@@ -78,5 +78,5 @@ export interface UserProfile {
   id: string;
   primaryArchetype: ArchetypeType;
   archetypeConfidence: Record<ArchetypeType, number>;
-  preferences: Record<string, any>;
+  preferences: Record<string, unknown>;
 }

@@ -48,11 +48,12 @@ const AnalystView: React.FC<AnalystViewProps> = ({
         valueA = a.project;
         valueB = b.project;
         break;
-      case "urgency":
+      case "urgency": {
         const urgencyOrder = { high: 0, medium: 1, low: 2 };
         valueA = urgencyOrder[a.metadata.urgency];
         valueB = urgencyOrder[b.metadata.urgency];
         break;
+      }
       default:
         valueA = a.timestamp;
         valueB = b.timestamp;
