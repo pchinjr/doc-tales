@@ -1,6 +1,6 @@
 // Task 8: Build Demo Flow
-import React, { useState } from 'react';
-import { ArchetypeType } from '../types/communication';
+import React, { useState } from "react";
+import { ArchetypeType } from "../types/communication";
 
 interface DemoFlowProps {
   onComplete: () => void;
@@ -63,8 +63,8 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
             
             <div className="archetype-cards">
               <div 
-                className={`archetype-card ${selectedArchetype === 'prioritizer' ? 'selected' : ''}`}
-                onClick={() => handleSelectArchetype('prioritizer')}
+                className={`archetype-card ${selectedArchetype === "prioritizer" ? "selected" : ""}`}
+                onClick={() => handleSelectArchetype("prioritizer")}
               >
                 <h3>Prioritizer</h3>
                 <div className="archetype-icon">⏱️</div>
@@ -72,8 +72,8 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
               </div>
               
               <div 
-                className={`archetype-card ${selectedArchetype === 'connector' ? 'selected' : ''}`}
-                onClick={() => handleSelectArchetype('connector')}
+                className={`archetype-card ${selectedArchetype === "connector" ? "selected" : ""}`}
+                onClick={() => handleSelectArchetype("connector")}
               >
                 <h3>Connector</h3>
                 <div className="archetype-icon">🔗</div>
@@ -81,8 +81,8 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
               </div>
               
               <div 
-                className={`archetype-card ${selectedArchetype === 'visualizer' ? 'selected' : ''}`}
-                onClick={() => handleSelectArchetype('visualizer')}
+                className={`archetype-card ${selectedArchetype === "visualizer" ? "selected" : ""}`}
+                onClick={() => handleSelectArchetype("visualizer")}
               >
                 <h3>Visualizer</h3>
                 <div className="archetype-icon">🖼️</div>
@@ -90,8 +90,8 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
               </div>
               
               <div 
-                className={`archetype-card ${selectedArchetype === 'analyst' ? 'selected' : ''}`}
-                onClick={() => handleSelectArchetype('analyst')}
+                className={`archetype-card ${selectedArchetype === "analyst" ? "selected" : ""}`}
+                onClick={() => handleSelectArchetype("analyst")}
               >
                 <h3>Analyst</h3>
                 <div className="archetype-icon">📊</div>
@@ -229,7 +229,7 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
           {[1, 2, 3, 4, 5].map(i => (
             <div 
               key={i} 
-              className={`progress-step ${i === step ? 'active' : ''} ${i < step ? 'completed' : ''}`}
+              className={`progress-step ${i === step ? "active" : ""} ${i < step ? "completed" : ""}`}
             >
               {i}
             </div>
@@ -253,7 +253,7 @@ const DemoFlow: React.FC<DemoFlowProps> = ({ onComplete, onArchetypeSelect }) =>
           className="next-button"
           disabled={step === 2 && !selectedArchetype}
         >
-          {step === 5 ? 'Start Experience' : 'Next'}
+          {step === 5 ? "Start Experience" : "Next"}
         </button>
       </div>
     </div>

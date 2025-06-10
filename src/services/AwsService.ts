@@ -1,7 +1,7 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import { S3Client } from '@aws-sdk/client-s3';
-import { ComprehendClient } from '@aws-sdk/client-comprehend';
-import { TextractClient } from '@aws-sdk/client-textract';
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { S3Client } from "@aws-sdk/client-s3";
+import { ComprehendClient } from "@aws-sdk/client-comprehend";
+import { TextractClient } from "@aws-sdk/client-textract";
 
 export class AwsService {
   private static instance: AwsService;
@@ -11,7 +11,7 @@ export class AwsService {
   private textractClient: TextractClient;
   
   private constructor() {
-    const region = 'us-east-1'; // Change to your region
+    const region = "us-east-1"; // Change to your region
     
     this.dynamoClient = new DynamoDBClient({ region });
     this.s3Client = new S3Client({ region });

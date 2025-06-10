@@ -1,12 +1,12 @@
 // Task 4: Develop Dimension Extraction Utilities
-import { Communication } from '../types/communication';
+import { Communication } from "../types/communication";
 import { 
   Dimensions, 
   TemporalDimension, 
   RelationshipDimension, 
   VisualDimension, 
   AnalyticalDimension 
-} from '../types/dimensions';
+} from "../types/dimensions";
 
 export class DimensionExtractor {
   /**
@@ -58,11 +58,11 @@ export class DimensionExtractor {
     
     // Determine if this requires action based on content and urgency
     const requiresAction = 
-      communication.metadata.urgency === 'high' || 
-      communication.content.toLowerCase().includes('please') ||
-      communication.content.toLowerCase().includes('need') ||
-      communication.content.toLowerCase().includes('required') ||
-      communication.content.toLowerCase().includes('action');
+      communication.metadata.urgency === "high" || 
+      communication.content.toLowerCase().includes("please") ||
+      communication.content.toLowerCase().includes("need") ||
+      communication.content.toLowerCase().includes("required") ||
+      communication.content.toLowerCase().includes("action");
     
     // Create the temporal dimension
     return {
@@ -88,44 +88,44 @@ export class DimensionExtractor {
   private extractRelationshipDimension(communication: Communication): RelationshipDimension {
     // Determine connection strength based on communication patterns
     // In a real implementation, this would analyze communication history
-    let connectionStrength: 'strong' | 'medium' | 'weak' = 'medium';
+    let connectionStrength: "strong" | "medium" | "weak" = "medium";
     
     // For the MVP, use simple rules
-    if (communication.type === 'email' && communication.metadata.category === 'finance') {
-      connectionStrength = 'strong'; // Financial communications are important
-    } else if (communication.type === 'social') {
-      connectionStrength = 'weak'; // Social media connections are typically weaker
+    if (communication.type === "email" && communication.metadata.category === "finance") {
+      connectionStrength = "strong"; // Financial communications are important
+    } else if (communication.type === "social") {
+      connectionStrength = "weak"; // Social media connections are typically weaker
     }
     
     // Determine frequency based on metadata
     // In a real implementation, this would analyze communication history
-    let frequency: 'frequent' | 'occasional' | 'rare' = 'occasional';
+    let frequency: "frequent" | "occasional" | "rare" = "occasional";
     
     // For the MVP, use the source type to guess frequency
-    if (communication.type === 'email') {
-      frequency = 'frequent';
-    } else if (communication.type === 'document') {
-      frequency = 'occasional';
+    if (communication.type === "email") {
+      frequency = "frequent";
+    } else if (communication.type === "document") {
+      frequency = "occasional";
     } else {
-      frequency = 'rare';
+      frequency = "rare";
     }
     
     // Determine context based on project and content
     const personal = 
-      communication.project === 'family-event' || 
-      communication.content.toLowerCase().includes('family') ||
-      communication.content.toLowerCase().includes('friend');
+      communication.project === "family-event" || 
+      communication.content.toLowerCase().includes("family") ||
+      communication.content.toLowerCase().includes("friend");
       
     const professional = 
-      communication.project === 'career-change' || 
-      communication.content.toLowerCase().includes('work') ||
-      communication.content.toLowerCase().includes('job') ||
-      communication.content.toLowerCase().includes('interview');
+      communication.project === "career-change" || 
+      communication.content.toLowerCase().includes("work") ||
+      communication.content.toLowerCase().includes("job") ||
+      communication.content.toLowerCase().includes("interview");
       
     const projectSpecific = 
-      communication.project === 'home-purchase' || 
-      communication.content.toLowerCase().includes('house') ||
-      communication.content.toLowerCase().includes('property');
+      communication.project === "home-purchase" || 
+      communication.content.toLowerCase().includes("house") ||
+      communication.content.toLowerCase().includes("property");
     
     return {
       connectionStrength,
@@ -164,16 +164,16 @@ export class DimensionExtractor {
     const attachments = communication.attachments.length;
     
     // Determine visual category
-    let visualCategory: 'document' | 'image' | 'chart' | 'mixed' | 'text-only' = 'text-only';
+    let visualCategory: "document" | "image" | "chart" | "mixed" | "text-only" = "text-only";
     
     if (charts > 0 && tables > 0) {
-      visualCategory = 'mixed';
+      visualCategory = "mixed";
     } else if (charts > 0) {
-      visualCategory = 'chart';
+      visualCategory = "chart";
     } else if (images > 0) {
-      visualCategory = 'image';
+      visualCategory = "image";
     } else if (documentType) {
-      visualCategory = 'document';
+      visualCategory = "document";
     }
     
     // Extract location if available
@@ -206,29 +206,29 @@ export class DimensionExtractor {
     
     // Extract tags using simple keyword matching
     const tags: string[] = [];
-    if (communication.content.toLowerCase().includes('urgent')) tags.push('urgent');
-    if (communication.content.toLowerCase().includes('follow up')) tags.push('follow-up');
-    if (communication.content.toLowerCase().includes('review')) tags.push('review');
-    if (communication.content.toLowerCase().includes('approve')) tags.push('approval');
-    if (communication.content.toLowerCase().includes('meeting')) tags.push('meeting');
+    if (communication.content.toLowerCase().includes("urgent")) tags.push("urgent");
+    if (communication.content.toLowerCase().includes("follow up")) tags.push("follow-up");
+    if (communication.content.toLowerCase().includes("review")) tags.push("review");
+    if (communication.content.toLowerCase().includes("approve")) tags.push("approval");
+    if (communication.content.toLowerCase().includes("meeting")) tags.push("meeting");
     
     // Add project as a tag
-    tags.push(communication.project.replace('-', ' '));
+    tags.push(communication.project.replace("-", " "));
     
     // Determine sentiment using simple keyword matching
-    let sentiment: 'positive' | 'neutral' | 'negative' = 'neutral';
+    let sentiment: "positive" | "neutral" | "negative" = "neutral";
     
-    const positiveWords = ['good', 'great', 'excellent', 'happy', 'pleased', 'excited'];
-    const negativeWords = ['bad', 'issue', 'problem', 'concerned', 'disappointed', 'urgent'];
+    const positiveWords = ["good", "great", "excellent", "happy", "pleased", "excited"];
+    const negativeWords = ["bad", "issue", "problem", "concerned", "disappointed", "urgent"];
     
     const contentLower = communication.content.toLowerCase();
     const positiveCount = positiveWords.filter(word => contentLower.includes(word)).length;
     const negativeCount = negativeWords.filter(word => contentLower.includes(word)).length;
     
     if (positiveCount > negativeCount) {
-      sentiment = 'positive';
+      sentiment = "positive";
     } else if (negativeCount > positiveCount) {
-      sentiment = 'negative';
+      sentiment = "negative";
     }
     
     // Extract entities using simple pattern matching
@@ -248,12 +248,12 @@ export class DimensionExtractor {
     
     // Extract concepts using simple keyword matching
     const concepts: string[] = [];
-    if (communication.project === 'home-purchase') {
-      concepts.push('real estate', 'mortgage', 'property');
-    } else if (communication.project === 'career-change') {
-      concepts.push('job search', 'interview', 'resume');
-    } else if (communication.project === 'family-event') {
-      concepts.push('reunion', 'planning', 'family');
+    if (communication.project === "home-purchase") {
+      concepts.push("real estate", "mortgage", "property");
+    } else if (communication.project === "career-change") {
+      concepts.push("job search", "interview", "resume");
+    } else if (communication.project === "family-event") {
+      concepts.push("reunion", "planning", "family");
     }
     
     // Calculate metrics
@@ -261,11 +261,11 @@ export class DimensionExtractor {
     const readingTime = Math.ceil(wordCount / 200); // Average reading speed
     
     // Determine complexity
-    let complexity: 'high' | 'medium' | 'low' = 'medium';
+    let complexity: "high" | "medium" | "low" = "medium";
     if (wordCount > 300) {
-      complexity = 'high';
+      complexity = "high";
     } else if (wordCount < 50) {
-      complexity = 'low';
+      complexity = "low";
     }
     
     // Calculate information density
@@ -327,14 +327,14 @@ export class DimensionExtractor {
     let score = 0.5; // Start with neutral score
     
     // Adjust based on urgency
-    if (communication.metadata.urgency === 'high') score += 0.3;
-    if (communication.metadata.urgency === 'low') score -= 0.1;
+    if (communication.metadata.urgency === "high") score += 0.3;
+    if (communication.metadata.urgency === "low") score -= 0.1;
     
     // Adjust based on recency
     if (this.isRecent(communication.timestamp)) score += 0.2;
     
     // Adjust based on project
-    if (communication.project === 'home-purchase') score += 0.1;
+    if (communication.project === "home-purchase") score += 0.1;
     
     // Ensure score is between 0 and 1
     return Math.max(0, Math.min(1, score));
@@ -356,8 +356,8 @@ export class DimensionExtractor {
   private calculateRelationshipConfidence(relationship: RelationshipDimension): number {
     let score = 0.5; // Start with neutral score
     
-    if (relationship.connectionStrength === 'strong') score += 0.2;
-    if (relationship.frequency === 'frequent') score += 0.1;
+    if (relationship.connectionStrength === "strong") score += 0.2;
+    if (relationship.frequency === "frequent") score += 0.1;
     if (relationship.networkPosition.sharedConnections > 0) score += 0.1;
     if (relationship.context.personal || relationship.context.professional) score += 0.1;
     
@@ -380,7 +380,7 @@ export class DimensionExtractor {
     
     if (analytical.tags.length > 2) score += 0.1;
     if (analytical.entities.concepts.length > 0) score += 0.1;
-    if (analytical.metrics.complexity === 'high') score += 0.1;
+    if (analytical.metrics.complexity === "high") score += 0.1;
     if (analytical.structure.hasHeadings || 
         analytical.structure.hasBulletPoints || 
         analytical.structure.hasNumberedLists) score += 0.1;

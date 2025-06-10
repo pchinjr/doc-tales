@@ -1,5 +1,5 @@
 // Task 3: Implement Source Adapters
-import { Communication, SourceType, CommunicationType } from '../types/communication';
+import { Communication, SourceType, CommunicationType } from "../types/communication";
 
 // Base interface for all source adapters
 export interface SourceAdapter {
@@ -17,7 +17,7 @@ export interface SourceAdapter {
 
 // Base abstract class that implements common functionality
 export abstract class BaseSourceAdapter implements SourceAdapter {
-  protected connected: boolean = false;
+  protected connected = false;
   protected sourceType: SourceType;
   protected communicationType: CommunicationType;
   

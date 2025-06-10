@@ -1,8 +1,8 @@
-export type CommunicationType = 'email' | 'document' | 'social';
-export type ProjectType = 'home-purchase' | 'career-change' | 'family-event';
-export type UrgencyLevel = 'high' | 'medium' | 'low';
-export type ArchetypeType = 'prioritizer' | 'connector' | 'visualizer' | 'analyst';
-export type SourceType = 'gmail' | 'outlook' | 'dropbox' | 'gdrive' | 'twitter' | 'linkedin' | 'slack';
+export type CommunicationType = "email" | "document" | "social";
+export type ProjectType = "home-purchase" | "career-change" | "family-event";
+export type UrgencyLevel = "high" | "medium" | "low";
+export type ArchetypeType = "prioritizer" | "connector" | "visualizer" | "analyst";
+export type SourceType = "gmail" | "outlook" | "dropbox" | "gdrive" | "twitter" | "linkedin" | "slack";
 
 export interface Entity {
   id: string;
@@ -34,7 +34,7 @@ export interface Relationship {
 }
 
 // Import dimensions for Task 2: Build Unified Communication Model
-import { Dimensions, TemporalDimension, RelationshipDimension, VisualDimension, AnalyticalDimension } from './dimensions';
+import { Dimensions, TemporalDimension, RelationshipDimension, VisualDimension, AnalyticalDimension } from "./dimensions";
 
 export interface Communication {
   id: string;

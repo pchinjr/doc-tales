@@ -146,7 +146,7 @@ const Dashboard: React.FC = () => {
             className="config-button"
             onClick={() => setShowConfig(!showConfig)}
           >
-            {showConfig ? 'Hide Configuration' : 'Configure Sources'}
+            {showConfig ? "Hide Configuration" : "Configure Sources"}
           </button>
           <button 
             className="demo-button"

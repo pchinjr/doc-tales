@@ -1,14 +1,14 @@
 // Task 3: Implement Source Adapters - Email Adapter
-import { BaseSourceAdapter } from '../SourceAdapter';
-import { Communication, SourceType } from '../../types/communication';
-import { DimensionExtractor } from '../DimensionExtractor';
+import { BaseSourceAdapter } from "../SourceAdapter";
+import { Communication, SourceType } from "../../types/communication";
+import { DimensionExtractor } from "../DimensionExtractor";
 
 export class EmailAdapter extends BaseSourceAdapter {
   private mockData: any[] = [];
   private dimensionExtractor: DimensionExtractor;
   
-  constructor(sourceType: SourceType = 'gmail') {
-    super(sourceType, 'email');
+  constructor(sourceType: SourceType = "gmail") {
+    super(sourceType, "email");
     this.dimensionExtractor = new DimensionExtractor();
     this.loadMockData();
   }
@@ -18,89 +18,89 @@ export class EmailAdapter extends BaseSourceAdapter {
     // For the hackathon MVP, we'll use hardcoded sample data
     this.mockData = [
       {
-        id: 'email-001',
-        subject: 'Mortgage Pre-Approval Update',
+        id: "email-001",
+        subject: "Mortgage Pre-Approval Update",
         from: {
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@bankofamerica.com',
-          id: 'contact-001'
+          name: "Sarah Johnson",
+          email: "sarah.johnson@bankofamerica.com",
+          id: "contact-001"
         },
         to: [
           {
-            name: 'User',
-            email: 'user@example.com',
-            id: 'user-001'
+            name: "User",
+            email: "user@example.com",
+            id: "user-001"
           }
         ],
-        date: '2025-06-05T10:30:00Z',
+        date: "2025-06-05T10:30:00Z",
         body: "Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?",
-        project: 'home-purchase',
-        urgency: 'high',
-        category: 'finance',
+        project: "home-purchase",
+        urgency: "high",
+        category: "finance",
         hasAttachments: true,
         attachments: [
           {
-            id: 'att-001',
-            name: 'Pre-Approval-Letter.pdf',
-            type: 'application/pdf',
+            id: "att-001",
+            name: "Pre-Approval-Letter.pdf",
+            type: "application/pdf",
             size: 245000
           }
         ]
       },
       {
-        id: 'email-002',
-        subject: 'Interview Confirmation',
+        id: "email-002",
+        subject: "Interview Confirmation",
         from: {
-          name: 'Michael Chen',
-          email: 'mchen@techcorp.com',
-          id: 'contact-002'
+          name: "Michael Chen",
+          email: "mchen@techcorp.com",
+          id: "contact-002"
         },
         to: [
           {
-            name: 'User',
-            email: 'user@example.com',
-            id: 'user-001'
+            name: "User",
+            email: "user@example.com",
+            id: "user-001"
           }
         ],
-        date: '2025-06-07T14:15:00Z',
+        date: "2025-06-07T14:15:00Z",
         body: "This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!",
-        project: 'career-change',
-        urgency: 'high',
-        category: 'interviews',
+        project: "career-change",
+        urgency: "high",
+        category: "interviews",
         hasAttachments: false,
         attachments: []
       },
       {
-        id: 'email-003',
-        subject: 'Family Reunion Planning',
+        id: "email-003",
+        subject: "Family Reunion Planning",
         from: {
-          name: 'Aunt Lisa',
-          email: 'lisa.family@gmail.com',
-          id: 'contact-003'
+          name: "Aunt Lisa",
+          email: "lisa.family@gmail.com",
+          id: "contact-003"
         },
         to: [
           {
-            name: 'User',
-            email: 'user@example.com',
-            id: 'user-001'
+            name: "User",
+            email: "user@example.com",
+            id: "user-001"
           },
           {
-            name: 'Uncle Bob',
-            email: 'bob.family@gmail.com',
-            id: 'contact-004'
+            name: "Uncle Bob",
+            email: "bob.family@gmail.com",
+            id: "contact-004"
           }
         ],
-        date: '2025-06-01T09:45:00Z',
+        date: "2025-06-01T09:45:00Z",
         body: "Hi everyone! I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.",
-        project: 'family-event',
-        urgency: 'medium',
-        category: 'planning',
+        project: "family-event",
+        urgency: "medium",
+        category: "planning",
         hasAttachments: true,
         attachments: [
           {
-            id: 'att-002',
-            name: 'last-reunion-photos.zip',
-            type: 'application/zip',
+            id: "att-002",
+            name: "last-reunion-photos.zip",
+            type: "application/zip",
             size: 15400000
           }
         ]
@@ -112,7 +112,7 @@ export class EmailAdapter extends BaseSourceAdapter {
   
   public async fetchCommunications(): Promise<Communication[]> {
     if (!this.connected) {
-      throw new Error('Not connected to email source');
+      throw new Error("Not connected to email source");
     }
     
     // Transform mock data into standardized Communication objects
@@ -120,7 +120,7 @@ export class EmailAdapter extends BaseSourceAdapter {
       // Create a basic communication object
       const communication: Partial<Communication> = {
         id: email.id,
-        type: 'email',
+        type: "email",
         source: this.sourceType,
         timestamp: email.date,
         subject: email.subject,
@@ -150,8 +150,8 @@ export class EmailAdapter extends BaseSourceAdapter {
           read: false,
           flagged: false,
           sourceSpecific: {
-            isStarred: email.id === 'email-001', // Example of source-specific data
-            folder: email.project === 'home-purchase' ? 'Important' : 'Inbox'
+            isStarred: email.id === "email-001", // Example of source-specific data
+            folder: email.project === "home-purchase" ? "Important" : "Inbox"
           }
         },
         entities: [],

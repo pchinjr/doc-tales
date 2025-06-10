@@ -1,4 +1,4 @@
-import { ArchetypeType, UserProfile } from '../types/communication';
+import { ArchetypeType, UserProfile } from "../types/communication";
 
 export interface InteractionEvent {
   type: string;
@@ -11,8 +11,8 @@ export class ArchetypeService {
   private static instance: ArchetypeService;
   private interactions: InteractionEvent[] = [];
   private userProfile: UserProfile = {
-    id: 'demo-user',
-    primaryArchetype: 'connector',
+    id: "demo-user",
+    primaryArchetype: "connector",
     archetypeConfidence: {
       prioritizer: 0.25,
       connector: 0.25,
@@ -42,10 +42,10 @@ export class ArchetypeService {
     // Simple rule-based classification for hackathon
     // In a real implementation, this would use ML
     
-    const dateInteractions = this.countInteractionsByType('date_click');
-    const peopleInteractions = this.countInteractionsByType('person_click');
-    const visualInteractions = this.countInteractionsByType('image_view');
-    const detailInteractions = this.countInteractionsByType('details_view');
+    const dateInteractions = this.countInteractionsByType("date_click");
+    const peopleInteractions = this.countInteractionsByType("person_click");
+    const visualInteractions = this.countInteractionsByType("image_view");
+    const detailInteractions = this.countInteractionsByType("details_view");
     
     const total = Math.max(1, dateInteractions + peopleInteractions + 
                           visualInteractions + detailInteractions);
@@ -59,7 +59,7 @@ export class ArchetypeService {
     
     // Find the archetype with highest confidence
     let maxConfidence = 0;
-    let primaryArchetype: ArchetypeType = 'connector';
+    let primaryArchetype: ArchetypeType = "connector";
     
     Object.entries(this.userProfile.archetypeConfidence).forEach(([archetype, confidence]) => {
       if (confidence > maxConfidence) {

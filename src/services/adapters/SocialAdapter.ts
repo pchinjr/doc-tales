@@ -1,14 +1,14 @@
 // Task 3: Implement Source Adapters - Social Media Adapter
-import { BaseSourceAdapter } from '../SourceAdapter';
-import { Communication, SourceType } from '../../types/communication';
-import { DimensionExtractor } from '../DimensionExtractor';
+import { BaseSourceAdapter } from "../SourceAdapter";
+import { Communication, SourceType } from "../../types/communication";
+import { DimensionExtractor } from "../DimensionExtractor";
 
 export class SocialAdapter extends BaseSourceAdapter {
   private mockData: any[] = [];
   private dimensionExtractor: DimensionExtractor;
   
-  constructor(sourceType: SourceType = 'twitter') {
-    super(sourceType, 'social');
+  constructor(sourceType: SourceType = "twitter") {
+    super(sourceType, "social");
     this.dimensionExtractor = new DimensionExtractor();
     this.loadMockData();
   }
@@ -18,111 +18,111 @@ export class SocialAdapter extends BaseSourceAdapter {
     // For the hackathon MVP, we'll use hardcoded sample data
     this.mockData = [
       {
-        id: 'social-001',
-        platform: 'twitter',
+        id: "social-001",
+        platform: "twitter",
         content: "Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome",
         author: {
-          name: 'User',
-          handle: '@user',
-          id: 'user-001'
+          name: "User",
+          handle: "@user",
+          id: "user-001"
         },
         mentions: [],
-        timestamp: '2025-06-02T13:25:00Z',
+        timestamp: "2025-06-02T13:25:00Z",
         likes: 5,
         shares: 2,
         comments: 3,
         commenters: [
           {
-            name: 'Real Estate Agent',
-            handle: '@realestateagent',
-            id: 'contact-007'
+            name: "Real Estate Agent",
+            handle: "@realestateagent",
+            id: "contact-007"
           },
           {
-            name: 'Friend',
-            handle: '@friend',
-            id: 'contact-008'
+            name: "Friend",
+            handle: "@friend",
+            id: "contact-008"
           }
         ],
-        project: 'home-purchase',
-        urgency: 'low',
-        category: 'updates',
+        project: "home-purchase",
+        urgency: "low",
+        category: "updates",
         hasMedia: true,
-        mediaType: 'image',
+        mediaType: "image",
         mediaCount: 2,
-        location: 'Maple Street, Springfield'
+        location: "Maple Street, Springfield"
       },
       {
-        id: 'social-002',
-        platform: 'linkedin',
+        id: "social-002",
+        platform: "linkedin",
         content: "Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs",
         author: {
-          name: 'User',
-          handle: 'user-linkedin',
-          id: 'user-001'
+          name: "User",
+          handle: "user-linkedin",
+          id: "user-001"
         },
         mentions: [],
-        timestamp: '2025-06-06T10:15:00Z',
+        timestamp: "2025-06-06T10:15:00Z",
         likes: 24,
         shares: 0,
         comments: 8,
         commenters: [
           {
-            name: 'Former Colleague',
-            handle: 'former-colleague',
-            id: 'contact-009'
+            name: "Former Colleague",
+            handle: "former-colleague",
+            id: "contact-009"
           },
           {
-            name: 'Industry Contact',
-            handle: 'industry-contact',
-            id: 'contact-010'
+            name: "Industry Contact",
+            handle: "industry-contact",
+            id: "contact-010"
           },
           {
-            name: 'Michael Chen',
-            handle: 'michael-chen',
-            id: 'contact-002'
+            name: "Michael Chen",
+            handle: "michael-chen",
+            id: "contact-002"
           }
         ],
-        project: 'career-change',
-        urgency: 'medium',
-        category: 'networking',
+        project: "career-change",
+        urgency: "medium",
+        category: "networking",
         hasMedia: false,
         mediaCount: 0
       },
       {
-        id: 'social-003',
-        platform: 'twitter',
+        id: "social-003",
+        platform: "twitter",
         content: "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
         author: {
-          name: 'User',
-          handle: '@user',
-          id: 'user-001'
+          name: "User",
+          handle: "@user",
+          id: "user-001"
         },
         mentions: [
           {
-            name: 'Aunt Lisa',
-            handle: '@aunt_lisa',
-            id: 'contact-003'
+            name: "Aunt Lisa",
+            handle: "@aunt_lisa",
+            id: "contact-003"
           }
         ],
-        timestamp: '2025-06-01T18:40:00Z',
+        timestamp: "2025-06-01T18:40:00Z",
         likes: 3,
         shares: 0,
         comments: 2,
         commenters: [
           {
-            name: 'Aunt Lisa',
-            handle: '@aunt_lisa',
-            id: 'contact-003'
+            name: "Aunt Lisa",
+            handle: "@aunt_lisa",
+            id: "contact-003"
           },
           {
-            name: 'Uncle Bob',
-            handle: '@uncle_bob',
-            id: 'contact-004'
+            name: "Uncle Bob",
+            handle: "@uncle_bob",
+            id: "contact-004"
           }
         ],
-        project: 'family-event',
-        urgency: 'low',
-        category: 'planning',
+        project: "family-event",
+        urgency: "low",
+        category: "planning",
         hasMedia: false,
         mediaCount: 0
       }
@@ -133,7 +133,7 @@ export class SocialAdapter extends BaseSourceAdapter {
   
   public async fetchCommunications(): Promise<Communication[]> {
     if (!this.connected) {
-      throw new Error('Not connected to social media source');
+      throw new Error("Not connected to social media source");
     }
     
     // Transform mock data into standardized Communication objects
@@ -160,10 +160,10 @@ export class SocialAdapter extends BaseSourceAdapter {
       // Create a basic communication object
       const communication: Partial<Communication> = {
         id: post.id,
-        type: 'social',
+        type: "social",
         source: this.sourceType,
         timestamp: post.timestamp,
-        subject: post.content.substring(0, 50) + (post.content.length > 50 ? '...' : ''),
+        subject: post.content.substring(0, 50) + (post.content.length > 50 ? "..." : ""),
         content: post.content,
         project: post.project,
         sender: {
@@ -176,7 +176,7 @@ export class SocialAdapter extends BaseSourceAdapter {
           {
             id: `${post.id}-media-1`,
             name: `${post.mediaType}-1`,
-            type: `image/${post.mediaType === 'image' ? 'jpeg' : 'mp4'}`,
+            type: `image/${post.mediaType === "image" ? "jpeg" : "mp4"}`,
             size: 500000
           }
         ] : [],

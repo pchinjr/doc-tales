@@ -3,7 +3,7 @@
 
 export interface TemporalDimension {
   deadline?: string;
-  urgency: 'high' | 'medium' | 'low';
+  urgency: "high" | "medium" | "low";
   chronology: {
     created: string;
     lastUpdated?: string;
@@ -18,8 +18,8 @@ export interface TemporalDimension {
 }
 
 export interface RelationshipDimension {
-  connectionStrength: 'strong' | 'medium' | 'weak';
-  frequency: 'frequent' | 'occasional' | 'rare';
+  connectionStrength: "strong" | "medium" | "weak";
+  frequency: "frequent" | "occasional" | "rare";
   lastInteraction?: string;
   networkPosition: {
     isDirectConnection: boolean;
@@ -47,13 +47,13 @@ export interface VisualDimension {
     coordinates?: [number, number];
     relatedLocations?: string[];
   };
-  visualCategory: 'document' | 'image' | 'chart' | 'mixed' | 'text-only';
+  visualCategory: "document" | "image" | "chart" | "mixed" | "text-only";
 }
 
 export interface AnalyticalDimension {
   categories: string[];
   tags: string[];
-  sentiment: 'positive' | 'neutral' | 'negative';
+  sentiment: "positive" | "neutral" | "negative";
   entities: {
     people: string[];
     organizations: string[];
@@ -64,7 +64,7 @@ export interface AnalyticalDimension {
   metrics: {
     wordCount: number;
     readingTime: number;
-    complexity: 'high' | 'medium' | 'low';
+    complexity: "high" | "medium" | "low";
     informationDensity: number;
   };
   structure: {

@@ -1,23 +1,23 @@
 // Task 5: Create Mock Data Service
-import { Communication, SourceType, ProjectType, ArchetypeType } from '../types/communication';
-import { SourceAdapter } from './SourceAdapter';
-import { EmailAdapter } from './adapters/EmailAdapter';
-import { DocumentAdapter } from './adapters/DocumentAdapter';
-import { SocialAdapter } from './adapters/SocialAdapter';
-import { Dimensions } from '../types/dimensions';
+import { Communication, SourceType, ProjectType, ArchetypeType } from "../types/communication";
+import { SourceAdapter } from "./SourceAdapter";
+import { EmailAdapter } from "./adapters/EmailAdapter";
+import { DocumentAdapter } from "./adapters/DocumentAdapter";
+import { SocialAdapter } from "./adapters/SocialAdapter";
+import { Dimensions } from "../types/dimensions";
 
 export class UnifiedDataService {
   private static instance: UnifiedDataService;
   private adapters: Map<SourceType, SourceAdapter> = new Map();
   private communications: Communication[] = [];
-  private isLoading: boolean = false;
+  private isLoading = false;
   private lastRefresh: Date | null = null;
   
   private constructor() {
     // Initialize with default adapters
-    this.registerAdapter(new EmailAdapter('gmail'));
-    this.registerAdapter(new DocumentAdapter('dropbox'));
-    this.registerAdapter(new SocialAdapter('twitter'));
+    this.registerAdapter(new EmailAdapter("gmail"));
+    this.registerAdapter(new DocumentAdapter("dropbox"));
+    this.registerAdapter(new SocialAdapter("twitter"));
   }
   
   public static getInstance(): UnifiedDataService {
@@ -53,7 +53,7 @@ export class UnifiedDataService {
    */
   public async loadAllData(): Promise<void> {
     if (this.isLoading) {
-      throw new Error('Data loading already in progress');
+      throw new Error("Data loading already in progress");
     }
     
     try {
@@ -75,7 +75,7 @@ export class UnifiedDataService {
       
       this.lastRefresh = new Date();
     } catch (error) {
-      console.error('Failed to load data:', error);
+      console.error("Failed to load data:", error);
       throw error;
     } finally {
       this.isLoading = false;
@@ -119,7 +119,7 @@ export class UnifiedDataService {
   public getCommunicationsForArchetype(archetype: ArchetypeType): Communication[] {
     // Sort and filter communications based on archetype
     switch (archetype) {
-      case 'prioritizer':
+      case "prioritizer":
         // Sort by urgency and deadline
         return [...this.communications].sort((a, b) => {
           // First sort by urgency
@@ -138,7 +138,7 @@ export class UnifiedDataService {
           return aDeadline - bDeadline;
         });
         
-      case 'connector':
+      case "connector":
         // Sort by relationship strength
         return [...this.communications].sort((a, b) => {
           const strengthOrder = { strong: 0, medium: 1, weak: 2 };
@@ -148,7 +148,7 @@ export class UnifiedDataService {
           );
         });
         
-      case 'visualizer':
+      case "visualizer":
         // Prioritize communications with visual elements
         return [...this.communications].sort((a, b) => {
           const aVisualScore = this.calculateVisualScore(a.dimensions);
@@ -156,7 +156,7 @@ export class UnifiedDataService {
           return bVisualScore - aVisualScore;
         });
         
-      case 'analyst':
+      case "analyst":
         // Prioritize communications with rich metadata and structure
         return [...this.communications].sort((a, b) => {
           const aAnalyticalScore = this.calculateAnalyticalScore(a.dimensions);
