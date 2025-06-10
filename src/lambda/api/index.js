@@ -238,63 +238,96 @@ async function getArchetypes() {
  * Query communications from DynamoDB
  */
 async function queryCommunications(filters) {
-  let params = {
-    TableName: COMMUNICATIONS_TABLE,
-    Limit: 100
-  };
-  
-  // If filtering by project, use the GSI
-  if (filters.project) {
-    params = {
-      TableName: COMMUNICATIONS_TABLE,
-      IndexName: 'ProjectIndex',
-      KeyConditionExpression: 'project = :project',
-      ExpressionAttributeValues: {
-        ':project': filters.project
-      },
-      Limit: 100
-    };
-  }
-  
-  // If filtering by sender, use the sender GSI
-  if (filters.sender) {
-    params = {
-      TableName: COMMUNICATIONS_TABLE,
-      IndexName: 'SenderIndex',
-      KeyConditionExpression: 'sender_id = :sender',
-      ExpressionAttributeValues: {
-        ':sender': filters.sender
-      },
-      Limit: 100
-    };
-  }
-  
-  // Execute the query
-  const result = await dynamodb.query(params).promise();
-  
-  // For each item, get the full communication from S3 if needed
-  const communications = [];
-  
-  for (const item of result.Items) {
-    // If we need the full content, get it from S3
-    if (filters.includeContent) {
-      try {
-        const fullCommunication = await getFullCommunicationFromS3(item);
-        communications.push(fullCommunication);
-      } catch (error) {
-        console.error(`Error getting full communication for ${item.id}:`, error);
+  try {
+    let params;
+    
+    // If filtering by project, use the ProjectIndex GSI
+    if (filters.project) {
+      params = {
+        TableName: COMMUNICATIONS_TABLE,
+        IndexName: 'ProjectIndex',
+        KeyConditionExpression: 'project = :project',
+        ExpressionAttributeValues: {
+          ':project': filters.project
+        },
+        Limit: 100
+      };
+    } 
+    // If filtering by sender, use the SenderIndex GSI
+    else if (filters.sender) {
+      params = {
+        TableName: COMMUNICATIONS_TABLE,
+        IndexName: 'SenderIndex',
+        KeyConditionExpression: 'sender_id = :sender',
+        ExpressionAttributeValues: {
+          ':sender': filters.sender
+        },
+        Limit: 100
+      };
+    } 
+    // If no specific filter, use the IdOnlyIndex GSI to get all communications
+    else {
+      params = {
+        TableName: COMMUNICATIONS_TABLE,
+        IndexName: 'IdOnlyIndex',
+        Limit: 100
+      };
+    }
+    
+    // Add additional filter expressions if needed
+    if (filters.type || filters.urgency) {
+      let filterExpressions = [];
+      let expressionAttributeValues = params.ExpressionAttributeValues || {};
+      
+      if (filters.type) {
+        filterExpressions.push('type = :type');
+        expressionAttributeValues[':type'] = filters.type;
+      }
+      
+      if (filters.urgency) {
+        filterExpressions.push('metadata.urgency = :urgency');
+        expressionAttributeValues[':urgency'] = filters.urgency;
+      }
+      
+      if (filterExpressions.length > 0) {
+        params.FilterExpression = filterExpressions.join(' AND ');
+        params.ExpressionAttributeValues = expressionAttributeValues;
+      }
+    }
+    
+    console.log('Query params:', JSON.stringify(params, null, 2));
+    
+    // Execute the query
+    const result = await dynamodb.query(params).promise();
+    console.log(`Query returned ${result.Items.length} items`);
+    
+    // For each item, get the full communication from S3 if needed
+    const communications = [];
+    
+    for (const item of result.Items) {
+      // If we need the full content, get it from S3
+      if (filters.includeContent) {
+        try {
+          const fullCommunication = await getFullCommunicationFromS3(item);
+          communications.push(fullCommunication);
+        } catch (error) {
+          console.error(`Error getting full communication for ${item.id}:`, error);
+          communications.push(item);
+        }
+      } else {
         communications.push(item);
       }
-    } else {
-      communications.push(item);
     }
+    
+    return {
+      communications,
+      count: communications.length,
+      scannedCount: result.ScannedCount
+    };
+  } catch (error) {
+    console.error('Error querying communications:', error);
+    throw error;
   }
-  
-  return {
-    communications,
-    count: communications.length,
-    scannedCount: result.ScannedCount
-  };
 }
 
 /**
