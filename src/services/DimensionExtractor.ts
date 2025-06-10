@@ -149,18 +149,39 @@ export class DimensionExtractor {
    */
   private extractVisualDimension(communication: Communication): VisualDimension {
     // Determine if the communication has images
-    const hasImages = communication.attachments.length > 0 || 
+    const hasImages = Boolean(communication.attachments.length > 0 || 
       (communication.metadata.sourceSpecific && 
-       communication.metadata.sourceSpecific.hasImages);
+       typeof communication.metadata.sourceSpecific === "object" &&
+       "hasImages" in communication.metadata.sourceSpecific &&
+       communication.metadata.sourceSpecific.hasImages));
     
     // Get document type if available
-    const documentType = communication.metadata.sourceSpecific?.fileType;
+    const documentType = communication.metadata.sourceSpecific && 
+      typeof communication.metadata.sourceSpecific === "object" &&
+      "fileType" in communication.metadata.sourceSpecific ? 
+      String(communication.metadata.sourceSpecific.fileType) : undefined;
     
     // Count visual elements
-    const charts = communication.metadata.sourceSpecific?.chartCount || 0;
-    const tables = communication.metadata.sourceSpecific?.tableCount || 0;
-    const images = communication.metadata.sourceSpecific?.imageCount || 
-                  (communication.metadata.sourceSpecific?.hasImages ? 1 : 0);
+    const charts = communication.metadata.sourceSpecific && 
+      typeof communication.metadata.sourceSpecific === "object" &&
+      "chartCount" in communication.metadata.sourceSpecific ? 
+      Number(communication.metadata.sourceSpecific.chartCount) : 0;
+    
+    const tables = communication.metadata.sourceSpecific && 
+      typeof communication.metadata.sourceSpecific === "object" &&
+      "tableCount" in communication.metadata.sourceSpecific ? 
+      Number(communication.metadata.sourceSpecific.tableCount) : 0;
+    
+    const images = communication.metadata.sourceSpecific && 
+      typeof communication.metadata.sourceSpecific === "object" &&
+      "imageCount" in communication.metadata.sourceSpecific ? 
+      Number(communication.metadata.sourceSpecific.imageCount) : 
+      (communication.metadata.sourceSpecific && 
+       typeof communication.metadata.sourceSpecific === "object" &&
+       "hasImages" in communication.metadata.sourceSpecific && 
+       communication.metadata.sourceSpecific.hasImages ? 1 : 0);
+    
+    const attachments = communication.attachments.length;
     const attachments = communication.attachments.length;
     
     // Determine visual category
@@ -177,7 +198,10 @@ export class DimensionExtractor {
     }
     
     // Extract location if available
-    const location = communication.metadata.sourceSpecific?.location;
+    const location = communication.metadata.sourceSpecific && 
+      typeof communication.metadata.sourceSpecific === "object" &&
+      "location" in communication.metadata.sourceSpecific ? 
+      String(communication.metadata.sourceSpecific.location) : undefined;
     
     return {
       hasImages,
@@ -239,8 +263,10 @@ export class DimensionExtractor {
     
     // Extract locations using simple pattern matching
     const locations: string[] = [];
-    if (communication.metadata.sourceSpecific?.location) {
-      locations.push(communication.metadata.sourceSpecific.location);
+    if (communication.metadata.sourceSpecific && 
+        typeof communication.metadata.sourceSpecific === "object" &&
+        "location" in communication.metadata.sourceSpecific) {
+      locations.push(String(communication.metadata.sourceSpecific.location));
     }
     
     // Extract dates using simple pattern matching
