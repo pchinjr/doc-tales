@@ -254,7 +254,13 @@ Resources:
       Runtime: nodejs18.x
       Timeout: 60
       Policies:
-        - S3CrudPolicy:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetBucketNotification
+                - s3:PutBucketNotification
+              Resource: !Sub "arn:aws:s3:::${AppName}-raw-communications-${Environment}-${AWS::AccountId}"
+        - S3ReadPolicy:
             BucketName: !Ref RawCommunicationsBucket
 
 Outputs:
