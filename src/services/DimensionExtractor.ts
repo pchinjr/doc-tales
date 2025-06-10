@@ -182,7 +182,6 @@ export class DimensionExtractor {
        communication.metadata.sourceSpecific.hasImages ? 1 : 0);
     
     const attachments = communication.attachments.length;
-    const attachments = communication.attachments.length;
     
     // Determine visual category
     let visualCategory: "document" | "image" | "chart" | "mixed" | "text-only" = "text-only";
