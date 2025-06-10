@@ -1,0 +1,9 @@
+{
+  "name": "doc-tales-notification",
+  "version": "1.0.0",
+  "description": "Doc-Tales Notification Lambda Function",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1500.0"
+  }
+}

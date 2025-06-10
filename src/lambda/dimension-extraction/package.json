@@ -1,0 +1,9 @@
+{
+  "name": "doc-tales-dimension-extraction",
+  "version": "1.0.0",
+  "description": "Doc-Tales Dimension Extraction Lambda Function",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1500.0"
+  }
+}

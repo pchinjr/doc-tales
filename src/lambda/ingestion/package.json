@@ -1,0 +1,9 @@
+{
+  "name": "doc-tales-ingestion",
+  "version": "1.0.0",
+  "description": "Doc-Tales Ingestion Lambda Function",
+  "main": "index.js",
+  "dependencies": {
+    "aws-sdk": "^2.1500.0"
+  }
+}
