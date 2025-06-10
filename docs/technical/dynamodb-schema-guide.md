@@ -32,7 +32,7 @@ This composite key structure enables efficient queries but requires special hand
 
 ### Global Secondary Indexes (GSIs)
 
-The table has two GSIs to support additional access patterns:
+The table has three GSIs to support additional access patterns:
 
 1. **ProjectIndex**
    - Partition Key: `project`
@@ -43,6 +43,10 @@ The table has two GSIs to support additional access patterns:
    - Partition Key: `sender_id`
    - Sort Key: `timestamp`
    - Purpose: Query communications by sender
+
+3. **IdOnlyIndex**
+   - Partition Key: `id`
+   - Purpose: Query communications by ID without knowing the timestamp
 
 ### Access Patterns
 
@@ -120,21 +124,22 @@ await dynamodb.update(params).promise();
 
 ### Querying by ID When Timestamp is Unknown
 
-When you need to find an item by ID but don't know the timestamp, you can use a scan operation with a filter:
+When you need to find an item by ID but don't know the timestamp, use the IdOnlyIndex GSI:
 
 ```javascript
 const params = {
   TableName: COMMUNICATIONS_TABLE,
-  FilterExpression: "id = :id",
+  IndexName: 'IdOnlyIndex',
+  KeyConditionExpression: 'id = :id',
   ExpressionAttributeValues: {
-    ":id": "communication-id"
+    ':id': 'communication-id'
   }
 };
 
-const result = await dynamodb.scan(params).promise();
+const result = await dynamodb.query(params).promise();
 ```
 
-Note that scan operations are less efficient than queries and should be avoided for large tables.
+This is much more efficient than using a scan operation with a filter.
 
 ### Querying by Project
 
