@@ -1,0 +1,8 @@
+{
+  "short_name": "Doc-Tales",
+  "name": "Doc-Tales: Smart Document & Feed Unification Processor",
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
