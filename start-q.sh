@@ -48,4 +48,5 @@ BASE_CONTEXT=$(cat "$CONTEXT_FILE")
 FULL_CONTEXT="$BASE_CONTEXT Current environment: $ENV. $GIT_CONTEXT"
 
 # Launch Q with the combined context
-q chat --context "$FULL_CONTEXT"
+# The --context flag is no longer supported, so we pass the context as the first input
+q chat "$FULL_CONTEXT"
