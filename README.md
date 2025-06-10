@@ -116,6 +116,8 @@ doc-tales/
 - [Development Progress Report](docs/technical/development-progress.md)
 - [Architecture Improvements](docs/technical/architecture-improvements.md)
 - [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)
+- [DynamoDB Access Patterns](docs/technical/dynamodb-access-patterns.md)
+- [Lambda Refactoring Plan](docs/technical/lambda-refactoring-plan.md)
 
 ## Current Progress
 
