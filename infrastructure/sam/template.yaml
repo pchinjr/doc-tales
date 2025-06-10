@@ -1,0 +1,265 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Doc-Tales Serverless Infrastructure
+  
+  SAM Template for Doc-Tales application with Lambda functions and event-driven architecture
+
+# Global parameters that can be referenced in other sections
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name (dev, staging, prod)
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  
+  AppName:
+    Type: String
+    Default: doc-tales
+    Description: Application name used for resource naming
+
+# Global variables that can be referenced in other sections
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs18.x
+    MemorySize: 256
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        APP_NAME: !Ref AppName
+        COMMUNICATIONS_TABLE: !Ref CommunicationsTable
+        RAW_BUCKET: !Ref RawCommunicationsBucket
+
+Resources:
+  # API Gateway
+  DocTalesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+      Auth:
+        DefaultAuthorizer: NONE  # For MVP; should be replaced with proper auth in production
+
+  # Lambda Functions
+  IngestionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/lambda/ingestion/
+      Handler: index.handler
+      Description: Receives and normalizes communications from various sources
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref RawCommunicationsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CommunicationsTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /communications
+            Method: post
+
+  DimensionExtractionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/lambda/dimension-extraction/
+      Handler: index.handler
+      Description: Extracts dimensions from communications
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref RawCommunicationsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CommunicationsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectEntities
+                - comprehend:DetectSentiment
+                - comprehend:DetectKeyPhrases
+              Resource: '*'
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref RawCommunicationsBucket
+            Events: s3:ObjectCreated:*
+
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/lambda/notification/
+      Handler: index.handler
+      Description: Sends alerts for high-priority communications
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CommunicationsTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt NotificationTopic.TopicName
+      Events:
+        DynamoDBEvent:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt CommunicationsTable.StreamArn
+            StartingPosition: LATEST
+            FilterCriteria:
+              Filters:
+                - Pattern: '{"dynamodb": {"NewImage": {"metadata": {"M": {"urgency": {"S": ["high"]}}}}}}'
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/lambda/api/
+      Handler: index.handler
+      Description: Serves data to frontend
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref CommunicationsTable
+        - S3ReadPolicy:
+            BucketName: !Ref RawCommunicationsBucket
+      Events:
+        GetCommunications:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /communications
+            Method: get
+        GetCommunicationById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /communications/{id}
+            Method: get
+
+  # DynamoDB Tables
+  CommunicationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AppName}-communications-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+        - AttributeName: project
+          AttributeType: S
+        - AttributeName: sender_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ProjectIndex
+          KeySchema:
+            - AttributeName: project
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: SenderIndex
+          KeySchema:
+            - AttributeName: sender_id
+              KeyType: HASH
+            - AttributeName: timestamp
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+
+  UserProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AppName}-user-profiles-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+
+  # S3 Buckets
+  RawCommunicationsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AppName}-raw-communications-${Environment}-${AWS::AccountId}
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt DimensionExtractionFunction.Arn
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+
+  ProcessedDocumentsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AppName}-processed-documents-${Environment}-${AWS::AccountId}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+
+  # SNS Topics
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${AppName}-notifications-${Environment}
+
+# Lambda function permissions
+  RawBucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DimensionExtractionFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !GetAtt RawCommunicationsBucket.Arn
+
+Outputs:
+  ApiEndpoint:
+    Description: "API Gateway endpoint URL"
+    Value: !Sub "https://${DocTalesApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+  
+  RawCommunicationsBucketName:
+    Description: "S3 bucket for raw communications"
+    Value: !Ref RawCommunicationsBucket
+  
+  ProcessedDocumentsBucketName:
+    Description: "S3 bucket for processed documents"
+    Value: !Ref ProcessedDocumentsBucket
+  
+  CommunicationsTableName:
+    Description: "DynamoDB table for communications"
+    Value: !Ref CommunicationsTable
+  
+  UserProfilesTableName:
+    Description: "DynamoDB table for user profiles"
+    Value: !Ref UserProfilesTable
