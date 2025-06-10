@@ -18,7 +18,7 @@ const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
  * Main handler function
  */
 exports.handler = async (event) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
+  console.log('Dimension Extraction Lambda received event:', JSON.stringify(event, null, 2));
   
   try {
     // For S3 events
@@ -36,10 +36,11 @@ exports.handler = async (event) => {
       body: JSON.stringify({ error: 'Unsupported event type' })
     };
   } catch (error) {
-    console.error('Error extracting dimensions:', error);
+    console.error('Error extracting dimensions:', error.message);
+    console.error(error.stack);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to extract dimensions' })
+      body: JSON.stringify({ error: 'Failed to extract dimensions', details: error.message })
     };
   }
 };
@@ -56,26 +57,37 @@ async function handleS3Event(event) {
   
   // Extract communication ID from the key
   const communicationId = key.split('/').pop().replace('.json', '');
+  console.log(`Extracted communication ID: ${communicationId}`);
   
-  await processCommunication(communicationId, key);
-  
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: 'Dimensions extracted successfully',
-      communicationId
-    })
-  };
+  try {
+    const result = await processCommunication(communicationId, key);
+    
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Dimensions extracted successfully',
+        communicationId,
+        dimensions: result.dimensions
+      })
+    };
+  } catch (error) {
+    console.error(`Error processing communication ${communicationId}:`, error.message);
+    console.error(error.stack);
+    throw error; // Re-throw to be caught by the main handler
+  }
 }
 
 /**
  * Process a communication to extract dimensions
  */
 async function processCommunication(communicationId, s3Key) {
+  console.log(`Processing communication: ${communicationId}`);
+  
   // Get the communication from S3
   const communication = await getCommunicationFromS3(communicationId, s3Key);
   
   // Extract dimensions
+  console.log(`Extracting dimensions for communication: ${communicationId}`);
   const dimensions = await extractDimensions(communication);
   
   // Update DynamoDB with dimensions
@@ -95,6 +107,7 @@ async function getCommunicationFromS3(communicationId, providedKey) {
   
   // If key not provided, look up in DynamoDB first using the IdOnlyIndex
   if (!key) {
+    console.log(`Looking up S3 key for communication ID: ${communicationId}`);
     const queryParams = {
       TableName: COMMUNICATIONS_TABLE,
       IndexName: 'IdOnlyIndex',
@@ -107,19 +120,28 @@ async function getCommunicationFromS3(communicationId, providedKey) {
     const queryResult = await dynamodb.query(queryParams).promise();
     
     if (!queryResult.Items || queryResult.Items.length === 0 || !queryResult.Items[0].s3Key) {
-      throw new Error(`Communication not found in DynamoDB: ${communicationId}`);
+      throw new Error(`Communication not found in DynamoDB or missing S3 key: ${communicationId}`);
     }
     
     key = queryResult.Items[0].s3Key;
+    console.log(`Found S3 key: ${key}`);
   }
   
   // Get the object from S3
-  const s3Result = await s3.getObject({
-    Bucket: RAW_BUCKET,
-    Key: key
-  }).promise();
-  
-  return JSON.parse(s3Result.Body.toString());
+  console.log(`Retrieving communication from S3: ${RAW_BUCKET}/${key}`);
+  try {
+    const s3Result = await s3.getObject({
+      Bucket: RAW_BUCKET,
+      Key: key
+    }).promise();
+    
+    console.log(`Successfully retrieved communication from S3`);
+    return JSON.parse(s3Result.Body.toString());
+  } catch (error) {
+    console.error(`Error retrieving from S3: ${error.message}`);
+    console.error(error.stack);
+    throw error;
+  }
 }
 
 /**
@@ -456,25 +478,36 @@ async function extractAnalyticalDimension(communication) {
  */
 async function updateDynamoDBWithDimensions(communicationId, dimensions) {
   try {
-    // First, get the full item to retrieve the timestamp
-    const getParams = {
+    // Use the IdOnlyIndex GSI to find the item by ID
+    const queryParams = {
       TableName: COMMUNICATIONS_TABLE,
-      Key: {
-        id: communicationId
+      IndexName: 'IdOnlyIndex',
+      KeyConditionExpression: 'id = :id',
+      ExpressionAttributeValues: {
+        ':id': communicationId
       }
     };
     
-    const result = await dynamodb.get(getParams).promise();
-    if (!result.Item || !result.Item.timestamp) {
-      throw new Error(`Communication not found or missing timestamp: ${communicationId}`);
+    console.log(`Querying DynamoDB for communication with ID: ${communicationId}`);
+    const queryResult = await dynamodb.query(queryParams).promise();
+    
+    if (!queryResult.Items || queryResult.Items.length === 0) {
+      throw new Error(`Communication not found: ${communicationId}`);
     }
+    
+    const item = queryResult.Items[0];
+    if (!item.timestamp) {
+      throw new Error(`Communication missing timestamp: ${communicationId}`);
+    }
+    
+    console.log(`Found communication with timestamp: ${item.timestamp}`);
     
     // Now update with both hash and range keys
     const updateParams = {
       TableName: COMMUNICATIONS_TABLE,
       Key: {
         id: communicationId,
-        timestamp: result.Item.timestamp
+        timestamp: item.timestamp
       },
       UpdateExpression: 'set dimensions = :dimensions',
       ExpressionAttributeValues: {
@@ -483,10 +516,12 @@ async function updateDynamoDBWithDimensions(communicationId, dimensions) {
       ReturnValues: 'UPDATED_NEW'
     };
     
+    console.log(`Updating DynamoDB with dimensions for: ${communicationId}`);
     await dynamodb.update(updateParams).promise();
-    console.log(`Updated DynamoDB with dimensions for: ${communicationId}`);
+    console.log(`Successfully updated DynamoDB with dimensions for: ${communicationId}`);
   } catch (error) {
-    console.error(`Error updating DynamoDB: ${error}`);
+    console.error(`Error updating DynamoDB: ${error.message}`);
+    console.error(error.stack);
     throw error;
   }
 }
