@@ -1,251 +1,211 @@
-# Technical Architecture for Doc-Tales
+# Doc-Tales Technical Architecture
 
-## Overview
+This document outlines the technical architecture of the Doc-Tales application, focusing on the core components and their interactions.
 
-This document outlines the technical architecture for Doc-Tales, a personalized communications sorter with archetype-based dashboards. The architecture is designed to be serverless, scalable, and cost-effective while supporting the system's core capabilities.
+## System Overview
 
-## Core Architecture Components
+Doc-Tales is a personalized communications sorter that unifies content from diverse sources into a single dashboard with archetype-based personalization. The system consists of:
 
-### 1. Ingestion Layer
-- **Document Capture Service**
-  - Lambda functions triggered by S3 uploads
-  - SES email receiving pipeline
-  - API Gateway endpoints for social media webhooks
+1. **Frontend Application**: React-based UI with archetype-specific views
+2. **Data Ingestion Layer**: Adapters for different communication sources
+3. **Dimension Extraction Engine**: Extracts key dimensions from communications
+4. **Archetype Detection System**: Determines user's cognitive style
+5. **AWS Serverless Backend**: Processes and stores communications
 
-- **Content Extraction Pipeline**
-  - Textract for document text/form extraction
-  - Lambda functions for email parsing
-  - Custom extractors for social media content
-  - S3 for raw content storage
+## Architecture Diagram
 
-### 2. Processing Layer
-- **Entity Extraction Service**
-  - Amazon Comprehend for NLP and entity recognition
-  - Custom Lambda functions for specialized entity types
-  - DynamoDB for entity storage and relationships
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      Frontend Application                        │
+├───────────┬───────────┬────────────┬────────────┬───────────────┤
+│ Prioritizer│ Connector │ Visualizer │  Analyst   │Configuration UI│
+│   View    │   View    │    View    │    View    │               │
+└─────┬─────┴─────┬─────┴─────┬──────┴─────┬──────┴───────┬───────┘
+      │           │           │            │              │
+      └───────────┴───────────┼────────────┴──────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Data Service Layer                         │
+├─────────────────┬───────────────────────┬─────────────────────┬─┘
+│ Unified Data    │ Archetype Detection   │ Dimension Extraction │
+│ Service         │ Service               │ Service              │
+└────────┬────────┴───────────┬───────────┴──────────┬───────────┘
+         │                    │                      │
+         ▼                    │                      │
+┌──────────────────┐          │                      │
+│ Source Adapters  │          │                      │
+├──────────────────┤          │                      │
+│ - Email Adapter  │          │                      │
+│ - Document Adapter          │                      │
+│ - Social Adapter │          │                      │
+└────────┬─────────┘          │                      │
+         │                    │                      │
+         └────────────────────┼──────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      AWS Serverless Backend                     │
+├─────────────┬───────────────┬───────────────┬───────────────────┤
+│ API Gateway │ Lambda        │ S3            │ DynamoDB          │
+│             │ Functions     │ Buckets       │ Tables            │
+└─────────────┴───────┬───────┴───────────────┴───────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      External Data Sources                      │
+├─────────────┬───────────────┬───────────────┬───────────────────┤
+│ Email       │ Document      │ Social Media  │ Other             │
+│ Providers   │ Storage       │ Platforms     │ Sources           │
+└─────────────┴───────────────┴───────────────┴───────────────────┘
+```
 
-- **Classification System**
-  - Rule-based classification for the hackathon MVP
-  - Lambda functions for categorization
-  - Step Functions for multi-stage classification workflows
+## Core Components
 
-- **Project Organization Engine**
-  - Lambda functions for project relationship detection
-  - DynamoDB for storing project metadata
-  - EventBridge for cross-project updates
+### 1. Frontend Application
 
-### 3. Archetype System
-- **Interaction Tracking Service**
-  - API Gateway for capturing UI interactions
-  - Lambda functions for behavior analysis
-  - DynamoDB for storing interaction patterns
+The frontend is built with React and TypeScript, featuring:
 
-- **Archetype Classification Engine**
-  - Rule-based classification for the hackathon MVP
-  - Lambda functions for interface adaptation
-  - DynamoDB for storing user archetype profiles
+- **Archetype-Specific Views**: Four different UI layouts optimized for different cognitive styles
+  - **Prioritizer View**: Time-based organization with urgency indicators
+  - **Connector View**: People-centric view with relationship mapping
+  - **Visualizer View**: Visual boards with spatial organization
+  - **Analyst View**: Detailed metadata view with logical hierarchies
 
-- **Adaptive Dashboard Controller**
-  - Lambda functions for dashboard configuration
-  - API Gateway for UI updates
-  - WebSocket API for real-time notifications
+- **Dashboard Component**: Central component that manages state and renders the appropriate view
+- **Configuration UI**: Interface for managing data sources and preferences
+- **Demo Flow**: Guided tour for onboarding new users
 
-### 4. Storage Layer
-- **Content Store**
-  - S3 for document and media storage
-  - Lifecycle policies for tiered storage
+### 2. Data Service Layer
 
-- **Metadata Store**
-  - DynamoDB for document metadata and user preferences
-  - DynamoDB for user archetype profiles
+The data service layer manages communication data and user preferences:
 
-- **Project Store**
-  - DynamoDB for project relationships
-  - DynamoDB for cross-project elements
+- **Unified Data Service**: Central service that coordinates data access
+  - Manages source adapters
+  - Provides methods for filtering and sorting communications
+  - Optimizes data for different archetypes
 
-### 5. API Layer
-- **REST API**
-  - API Gateway for all service operations
-  - Lambda functions for business logic
-  - Standard HTTP request/response patterns
+- **Source Adapters**: Standardize data from different sources
+  - **Email Adapter**: Processes email communications
+  - **Document Adapter**: Processes document communications
+  - **Social Adapter**: Processes social media communications
 
-- **WebSockets API**
-  - API Gateway WebSocket API for real-time notifications
-  - Lambda functions for connection management
-  - Simple pub/sub pattern for UI updates
+- **Archetype Service**: Detects and manages user archetypes
+  - Tracks user interactions
+  - Calculates archetype confidence scores
+  - Determines primary archetype
 
-### 6. Frontend Layer
-- **Web Application**
-  - React components with archetype variations
-  - S3 for static asset hosting
-  - CloudFront for content delivery
+- **Dimension Extraction Service**: Extracts key dimensions from communications
+  - **Temporal Dimension**: Deadlines, urgency, chronology
+  - **Relationship Dimension**: Connection strength, frequency, network position
+  - **Visual Dimension**: Document types, visual elements, spatial organization
+  - **Analytical Dimension**: Categories, tags, sentiment, structure
 
-## Adaptive Dashboard Evolution
+### 3. AWS Serverless Backend
 
-### Gradual Adaptation Principles
+The AWS backend provides scalable, event-driven processing:
 
-1. **Progressive Enhancement**
-   - Incremental changes based on observed patterns
-   - Feature highlighting for new organizational elements
-   - Contextual adaptations for specific content types
+- **API Gateway**: RESTful API endpoints for frontend communication
+- **Lambda Functions**:
+  - **Ingestion Lambda**: Receives and normalizes communications
+  - **Dimension Extraction Lambda**: Processes communications to extract dimensions
+  - **Notification Lambda**: Sends alerts for high-priority communications
+  - **API Lambda**: Serves data to frontend
 
-2. **Consistent Core Elements**
-   - Primary navigation structure stays consistent
-   - All communications remain accessible, just organized differently
-   - Core functionality and actions maintain consistent placement
+- **Storage**:
+  - **S3 Buckets**: Store raw communications and processed documents
+  - **DynamoDB Tables**: Store metadata, dimensions, and user profiles
 
-3. **Transparent Adaptation Process**
-   - Brief explanations for suggested changes
-   - Preview option for adaptations
-   - Direct user feedback on adaptation helpfulness
+- **Event Management**:
+  - **EventBridge**: Coordinates Lambda functions
+  - **S3 Event Notifications**: Triggers for processing new communications
+  - **DynamoDB Streams**: React to changes in data
 
-4. **User Control**
-   - Opt-in changes for significant layout modifications
-   - Ability to undo adaptations
-   - Manual customization options alongside AI suggestions
+## Data Flow
 
-### Multi-dimensional Adaptation Model
+### Communication Ingestion Flow
 
-- **Primary Archetype**: Determines the main dashboard layout and organization
-- **Secondary Influences**: Incorporates elements from other archetypes based on specific behaviors
-- **Context Sensitivity**: Different views for different communication types or projects
+1. New communication arrives via API Gateway
+2. Ingestion Lambda processes and stores in S3
+3. S3 event triggers Dimension Extraction Lambda
+4. Extracted dimensions stored in DynamoDB
+5. Frontend retrieves communication data via API Lambda
 
-### Example Adaptation Scenarios
+### User Interaction Flow
 
-1. **Emerging Prioritizer**
-   - System notices user frequently sorts by date and urgency
-   - Suggests deadline countdowns for important items
-   - Gradually introduces more Prioritizer elements
-   - Eventually suggests full Prioritizer view with preview option
+1. User interacts with communication in frontend
+2. Interaction tracked by Archetype Service
+3. Archetype confidence scores updated
+4. Dashboard updates to reflect new primary archetype if needed
 
-2. **Connector/Analyst Hybrid**
-   - User shows strong affinity for both people-centric views and detailed metadata
-   - System creates hybrid view with relationship graphs and enhanced metadata panels
-   - Context-sensitive switching based on content type
-   - Custom dashboard combines elements from both archetypes
+## Dimension Model
 
-## AWS Implementation
+The dimension model is central to Doc-Tales' personalization approach:
 
-### Key AWS Services
+### Temporal Dimension
+- **Deadline**: When action is required
+- **Urgency**: How important the communication is
+- **Chronology**: When the communication was created and updated
+- **Time Context**: Whether the communication is recent, past, or requires action
 
-1. **Compute**
-   - Lambda for serverless functions
-   - Step Functions for workflow orchestration
+### Relationship Dimension
+- **Connection Strength**: How strong the relationship is
+- **Frequency**: How often communication occurs
+- **Network Position**: Direct connection or shared connections
+- **Context**: Personal, professional, or project-specific
 
-2. **Storage**
-   - S3 for document and static asset storage
-   - DynamoDB for metadata, user profiles, and relationships
+### Visual Dimension
+- **Document Type**: What kind of document it is
+- **Visual Elements**: Charts, tables, images, attachments
+- **Spatial Context**: Location-related information
+- **Visual Category**: How the communication is best represented visually
 
-3. **AI/ML**
-   - Comprehend for entity extraction and text analysis
-   - Textract for document processing
-   - SageMaker for future ML model development (post-hackathon)
+### Analytical Dimension
+- **Categories**: High-level groupings
+- **Tags**: Specific labels
+- **Sentiment**: Positive, neutral, or negative tone
+- **Entities**: People, organizations, locations, dates, concepts
+- **Metrics**: Word count, reading time, complexity
+- **Structure**: Headings, bullet points, numbered lists, paragraphs
 
-4. **Integration**
-   - EventBridge for event-driven architecture
-   - SQS for message queuing
-   - SES for email processing
+## Technology Stack
 
-5. **API**
-   - API Gateway for REST endpoints
-   - API Gateway WebSockets for real-time communication
+- **Frontend**:
+  - React 17.x
+  - TypeScript 4.x
+  - ESLint for code quality
 
-6. **Delivery**
-   - CloudFront for content delivery
-   - S3 for static website hosting
+- **Backend**:
+  - AWS Lambda (Node.js runtime)
+  - AWS API Gateway
+  - AWS S3
+  - AWS DynamoDB
+  - AWS Comprehend
+  - AWS Textract
 
-### Data Flow
+- **Development Tools**:
+  - Git for version control
+  - npm for package management
+  - ESLint for code quality
+  - AWS SAM for local Lambda development
 
-1. **Communication Ingestion Flow**
-   ```
-   Document Upload → S3 → Lambda → Textract → Lambda → DynamoDB/S3
-   Email → SES → S3 → Lambda → DynamoDB/S3
-   Social Media → API Gateway → Lambda → DynamoDB/S3
-   ```
+## Security Considerations
 
-2. **Processing Flow**
-   ```
-   New Content → EventBridge → Step Functions →
-     │
-     ├─▶ Entity Extraction (Comprehend + Lambda) → DynamoDB
-     │
-     ├─▶ Classification (Lambda) → DynamoDB
-     │
-     └─▶ Project Organization (Lambda) → DynamoDB
-   ```
+- **Authentication**: User authentication via AWS Cognito
+- **Authorization**: Fine-grained access control with IAM roles
+- **Data Protection**: Encryption at rest and in transit
+- **Input Validation**: Strict validation of all inputs
 
-3. **User Interaction Flow**
-   ```
-   UI Interaction → API Gateway → Lambda → DynamoDB → 
-     Lambda → DynamoDB (User Profile)
-   ```
+## Scalability Considerations
 
-4. **Dashboard Personalization Flow**
-   ```
-   Dashboard Request → API Gateway → Lambda → 
-     │
-     ├─▶ DynamoDB (User Profile)
-     │
-     ├─▶ DynamoDB (Content Metadata)
-     │
-     └─▶ Personalized Response → UI Update
-   ```
+- **Serverless Architecture**: Automatic scaling with Lambda
+- **DynamoDB Auto-Scaling**: Adjust capacity based on demand
+- **S3 Performance Optimization**: Partitioning strategy for high throughput
 
-## Simplified Implementation for Hackathon
+## Future Enhancements
 
-For the 2-week hackathon, we'll implement a simplified version of this architecture:
-
-1. **Replace ML with Rules**
-   - Use rule-based classification for archetypes
-   - Implement pre-defined relationship mapping rules
-   - Focus on the appearance of intelligence rather than true ML
-
-2. **Pre-compute Where Possible**
-   - Pre-process the sample dataset
-   - Pre-compute entity extraction and classification
-   - Store results in DynamoDB for quick retrieval
-
-3. **Focus on Demo Experience**
-   - Implement only the components needed for the demo flow
-   - Create a scripted experience for reliability
-   - Use mock implementations where necessary
-
-4. **Serverless Architecture Simplification**
-   - Lambda for core processing
-   - S3 for document storage
-   - DynamoDB for metadata and user profiles
-   - API Gateway for frontend communication
-   - Textract and Comprehend for basic document processing
-
-## Implementation Timeline
-
-### Days 1-2: Foundation
-- Set up AWS environment
-- Create S3 buckets and DynamoDB tables
-- Implement basic Lambda functions
-- Set up API Gateway
-
-### Days 3-7: Core Components
-- Implement document processing with Textract
-- Create entity extraction with Comprehend
-- Build archetype detection system
-- Develop dashboard UI components
-
-### Days 8-12: Integration
-- Connect all components
-- Implement demo flow
-- Create project organization features
-- Test and debug
-
-### Days 13-14: Polish
-- Refine UI
-- Optimize performance
-- Create presentation materials
-- Prepare for demo
-
-## Next Steps
-
-1. Set up the AWS environment
-2. Create the sample dataset
-3. Implement the base Lambda functions
-4. Develop the dashboard UI components
+- **Machine Learning**: Replace rule-based dimension extraction with ML models
+- **Real-time Updates**: WebSocket support for instant updates
+- **Mobile Application**: Native mobile apps for iOS and Android
+- **Advanced Analytics**: Insights dashboard for communication patterns
+- **Integration Ecosystem**: Expand source adapters to more platforms
