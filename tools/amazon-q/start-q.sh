@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to your context file - using a relative path that works across environments
-CONTEXT_FILE="$HOME/Code/doc-tales/q-context.txt"
+CONTEXT_FILE="$HOME/Code/doc-tales/tools/amazon-q/q-context.txt"
 PROJECT_DIR="$HOME/Code/doc-tales"
 
 # Check if the file exists
