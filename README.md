@@ -2,55 +2,55 @@
 
 ## Project Overview
 
-Doc-Tales is a Smart Document & Feed Unification Processor developed for the AWS Lambda Hackathon. The solution unifies and intelligently processes content from diverse sources (physical mail via scans, emails, and social media feeds) into a single dashboard with automated processing capabilities.
+Doc-Tales is a personalized communications sorter for the intelligent document processing industry. The solution unifies and intelligently processes content from diverse sources (emails, documents, and social media) into a single dashboard with archetype-based personalization that adapts to the user's cognitive style.
 
 ### Core Value Proposition
 
+- Archetype-based personalization that adapts the interface to user cognitive styles
 - Unified inbox for all communications regardless of source
-- Intelligent prioritization and categorization that adapts to user preferences
-- Automated processing rules and workflows that reduce cognitive load
-- Cross-channel context and relationship mapping to provide a complete picture
+- Frictionless onboarding for diverse data sources
+- Cross-project organization to provide a complete picture
 
-## Key Technologies
+## Current Implementation
 
-- **AWS Lambda**: Serverless functions for document and feed processing
-- **Amazon S3**: Storage for documents and processing results
-- **Amazon DynamoDB**: Metadata storage and relationship mapping
-- **Amazon Comprehend**: Natural language processing for document analysis
-- **Amazon Textract**: Document text extraction and form processing
-- **Amazon EventBridge**: Event-driven architecture orchestration
-- **Amazon API Gateway**: RESTful API endpoints for the frontend
-- **React**: Frontend dashboard interface
+The current implementation is a TypeScript-based React application that demonstrates the core concept of archetype-based personalization:
 
-## Repository Structure
+- **Four Archetype Views**:
+  - **Prioritizer**: Time-based organization with urgency indicators
+  - **Connector**: People-centric view with relationship mapping
+  - **Visualizer**: Visual boards with spatial organization
+  - **Analyst**: Detailed metadata view with logical hierarchies
 
-```
-doc-tales/
-├── docs/                          # Project documentation
-│   ├── architecture/              # Architecture documentation
-│   ├── planning/                  # Project planning documents
-│   ├── research/                  # Research documents
-│   └── technical/                 # Technical documentation
-├── src/                           # Source code
-│   ├── functions/                 # Lambda functions
-│   ├── layers/                    # Lambda layers for shared code
-│   └── frontend/                  # Frontend code for dashboard
-├── infrastructure/                # Infrastructure as code
-├── tests/                         # Test files
-├── scripts/                       # Utility scripts
-└── tools/                         # Development tools
-    └── amazon-q/                  # Amazon Q setup files
-```
+- **Sample Dataset**: Includes communications across three life projects:
+  - Home Purchase
+  - Career Change
+  - Family Event
 
-For more details on the repository structure and organization guidelines, see [Repository Structure](repo-structure.md).
+- **Interaction Tracking**: Monitors user behavior to determine their archetype
+  - Clicking on dates increases Prioritizer confidence
+  - Clicking on people increases Connector confidence
+  - Viewing visual elements increases Visualizer confidence
+  - Viewing detailed information increases Analyst confidence
+
+- **Adaptive Dashboard**: Changes the organization of information based on detected archetype
+
+## Tech Stack
+
+- **Frontend**: React with TypeScript
+- **AWS Services**:
+  - Lambda for serverless processing
+  - S3 for document storage
+  - DynamoDB for metadata and user profiles
+  - Comprehend for entity extraction
+  - Textract for document processing
+  - API Gateway for frontend communication
 
 ## Getting Started
 
 ### Prerequisites
 
-- AWS Account with appropriate permissions
 - Node.js 18.x or later
-- AWS CLI configured with your credentials
+- npm or yarn
 - Git
 
 ### Setup Instructions
@@ -66,48 +66,74 @@ For more details on the repository structure and organization guidelines, see [R
    npm install
    ```
 
-3. Configure AWS credentials:
+3. Start the development server:
    ```bash
-   aws configure
+   npm start
    ```
 
-4. Deploy to AWS:
-   ```bash
-   npm run deploy
-   ```
+4. Open your browser to `http://localhost:3000`
 
-## Development Workflow
+## Project Structure
 
-1. Create a feature branch from `main`
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. Implement your changes
-
-3. Write tests for your changes
-   ```bash
-   npm test
-   ```
-
-4. Submit a pull request to `main`
-
-5. After review, merge your changes
+```
+doc-tales/
+├── docs/                          # Project documentation
+│   ├── planning/                  # Planning documents
+│   └── technical/                 # Technical documentation
+├── public/                        # Static assets
+├── src/                           # Source code
+│   ├── components/                # React components
+│   │   └── views/                 # Archetype-specific views
+│   ├── data/                      # Sample data
+│   ├── services/                  # Service layer
+│   └── types/                     # TypeScript type definitions
+└── infrastructure/                # Infrastructure as code (future)
+```
 
 ## Key Documentation
 
-- [Project Plan](docs/planning/lambda-hackathon-plan.md)
-- [Dynamic Architecture](docs/architecture/dynamic-architecture.md)
-- [Competitive Research](docs/research/competitive-research.md)
-- [Repository Structure](repo-structure.md)
+- [Hackathon Master Plan](docs/planning/hackathon-master-plan.md)
+- [Technical Architecture](docs/technical/technical-architecture.md)
+- [Demo Implementation Guide](docs/technical/demo-implementation-guide.md)
 
-## Features in Development
+## Current Progress
 
-- **Document Processor**: Lambda function for processing uploaded documents
-- **Feed Connector**: Integration with email and social media APIs
-- **Unified Dashboard**: React-based frontend for viewing all communications
-- **Smart Categorization**: ML-based document and message categorization
-- **Workflow Automation**: Rule-based processing of incoming communications
+- ✅ Defined archetype-based personalization concept
+- ✅ Created TypeScript type definitions
+- ✅ Implemented service layer for data and archetype detection
+- ✅ Built four archetype-specific views
+- ✅ Created sample dataset with cross-project elements
+- ✅ Implemented interaction tracking and archetype detection
+- ✅ Built adaptive dashboard that changes based on archetype
+
+## Next Steps
+
+1. **AWS Integration**:
+   - Implement Lambda functions for document processing
+   - Create DynamoDB tables for user profiles and metadata
+   - Set up S3 buckets for document storage
+
+2. **Enhanced Interaction Tracking**:
+   - Improve archetype detection algorithm
+   - Add more interaction types to track
+   - Implement confidence threshold for archetype switching
+
+3. **UI Enhancements**:
+   - Add animations for archetype transitions
+   - Implement relationship visualization with D3.js
+   - Create project timeline visualization
+
+4. **Demo Flow**:
+   - Implement guided tour experience
+   - Create "Time Travel Inbox" demo
+   - Add demo state management
+
+## Development Notes
+
+- The current implementation uses a simplified rule-based approach for archetype detection instead of ML
+- Sample data is loaded from a local JSON file rather than AWS services
+- UI components are functional but need visual polish
+- Type assertions are used in DataService to handle JSON data
 
 ## License
 
