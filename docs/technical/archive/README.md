@@ -1,0 +1,1 @@
+# Archived Documentation\n\nThis directory contains original documentation files that have been consolidated into more comprehensive guides.\nThese files are kept for reference but the consolidated guides should be used as the primary documentation source.
