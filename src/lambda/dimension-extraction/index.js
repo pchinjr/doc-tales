@@ -14,6 +14,14 @@ const comprehend = new AWS.Comprehend();
 const RAW_BUCKET = process.env.RAW_BUCKET;
 const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
 
+// Entity types for partition keys
+const ENTITY_TYPES = {
+  COMMUNICATION: 'COMM',
+  USER: 'USER',
+  PROJECT: 'PROJ',
+  ENTITY: 'ENTITY'
+};
+
 /**
  * Main handler function
  */
@@ -105,15 +113,15 @@ async function processCommunication(communicationId, s3Key) {
 async function getCommunicationFromS3(communicationId, providedKey) {
   let key = providedKey;
   
-  // If key not provided, look up in DynamoDB first using the IdOnlyIndex
+  // If key not provided, look up in DynamoDB first using the single-table design
   if (!key) {
     console.log(`Looking up S3 key for communication ID: ${communicationId}`);
     const queryParams = {
       TableName: COMMUNICATIONS_TABLE,
-      IndexName: 'IdOnlyIndex',
-      KeyConditionExpression: 'id = :id',
+      KeyConditionExpression: 'PK = :pk AND SK = :sk',
       ExpressionAttributeValues: {
-        ':id': communicationId
+        ':pk': ENTITY_TYPES.COMMUNICATION,
+        ':sk': `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
       }
     };
     
@@ -474,40 +482,16 @@ async function extractAnalyticalDimension(communication) {
 }
 
 /**
- * Update DynamoDB with extracted dimensions
+ * Update DynamoDB with extracted dimensions using the single-table design
  */
 async function updateDynamoDBWithDimensions(communicationId, dimensions) {
   try {
-    // Use the IdOnlyIndex GSI to find the item by ID
-    const queryParams = {
-      TableName: COMMUNICATIONS_TABLE,
-      IndexName: 'IdOnlyIndex',
-      KeyConditionExpression: 'id = :id',
-      ExpressionAttributeValues: {
-        ':id': communicationId
-      }
-    };
-    
-    console.log(`Querying DynamoDB for communication with ID: ${communicationId}`);
-    const queryResult = await dynamodb.query(queryParams).promise();
-    
-    if (!queryResult.Items || queryResult.Items.length === 0) {
-      throw new Error(`Communication not found: ${communicationId}`);
-    }
-    
-    const item = queryResult.Items[0];
-    if (!item.timestamp) {
-      throw new Error(`Communication missing timestamp: ${communicationId}`);
-    }
-    
-    console.log(`Found communication with timestamp: ${item.timestamp}`);
-    
-    // Now update with both hash and range keys
+    // Use the primary key structure for the single-table design
     const updateParams = {
       TableName: COMMUNICATIONS_TABLE,
       Key: {
-        id: communicationId,
-        timestamp: item.timestamp
+        PK: ENTITY_TYPES.COMMUNICATION,
+        SK: `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
       },
       UpdateExpression: 'set dimensions = :dimensions',
       ExpressionAttributeValues: {
