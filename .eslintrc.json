@@ -26,10 +26,9 @@
     "quotes": ["error", "double", { "avoidEscape": true, "allowTemplateLiterals": true }],
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-explicit-any": "off",
     "react/prop-types": "off",
-    "react/react-in-jsx-scope": "off",
-    "@typescript-eslint/no-explicit-any": "off"
+    "react/react-in-jsx-scope": "off"
   },
   "settings": {
     "react": {
