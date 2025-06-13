@@ -4,17 +4,21 @@
  * This function serves data to the frontend application,
  * providing endpoints for retrieving communications and user profiles.
  * 
- * Refactored to use single-table design with composite keys
+ * Refactored to use single-table design with composite keys and service layer
  */
 
-const AWS = require('aws-sdk');
-const dynamodb = new AWS.DynamoDB.DocumentClient();
-const s3 = new AWS.S3();
+const DynamoDBService = require('../services/dynamodb-service');
+const S3Service = require('../services/s3-service');
 
-// Environment variables
-const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
-const USER_PROFILES_TABLE = process.env.USER_PROFILES_TABLE || '';
-const RAW_BUCKET = process.env.RAW_BUCKET;
+// Create service instances
+const dynamoService = new DynamoDBService();
+const s3Service = new S3Service();
+
+// Export services for testing
+exports.services = {
+  dynamoService,
+  s3Service
+};
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
@@ -71,12 +75,12 @@ exports.handler = async (event) => {
     
     // Direct invocation
     if (event.action === 'getCommunications') {
-      const result = await queryCommunications(event.filters || {});
+      const result = await exports.queryCommunications(event.filters || {});
       return result;
     }
     
     if (event.action === 'getCommunicationById') {
-      const result = await getCommunicationData(event.id);
+      const result = await exports.getCommunicationData(event.id);
       return result;
     }
     
@@ -129,7 +133,7 @@ async function getCommunications(event) {
   }
   
   // Query communications
-  const result = await queryCommunications(filters);
+  const result = await exports.queryCommunications(filters);
   
   // Format for API response
   return {
@@ -143,7 +147,7 @@ async function getCommunications(event) {
  * Get a specific communication by ID
  */
 async function getCommunicationById(id) {
-  const result = await getCommunicationData(id);
+  const result = await exports.getCommunicationData(id);
   
   if (!result) {
     return {
@@ -247,14 +251,13 @@ async function getArchetypes() {
 /**
  * Query communications from DynamoDB using the single-table design
  */
-async function queryCommunications(filters) {
+exports.queryCommunications = async function queryCommunications(filters) {
   try {
-    let params;
+    let params = {};
     
     // If filtering by project, use GSI1 to query by project
     if (filters.project) {
       params = {
-        TableName: COMMUNICATIONS_TABLE,
         IndexName: 'GSI1',
         KeyConditionExpression: 'GSI1PK = :projectPK',
         ExpressionAttributeValues: {
@@ -266,7 +269,6 @@ async function queryCommunications(filters) {
     // If filtering by sender, use GSI2 to query by sender
     else if (filters.sender) {
       params = {
-        TableName: COMMUNICATIONS_TABLE,
         IndexName: 'GSI2',
         KeyConditionExpression: 'GSI2PK = :senderPK',
         ExpressionAttributeValues: {
@@ -278,7 +280,6 @@ async function queryCommunications(filters) {
     // If no specific filter, query all communications by type
     else {
       params = {
-        TableName: COMMUNICATIONS_TABLE,
         KeyConditionExpression: 'PK = :commType',
         ExpressionAttributeValues: {
           ':commType': ENTITY_TYPES.COMMUNICATION
@@ -310,8 +311,8 @@ async function queryCommunications(filters) {
     
     console.log('Query params:', JSON.stringify(params, null, 2));
     
-    // Execute the query
-    const result = await dynamodb.query(params).promise();
+    // Execute the query using the service
+    const result = await dynamoService.query(params);
     console.log(`Query returned ${result.Items.length} items`);
     
     // For each item, get the full communication from S3 if needed
@@ -324,7 +325,7 @@ async function queryCommunications(filters) {
       // If we need the full content, get it from S3
       if (filters.includeContent && item.s3Key) {
         try {
-          const fullCommunication = await getFullCommunicationFromS3(item);
+          const fullCommunication = await exports.getFullCommunicationFromS3(item);
           communications.push({
             ...fullCommunication,
             id: commId
@@ -354,16 +355,15 @@ async function queryCommunications(filters) {
     console.error('Error querying communications:', error);
     throw error;
   }
-}
+};
 
 /**
  * Get a specific communication by ID using the single-table design
  */
-async function getCommunicationData(id) {
+exports.getCommunicationData = async function getCommunicationData(id) {
   try {
     // Query the communication directly using its primary key
     const params = {
-      TableName: COMMUNICATIONS_TABLE,
       KeyConditionExpression: 'PK = :pk AND SK = :sk',
       ExpressionAttributeValues: {
         ':pk': ENTITY_TYPES.COMMUNICATION,
@@ -371,7 +371,7 @@ async function getCommunicationData(id) {
       }
     };
     
-    const result = await dynamodb.query(params).promise();
+    const result = await dynamoService.query(params);
     
     if (!result.Items || result.Items.length === 0) {
       console.log(`No communication found with ID: ${id}`);
@@ -383,7 +383,7 @@ async function getCommunicationData(id) {
     // Get the full communication from S3 if needed
     if (item.s3Key) {
       try {
-        const fullCommunication = await getFullCommunicationFromS3(item);
+        const fullCommunication = await exports.getFullCommunicationFromS3(item);
         return {
           ...fullCommunication,
           id // Ensure the ID is included
@@ -402,21 +402,20 @@ async function getCommunicationData(id) {
     console.error(`Error getting communication data for ${id}:`, error);
     throw error;
   }
-}
+};
 
 /**
  * Get the full communication from S3
  */
-async function getFullCommunicationFromS3(item) {
+exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(item) {
   if (!item.s3Key) {
     return item;
   }
   
   try {
-    const s3Result = await s3.getObject({
-      Bucket: RAW_BUCKET,
+    const s3Result = await s3Service.getObject({
       Key: item.s3Key
-    }).promise();
+    });
     
     const fullCommunication = JSON.parse(s3Result.Body.toString());
     
@@ -430,26 +429,18 @@ async function getFullCommunicationFromS3(item) {
     console.error(`Error getting object from S3: ${item.s3Key}`, error);
     throw error;
   }
-}
+};
 
 /**
  * Get user profile from DynamoDB using the single-table design
  */
 async function getUserProfileData(userId) {
-  // If no table name is provided, return null
-  if (!USER_PROFILES_TABLE) {
-    return null;
-  }
-  
-  const params = {
-    TableName: USER_PROFILES_TABLE,
-    Key: {
-      PK: `${ENTITY_TYPES.USER}#${userId}`
-    }
-  };
-  
   try {
-    const result = await dynamodb.get(params).promise();
+    const result = await dynamoService.getUserProfile({
+      Key: {
+        PK: `${ENTITY_TYPES.USER}#${userId}`
+      }
+    });
     
     if (!result.Item) {
       return null;
@@ -471,27 +462,23 @@ async function getUserProfileData(userId) {
  * Update user profile in DynamoDB using the single-table design
  */
 async function updateUserProfileData(userId, data) {
-  // If no table name is provided, just log
-  if (!USER_PROFILES_TABLE) {
-    console.log(`Would update user profile for ${userId}:`, data);
-    return;
+  try {
+    await dynamoService.updateUserProfile({
+      Key: {
+        PK: `${ENTITY_TYPES.USER}#${userId}`
+      },
+      UpdateExpression: 'set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences',
+      ExpressionAttributeValues: {
+        ':primaryArchetype': data.primaryArchetype,
+        ':archetypeConfidence': data.archetypeConfidence || {},
+        ':preferences': data.preferences || {}
+      },
+      ReturnValues: 'UPDATED_NEW'
+    });
+  } catch (error) {
+    console.error(`Error updating user profile for ${userId}:`, error);
+    throw error;
   }
-  
-  const params = {
-    TableName: USER_PROFILES_TABLE,
-    Key: {
-      PK: `${ENTITY_TYPES.USER}#${userId}`
-    },
-    UpdateExpression: 'set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences',
-    ExpressionAttributeValues: {
-      ':primaryArchetype': data.primaryArchetype,
-      ':archetypeConfidence': data.archetypeConfidence || {},
-      ':preferences': data.preferences || {}
-    },
-    ReturnValues: 'UPDATED_NEW'
-  };
-  
-  await dynamodb.update(params).promise();
 }
 
 /**

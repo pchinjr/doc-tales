@@ -3,16 +3,22 @@
  * 
  * This function receives and normalizes communications from various sources,
  * storing them in DynamoDB and S3 using the single-table design pattern.
+ * Refactored to use service layer for better testability.
  */
 
-const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
-const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const DynamoDBService = require('../services/dynamodb-service');
+const S3Service = require('../services/s3-service');
 
-// Environment variables
-const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
-const RAW_BUCKET = process.env.RAW_BUCKET;
+// Create service instances
+const dynamoService = new DynamoDBService();
+const s3Service = new S3Service();
+
+// Export services for testing
+exports.services = {
+  dynamoService,
+  s3Service
+};
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
@@ -32,7 +38,7 @@ exports.handler = async (event) => {
     // API Gateway event
     if (event.body) {
       const body = JSON.parse(event.body);
-      const result = await processCommunication(body);
+      const result = await exports.processCommunication(body);
       
       return {
         statusCode: 200,
@@ -43,7 +49,7 @@ exports.handler = async (event) => {
     
     // Direct invocation
     if (event.source) {
-      const result = await processCommunication(event);
+      const result = await exports.processCommunication(event);
       return result;
     }
     
@@ -65,31 +71,31 @@ exports.handler = async (event) => {
 /**
  * Process a communication from any source
  */
-async function processCommunication(data) {
+exports.processCommunication = async function processCommunication(data) {
   // Generate a unique ID if not provided
   const id = data.id || uuidv4();
   
   // Normalize the communication data
-  const normalizedData = normalizeData(data, id);
+  const normalizedData = exports.normalizeData(data, id);
   
   // Store the full communication in S3
-  const s3Key = await storeInS3(normalizedData, id);
+  const s3Key = await exports.storeInS3(normalizedData, id);
   
   // Store metadata in DynamoDB
-  const dbItem = createDynamoDBItem(normalizedData, id, s3Key);
-  await storeInDynamoDB(dbItem);
+  const dbItem = exports.createDynamoDBItem(normalizedData, id, s3Key);
+  await exports.storeInDynamoDB(dbItem);
   
   return {
     id,
     s3Key,
     message: 'Communication processed successfully'
   };
-}
+};
 
 /**
  * Normalize data from different sources into a standard format
  */
-function normalizeData(data, id) {
+exports.normalizeData = function normalizeData(data, id) {
   // Default values
   const normalized = {
     id,
@@ -137,28 +143,27 @@ function normalizeData(data, id) {
   }
   
   return normalized;
-}
+};
 
 /**
  * Store the full communication in S3
  */
-async function storeInS3(data, id) {
+exports.storeInS3 = async function storeInS3(data, id) {
   const key = `raw/${data.type}/${id}.json`;
   
-  await s3.putObject({
-    Bucket: RAW_BUCKET,
+  await s3Service.putObject({
     Key: key,
     Body: JSON.stringify(data),
     ContentType: 'application/json'
-  }).promise();
+  });
   
   return key;
-}
+};
 
 /**
  * Create a DynamoDB item using the single-table design
  */
-function createDynamoDBItem(data, id, s3Key) {
+exports.createDynamoDBItem = function createDynamoDBItem(data, id, s3Key) {
   // Extract timestamp for sorting
   const timestamp = data.timestamp;
   
@@ -197,19 +202,16 @@ function createDynamoDBItem(data, id, s3Key) {
   };
   
   return item;
-}
+};
 
 /**
  * Store metadata in DynamoDB
  */
-async function storeInDynamoDB(item) {
-  const params = {
-    TableName: COMMUNICATIONS_TABLE,
+exports.storeInDynamoDB = async function storeInDynamoDB(item) {
+  await dynamoService.put({
     Item: item
-  };
-  
-  await dynamodb.put(params).promise();
-}
+  });
+};
 
 /**
  * Get CORS headers for API responses

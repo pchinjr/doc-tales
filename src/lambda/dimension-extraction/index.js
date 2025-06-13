@@ -3,16 +3,24 @@
  * 
  * This function extracts dimensions from communications stored in S3
  * and updates the DynamoDB record with the extracted dimensions.
+ * Refactored to use service layer for better testability.
  */
 
 const AWS = require('aws-sdk');
-const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const DynamoDBService = require('../services/dynamodb-service');
+const S3Service = require('../services/s3-service');
+
+// Create service instances
+const dynamoService = new DynamoDBService();
+const s3Service = new S3Service();
 const comprehend = new AWS.Comprehend();
 
-// Environment variables
-const RAW_BUCKET = process.env.RAW_BUCKET;
-const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
+// Export services for testing
+exports.services = {
+  dynamoService,
+  s3Service,
+  comprehend
+};
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
@@ -116,8 +124,7 @@ async function getCommunicationFromS3(communicationId, providedKey) {
   // If key not provided, look up in DynamoDB first using the single-table design
   if (!key) {
     console.log(`Looking up S3 key for communication ID: ${communicationId}`);
-    const queryParams = {
-      TableName: COMMUNICATIONS_TABLE,
+    const params = {
       KeyConditionExpression: 'PK = :pk AND SK = :sk',
       ExpressionAttributeValues: {
         ':pk': ENTITY_TYPES.COMMUNICATION,
@@ -125,7 +132,7 @@ async function getCommunicationFromS3(communicationId, providedKey) {
       }
     };
     
-    const queryResult = await dynamodb.query(queryParams).promise();
+    const queryResult = await dynamoService.query(params);
     
     if (!queryResult.Items || queryResult.Items.length === 0 || !queryResult.Items[0].s3Key) {
       throw new Error(`Communication not found in DynamoDB or missing S3 key: ${communicationId}`);
@@ -136,12 +143,11 @@ async function getCommunicationFromS3(communicationId, providedKey) {
   }
   
   // Get the object from S3
-  console.log(`Retrieving communication from S3: ${RAW_BUCKET}/${key}`);
+  console.log(`Retrieving communication from S3: ${key}`);
   try {
-    const s3Result = await s3.getObject({
-      Bucket: RAW_BUCKET,
+    const s3Result = await s3Service.getObject({
       Key: key
-    }).promise();
+    });
     
     console.log(`Successfully retrieved communication from S3`);
     return JSON.parse(s3Result.Body.toString());
@@ -291,7 +297,7 @@ async function extractRelationshipDimension(communication) {
     lastInteraction: communication.timestamp,
     networkPosition: {
       isDirectConnection: true, // For MVP, assume all are direct connections
-      sharedConnections: communication.recipients.length,
+      sharedConnections: communication.recipients ? communication.recipients.length : 0,
       relevanceScore: calculateRelevanceScore(communication)
     },
     context: {
@@ -309,11 +315,13 @@ async function extractRelationshipDimension(communication) {
  */
 async function extractVisualDimension(communication) {
   // Determine if the communication has images
-  const hasImages = Boolean(communication.attachments.length > 0 || 
+  const hasImages = Boolean(
+    (communication.attachments && communication.attachments.length > 0) || 
     (communication.metadata.sourceSpecific && 
      typeof communication.metadata.sourceSpecific === 'object' &&
      'hasImages' in communication.metadata.sourceSpecific &&
-     communication.metadata.sourceSpecific.hasImages));
+     communication.metadata.sourceSpecific.hasImages)
+  );
   
   // Get document type if available
   const documentType = communication.metadata.sourceSpecific && 
@@ -341,7 +349,7 @@ async function extractVisualDimension(communication) {
      'hasImages' in communication.metadata.sourceSpecific && 
      communication.metadata.sourceSpecific.hasImages ? 1 : 0);
   
-  const attachments = communication.attachments.length;
+  const attachments = communication.attachments ? communication.attachments.length : 0;
   
   // Determine visual category
   let visualCategory = 'text-only';
@@ -391,7 +399,7 @@ async function extractVisualDimension(communication) {
  */
 async function extractAnalyticalDimension(communication) {
   // Extract categories and tags
-  const categories = [communication.metadata.category];
+  const categories = [communication.metadata.category].filter(Boolean);
   
   // Extract tags using simple keyword matching
   const tags = [];
@@ -402,7 +410,9 @@ async function extractAnalyticalDimension(communication) {
   if (communication.content.toLowerCase().includes('meeting')) tags.push('meeting');
   
   // Add project as a tag
-  tags.push(communication.project.replace('-', ' '));
+  if (communication.project) {
+    tags.push(communication.project.replace('-', ' '));
+  }
   
   // Use AWS Comprehend for sentiment analysis
   const sentiment = await detectSentiment(communication.content);
@@ -487,8 +497,7 @@ async function extractAnalyticalDimension(communication) {
 async function updateDynamoDBWithDimensions(communicationId, dimensions) {
   try {
     // Use the primary key structure for the single-table design
-    const updateParams = {
-      TableName: COMMUNICATIONS_TABLE,
+    const params = {
       Key: {
         PK: ENTITY_TYPES.COMMUNICATION,
         SK: `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
@@ -501,7 +510,7 @@ async function updateDynamoDBWithDimensions(communicationId, dimensions) {
     };
     
     console.log(`Updating DynamoDB with dimensions for: ${communicationId}`);
-    await dynamodb.update(updateParams).promise();
+    await dynamoService.update(params);
     console.log(`Successfully updated DynamoDB with dimensions for: ${communicationId}`);
   } catch (error) {
     console.error(`Error updating DynamoDB: ${error.message}`);
@@ -522,7 +531,7 @@ async function detectEntities(text) {
     LanguageCode: 'en'
   };
   
-  const result = await comprehend.detectEntities(params).promise();
+  const result = await exports.services.comprehend.detectEntities(params).promise();
   return result.Entities;
 }
 
@@ -538,7 +547,7 @@ async function detectSentiment(text) {
     LanguageCode: 'en'
   };
   
-  return await comprehend.detectSentiment(params).promise();
+  return await exports.services.comprehend.detectSentiment(params).promise();
 }
 
 /**
@@ -553,7 +562,7 @@ async function detectKeyPhrases(text) {
     LanguageCode: 'en'
   };
   
-  const result = await comprehend.detectKeyPhrases(params).promise();
+  const result = await exports.services.comprehend.detectKeyPhrases(params).promise();
   return result.KeyPhrases.map(phrase => phrase.Text);
 }
 
