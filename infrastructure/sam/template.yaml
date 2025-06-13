@@ -32,6 +32,7 @@ Globals:
         ENVIRONMENT: !Ref Environment
         APP_NAME: !Ref AppName
         COMMUNICATIONS_TABLE: !Ref CommunicationsTable
+        USER_PROFILES_TABLE: !Ref UserProfilesTable
         RAW_BUCKET: !Ref RawCommunicationsBucket
 
 Resources:
@@ -116,6 +117,8 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref CommunicationsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref UserProfilesTable
         - S3ReadPolicy:
             BucketName: !Ref RawCommunicationsBucket
       Events:
@@ -131,48 +134,64 @@ Resources:
             RestApiId: !Ref DocTalesApi
             Path: /communications/{id}
             Method: get
+        GetUserProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /user-profile
+            Method: get
+        UpdateUserProfile:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /user-profile
+            Method: put
+        GetArchetypes:
+          Type: Api
+          Properties:
+            RestApiId: !Ref DocTalesApi
+            Path: /archetypes
+            Method: get
 
-  # DynamoDB Tables
+  # DynamoDB Tables - Single-Table Design
   CommunicationsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub ${AppName}-communications-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: id
+        - AttributeName: PK
           AttributeType: S
-        - AttributeName: timestamp
+        - AttributeName: SK
           AttributeType: S
-        - AttributeName: project
+        - AttributeName: GSI1PK
           AttributeType: S
-        - AttributeName: sender_id
+        - AttributeName: GSI1SK
+          AttributeType: S
+        - AttributeName: GSI2PK
+          AttributeType: S
+        - AttributeName: GSI2SK
           AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: PK
           KeyType: HASH
-        - AttributeName: timestamp
+        - AttributeName: SK
           KeyType: RANGE
       GlobalSecondaryIndexes:
-        - IndexName: ProjectIndex
+        - IndexName: GSI1
           KeySchema:
-            - AttributeName: project
+            - AttributeName: GSI1PK
               KeyType: HASH
-            - AttributeName: timestamp
+            - AttributeName: GSI1SK
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-        - IndexName: SenderIndex
+        - IndexName: GSI2
           KeySchema:
-            - AttributeName: sender_id
+            - AttributeName: GSI2PK
               KeyType: HASH
-            - AttributeName: timestamp
+            - AttributeName: GSI2SK
               KeyType: RANGE
-          Projection:
-            ProjectionType: ALL
-        - IndexName: IdOnlyIndex
-          KeySchema:
-            - AttributeName: id
-              KeyType: HASH
           Projection:
             ProjectionType: ALL
       StreamSpecification:
@@ -184,10 +203,10 @@ Resources:
       TableName: !Sub ${AppName}-user-profiles-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: user_id
+        - AttributeName: PK
           AttributeType: S
       KeySchema:
-        - AttributeName: user_id
+        - AttributeName: PK
           KeyType: HASH
 
   # S3 Buckets
