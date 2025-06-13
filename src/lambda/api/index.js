@@ -3,6 +3,8 @@
  * 
  * This function serves data to the frontend application,
  * providing endpoints for retrieving communications and user profiles.
+ * 
+ * Refactored to use single-table design with composite keys
  */
 
 const AWS = require('aws-sdk');
@@ -13,6 +15,14 @@ const s3 = new AWS.S3();
 const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
 const USER_PROFILES_TABLE = process.env.USER_PROFILES_TABLE || '';
 const RAW_BUCKET = process.env.RAW_BUCKET;
+
+// Entity types for partition keys
+const ENTITY_TYPES = {
+  COMMUNICATION: 'COMM',
+  USER: 'USER',
+  PROJECT: 'PROJ',
+  ENTITY: 'ENTITY'
+};
 
 /**
  * Main handler function
@@ -235,41 +245,44 @@ async function getArchetypes() {
 }
 
 /**
- * Query communications from DynamoDB
+ * Query communications from DynamoDB using the single-table design
  */
 async function queryCommunications(filters) {
   try {
     let params;
     
-    // If filtering by project, use the ProjectIndex GSI
+    // If filtering by project, use GSI1 to query by project
     if (filters.project) {
       params = {
         TableName: COMMUNICATIONS_TABLE,
-        IndexName: 'ProjectIndex',
-        KeyConditionExpression: 'project = :project',
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :projectPK',
         ExpressionAttributeValues: {
-          ':project': filters.project
+          ':projectPK': `${ENTITY_TYPES.PROJECT}#${filters.project}`
         },
         Limit: 100
       };
     } 
-    // If filtering by sender, use the SenderIndex GSI
+    // If filtering by sender, use GSI2 to query by sender
     else if (filters.sender) {
       params = {
         TableName: COMMUNICATIONS_TABLE,
-        IndexName: 'SenderIndex',
-        KeyConditionExpression: 'sender_id = :sender',
+        IndexName: 'GSI2',
+        KeyConditionExpression: 'GSI2PK = :senderPK',
         ExpressionAttributeValues: {
-          ':sender': filters.sender
+          ':senderPK': `${ENTITY_TYPES.ENTITY}#${filters.sender}`
         },
         Limit: 100
       };
     } 
-    // If no specific filter, use the IdOnlyIndex GSI to get all communications
+    // If no specific filter, query all communications by type
     else {
       params = {
         TableName: COMMUNICATIONS_TABLE,
-        IndexName: 'IdOnlyIndex',
+        KeyConditionExpression: 'PK = :commType',
+        ExpressionAttributeValues: {
+          ':commType': ENTITY_TYPES.COMMUNICATION
+        },
         Limit: 100
       };
     }
@@ -280,7 +293,7 @@ async function queryCommunications(filters) {
       let expressionAttributeValues = params.ExpressionAttributeValues || {};
       
       if (filters.type) {
-        filterExpressions.push('type = :type');
+        filterExpressions.push('commType = :type');
         expressionAttributeValues[':type'] = filters.type;
       }
       
@@ -305,17 +318,30 @@ async function queryCommunications(filters) {
     const communications = [];
     
     for (const item of result.Items) {
+      // Extract the actual communication ID from the sort key
+      const commId = item.SK.split('#')[1];
+      
       // If we need the full content, get it from S3
-      if (filters.includeContent) {
+      if (filters.includeContent && item.s3Key) {
         try {
           const fullCommunication = await getFullCommunicationFromS3(item);
-          communications.push(fullCommunication);
+          communications.push({
+            ...fullCommunication,
+            id: commId
+          });
         } catch (error) {
-          console.error(`Error getting full communication for ${item.id}:`, error);
-          communications.push(item);
+          console.error(`Error getting full communication for ${commId}:`, error);
+          communications.push({
+            ...item,
+            id: commId
+          });
         }
       } else {
-        communications.push(item);
+        // Return the item with a clean ID
+        communications.push({
+          ...item,
+          id: commId
+        });
       }
     }
     
@@ -331,37 +357,47 @@ async function queryCommunications(filters) {
 }
 
 /**
- * Get a specific communication by ID
+ * Get a specific communication by ID using the single-table design
  */
 async function getCommunicationData(id) {
   try {
-    // Use GSI to query by ID only
-    const queryParams = {
+    // Query the communication directly using its primary key
+    const params = {
       TableName: COMMUNICATIONS_TABLE,
-      IndexName: 'IdOnlyIndex',
-      KeyConditionExpression: 'id = :id',
+      KeyConditionExpression: 'PK = :pk AND SK = :sk',
       ExpressionAttributeValues: {
-        ':id': id
+        ':pk': ENTITY_TYPES.COMMUNICATION,
+        ':sk': `${ENTITY_TYPES.COMMUNICATION}#${id}`
       }
     };
     
-    const queryResult = await dynamodb.query(queryParams).promise();
+    const result = await dynamodb.query(params).promise();
     
-    if (!queryResult.Items || queryResult.Items.length === 0) {
+    if (!result.Items || result.Items.length === 0) {
       console.log(`No communication found with ID: ${id}`);
       return null;
     }
     
-    const item = queryResult.Items[0];
+    const item = result.Items[0];
     
-    // Get the full communication from S3
-    try {
-      const fullCommunication = await getFullCommunicationFromS3(item);
-      return fullCommunication;
-    } catch (error) {
-      console.error(`Error getting full communication for ${id}:`, error);
-      return item;
+    // Get the full communication from S3 if needed
+    if (item.s3Key) {
+      try {
+        const fullCommunication = await getFullCommunicationFromS3(item);
+        return {
+          ...fullCommunication,
+          id // Ensure the ID is included
+        };
+      } catch (error) {
+        console.error(`Error getting full communication for ${id}:`, error);
+      }
     }
+    
+    // Return the item with a clean ID
+    return {
+      ...item,
+      id
+    };
   } catch (error) {
     console.error(`Error getting communication data for ${id}:`, error);
     throw error;
@@ -397,7 +433,7 @@ async function getFullCommunicationFromS3(item) {
 }
 
 /**
- * Get user profile from DynamoDB
+ * Get user profile from DynamoDB using the single-table design
  */
 async function getUserProfileData(userId) {
   // If no table name is provided, return null
@@ -408,13 +444,23 @@ async function getUserProfileData(userId) {
   const params = {
     TableName: USER_PROFILES_TABLE,
     Key: {
-      user_id: userId
+      PK: `${ENTITY_TYPES.USER}#${userId}`
     }
   };
   
   try {
     const result = await dynamodb.get(params).promise();
-    return result.Item;
+    
+    if (!result.Item) {
+      return null;
+    }
+    
+    // Clean up the response to remove the PK
+    const { PK, ...userProfile } = result.Item;
+    return {
+      ...userProfile,
+      id: userId
+    };
   } catch (error) {
     console.error(`Error getting user profile for ${userId}:`, error);
     return null;
@@ -422,7 +468,7 @@ async function getUserProfileData(userId) {
 }
 
 /**
- * Update user profile in DynamoDB
+ * Update user profile in DynamoDB using the single-table design
  */
 async function updateUserProfileData(userId, data) {
   // If no table name is provided, just log
@@ -434,7 +480,7 @@ async function updateUserProfileData(userId, data) {
   const params = {
     TableName: USER_PROFILES_TABLE,
     Key: {
-      user_id: userId
+      PK: `${ENTITY_TYPES.USER}#${userId}`
     },
     UpdateExpression: 'set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences',
     ExpressionAttributeValues: {
@@ -453,7 +499,7 @@ async function updateUserProfileData(userId, data) {
  */
 function createDefaultUserProfile(userId) {
   return {
-    user_id: userId,
+    id: userId,
     primaryArchetype: 'prioritizer',
     archetypeConfidence: {
       prioritizer: 0.25,
