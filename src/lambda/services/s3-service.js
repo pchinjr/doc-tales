@@ -9,6 +9,12 @@ const AWS = require('aws-sdk');
 class S3Service {
   constructor(options = {}) {
     this.bucketName = options.bucketName || process.env.RAW_BUCKET;
+    
+    // Configure AWS SDK with region for production
+    AWS.config.update({
+      region: options.region || process.env.AWS_REGION || 'us-east-1'
+    });
+    
     this.s3Client = options.s3Client || new AWS.S3();
   }
 

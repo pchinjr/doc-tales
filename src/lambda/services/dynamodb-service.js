@@ -10,6 +10,12 @@ class DynamoDBService {
   constructor(options = {}) {
     this.tableName = options.tableName || process.env.COMMUNICATIONS_TABLE;
     this.userProfilesTableName = options.userProfilesTableName || process.env.USER_PROFILES_TABLE;
+    
+    // Configure AWS SDK with region for production
+    AWS.config.update({
+      region: options.region || process.env.AWS_REGION || 'us-east-1'
+    });
+    
     this.documentClient = options.documentClient || new AWS.DynamoDB.DocumentClient();
   }
 
