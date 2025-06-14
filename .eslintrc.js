@@ -1,39 +1,47 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended"
   ],
-  plugins: ['@typescript-eslint', 'react'],
-  env: {
-    browser: true,
-    es6: true,
-    node: true,
-  },
-  settings: {
-    react: {
-      version: 'detect',
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
     },
+    "ecmaVersion": 12,
+    "sourceType": "module"
   },
-  rules: {
-    // This rule would have caught our string literal issues
-    'quotes': ['error', 'double', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
-    
-    // Other helpful rules
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    'react/prop-types': 'off',
-    'react/react-in-jsx-scope': 'off',
+  "plugins": [
+    "react",
+    "react-hooks",
+    "@typescript-eslint"
+  ],
+  "rules": {
+    "quotes": ["error", "double"],
+    "no-console": "warn",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-var-requires": "off"
   },
-  overrides: [
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "overrides": [
     {
-      files: ['*.js'],
-      rules: {
-        '@typescript-eslint/no-var-requires': 'off',
-      },
-    },
-  ],
-};
+      "files": ["*.test.js", "*.spec.js", "**/tests/**/*.js", "**/lambda/**/*.js"],
+      "rules": {
+        "no-console": "off",
+        "no-undef": "off",
+        "@typescript-eslint/no-var-requires": "off"
+      }
+    }
+  ]
+}
