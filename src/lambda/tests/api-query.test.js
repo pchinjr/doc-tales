@@ -6,32 +6,41 @@
 
 const test = require('tape');
 const apiLambda = require('../api/index');
+const { createMockDynamoDBService, createMockS3Service } = require('./mock-services');
 
 // Test queryCommunications with project filter
 test('API queryCommunications - project filter', async (t) => {
-  // Create a mock dynamoService
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
+  const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mock
-  apiLambda.services.dynamoService = {
-    query: (params) => {
-      t.equal(params.IndexName, 'GSI1', 'Should use GSI1 for project queries');
-      t.ok(params.KeyConditionExpression.includes('GSI1PK'), 'Should query by GSI1PK');
-      
-      return Promise.resolve({
-        Items: [
-          { 
-            PK: 'COMM', 
-            SK: 'COMM#123', 
-            GSI1PK: 'PROJ#home-purchase',
-            subject: 'Test Communication' 
-          }
-        ],
-        Count: 1,
-        ScannedCount: 1
-      });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: (params) => {
+        t.equal(params.IndexName, 'GSI1', 'Should use GSI1 for project queries');
+        t.ok(params.KeyConditionExpression.includes('GSI1PK'), 'Should query by GSI1PK');
+        
+        return {
+          Items: [
+            { 
+              PK: 'COMM', 
+              SK: 'COMM#123', 
+              GSI1PK: 'PROJ#home-purchase',
+              subject: 'Test Communication' 
+            }
+          ],
+          Count: 1,
+          ScannedCount: 1
+        };
+      }
     }
-  };
+  });
+  
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev'
+  });
   
   try {
     const result = await apiLambda.queryCommunications({ project: 'home-purchase' });
@@ -41,37 +50,46 @@ test('API queryCommunications - project filter', async (t) => {
   } catch (error) {
     t.fail(error);
   } finally {
-    // Restore original service
+    // Restore original services
     apiLambda.services.dynamoService = originalDynamoService;
+    apiLambda.services.s3Service = originalS3Service;
     t.end();
   }
 });
 
 // Test queryCommunications with sender filter
 test('API queryCommunications - sender filter', async (t) => {
-  // Create a mock dynamoService
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
+  const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mock
-  apiLambda.services.dynamoService = {
-    query: (params) => {
-      t.equal(params.IndexName, 'GSI2', 'Should use GSI2 for sender queries');
-      t.ok(params.KeyConditionExpression.includes('GSI2PK'), 'Should query by GSI2PK');
-      
-      return Promise.resolve({
-        Items: [
-          { 
-            PK: 'COMM', 
-            SK: 'COMM#456', 
-            GSI2PK: 'ENTITY#sender@example.com',
-            subject: 'From Sender' 
-          }
-        ],
-        Count: 1,
-        ScannedCount: 1
-      });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: (params) => {
+        t.equal(params.IndexName, 'GSI2', 'Should use GSI2 for sender queries');
+        t.ok(params.KeyConditionExpression.includes('GSI2PK'), 'Should query by GSI2PK');
+        
+        return {
+          Items: [
+            { 
+              PK: 'COMM', 
+              SK: 'COMM#456', 
+              GSI2PK: 'ENTITY#sender@example.com',
+              subject: 'From Sender' 
+            }
+          ],
+          Count: 1,
+          ScannedCount: 1
+        };
+      }
     }
-  };
+  });
+  
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev'
+  });
   
   try {
     const result = await apiLambda.queryCommunications({ sender: 'sender@example.com' });
@@ -81,33 +99,42 @@ test('API queryCommunications - sender filter', async (t) => {
   } catch (error) {
     t.fail(error);
   } finally {
-    // Restore original service
+    // Restore original services
     apiLambda.services.dynamoService = originalDynamoService;
+    apiLambda.services.s3Service = originalS3Service;
     t.end();
   }
 });
 
 // Test queryCommunications with no filters
 test('API queryCommunications - no filters', async (t) => {
-  // Create a mock dynamoService
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
+  const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mock
-  apiLambda.services.dynamoService = {
-    query: (params) => {
-      t.equal(params.IndexName, undefined, 'Should use base table for no filters');
-      t.ok(params.KeyConditionExpression.includes('PK'), 'Should query by PK');
-      
-      return Promise.resolve({
-        Items: [
-          { PK: 'COMM', SK: 'COMM#123', subject: 'Test 1' },
-          { PK: 'COMM', SK: 'COMM#456', subject: 'Test 2' }
-        ],
-        Count: 2,
-        ScannedCount: 2
-      });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: (params) => {
+        t.equal(params.IndexName, undefined, 'Should use base table for no filters');
+        t.ok(params.KeyConditionExpression.includes('PK'), 'Should query by PK');
+        
+        return {
+          Items: [
+            { PK: 'COMM', SK: 'COMM#123', subject: 'Test 1' },
+            { PK: 'COMM', SK: 'COMM#456', subject: 'Test 2' }
+          ],
+          Count: 2,
+          ScannedCount: 2
+        };
+      }
     }
-  };
+  });
+  
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev'
+  });
   
   try {
     const result = await apiLambda.queryCommunications({});
@@ -117,33 +144,42 @@ test('API queryCommunications - no filters', async (t) => {
   } catch (error) {
     t.fail(error);
   } finally {
-    // Restore original service
+    // Restore original services
     apiLambda.services.dynamoService = originalDynamoService;
+    apiLambda.services.s3Service = originalS3Service;
     t.end();
   }
 });
 
 // Test queryCommunications with type filter
 test('API queryCommunications - type filter', async (t) => {
-  // Create a mock dynamoService
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
+  const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mock
-  apiLambda.services.dynamoService = {
-    query: (params) => {
-      t.ok(params.FilterExpression, 'Should have a filter expression');
-      t.ok(params.FilterExpression.includes('commType = :type'), 'Should filter by type');
-      t.equal(params.ExpressionAttributeValues[':type'], 'email', 'Should use correct type value');
-      
-      return Promise.resolve({
-        Items: [
-          { PK: 'COMM', SK: 'COMM#789', subject: 'Email Test', commType: 'email' }
-        ],
-        Count: 1,
-        ScannedCount: 2 // Simulating that filtering happened
-      });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: (params) => {
+        t.ok(params.FilterExpression, 'Should have a filter expression');
+        t.ok(params.FilterExpression.includes('commType = :type'), 'Should filter by type');
+        t.equal(params.ExpressionAttributeValues[':type'], 'email', 'Should use correct type value');
+        
+        return {
+          Items: [
+            { PK: 'COMM', SK: 'COMM#789', subject: 'Email Test', commType: 'email' }
+          ],
+          Count: 1,
+          ScannedCount: 2 // Simulating that filtering happened
+        };
+      }
     }
-  };
+  });
+  
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev'
+  });
   
   try {
     const result = await apiLambda.queryCommunications({ type: 'email' });
@@ -153,50 +189,57 @@ test('API queryCommunications - type filter', async (t) => {
   } catch (error) {
     t.fail(error);
   } finally {
-    // Restore original service
+    // Restore original services
     apiLambda.services.dynamoService = originalDynamoService;
+    apiLambda.services.s3Service = originalS3Service;
     t.end();
   }
 });
 
 // Test getCommunicationData
 test('API getCommunicationData - existing communication', async (t) => {
-  // Create mock services
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mocks
-  apiLambda.services.dynamoService = {
-    query: (params) => {
-      t.equal(params.KeyConditionExpression, 'PK = :pk AND SK = :sk', 'Should use correct key condition');
-      t.equal(params.ExpressionAttributeValues[':pk'], 'COMM', 'Should use correct PK');
-      t.equal(params.ExpressionAttributeValues[':sk'], 'COMM#123', 'Should use correct SK');
-      
-      return Promise.resolve({
-        Items: [
-          { 
-            PK: 'COMM', 
-            SK: 'COMM#123', 
-            subject: 'Test Communication',
-            s3Key: 'raw/email/123.json'
-          }
-        ]
-      });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: (params) => {
+        t.equal(params.KeyConditionExpression, 'PK = :pk AND SK = :sk', 'Should use correct key condition');
+        t.equal(params.ExpressionAttributeValues[':pk'], 'COMM', 'Should use correct PK');
+        t.equal(params.ExpressionAttributeValues[':sk'], 'COMM#123', 'Should use correct SK');
+        
+        return {
+          Items: [
+            { 
+              PK: 'COMM', 
+              SK: 'COMM#123', 
+              subject: 'Test Communication',
+              s3Key: 'raw/email/123.json'
+            }
+          ]
+        };
+      }
     }
-  };
+  });
   
-  apiLambda.services.s3Service = {
-    getObject: (params) => {
-      t.equal(params.Key, 'raw/email/123.json', 'Should use correct S3 key');
-      
-      return Promise.resolve({
-        Body: Buffer.from(JSON.stringify({
-          content: 'This is the full content',
-          metadata: { category: 'test' }
-        }))
-      });
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev',
+    responses: {
+      getObject: (params) => {
+        t.equal(params.Key, 'raw/email/123.json', 'Should use correct S3 key');
+        
+        return {
+          Body: Buffer.from(JSON.stringify({
+            content: 'This is the full content',
+            metadata: { category: 'test' }
+          }))
+        };
+      }
     }
-  };
+  });
   
   try {
     const result = await apiLambda.getCommunicationData('123');
@@ -216,15 +259,23 @@ test('API getCommunicationData - existing communication', async (t) => {
 
 // Test getCommunicationData - not found
 test('API getCommunicationData - not found', async (t) => {
-  // Create a mock dynamoService
+  // Save original services
   const originalDynamoService = apiLambda.services.dynamoService;
+  const originalS3Service = apiLambda.services.s3Service;
   
-  // Replace with mock
-  apiLambda.services.dynamoService = {
-    query: () => {
-      return Promise.resolve({ Items: [] });
+  // Create mock services
+  apiLambda.services.dynamoService = createMockDynamoDBService({
+    tableName: 'doc-tales-communications-dev',
+    responses: {
+      query: () => {
+        return { Items: [] };
+      }
     }
-  };
+  });
+  
+  apiLambda.services.s3Service = createMockS3Service({
+    bucketName: 'doc-tales-raw-communications-dev'
+  });
   
   try {
     const result = await apiLambda.getCommunicationData('nonexistent');
@@ -232,8 +283,9 @@ test('API getCommunicationData - not found', async (t) => {
   } catch (error) {
     t.fail(error);
   } finally {
-    // Restore original service
+    // Restore original services
     apiLambda.services.dynamoService = originalDynamoService;
+    apiLambda.services.s3Service = originalS3Service;
     t.end();
   }
 });
