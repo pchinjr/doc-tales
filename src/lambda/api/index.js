@@ -7,17 +7,17 @@
  * Refactored to use single-table design with composite keys and service layer
  */
 
-const DynamoDBService = require('../services/dynamodb-service');
-const S3Service = require('../services/s3-service');
+const DynamoDBService = require("../services/dynamodb-service");
+const S3Service = require("../services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService({
-  tableName: process.env.COMMUNICATIONS_TABLE || 'doc-tales-communications-dev',
-  userProfilesTableName: process.env.USER_PROFILES_TABLE || 'doc-tales-user-profiles-dev'
+  tableName: process.env.COMMUNICATIONS_TABLE || "doc-tales-communications-dev",
+  userProfilesTableName: process.env.USER_PROFILES_TABLE || "doc-tales-user-profiles-dev"
 });
 
 const s3Service = new S3Service({
-  bucketName: process.env.RAW_BUCKET || 'doc-tales-raw-communications-dev'
+  bucketName: process.env.RAW_BUCKET || "doc-tales-raw-communications-dev"
 });
 
 // Export services for testing
@@ -28,17 +28,17 @@ exports.services = {
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
-  COMMUNICATION: 'COMM',
-  USER: 'USER',
-  PROJECT: 'PROJ',
-  ENTITY: 'ENTITY'
+  COMMUNICATION: "COMM",
+  USER: "USER",
+  PROJECT: "PROJ",
+  ENTITY: "ENTITY"
 };
 
 /**
  * Main handler function
  */
 exports.handler = async (event) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
+  console.log("Received event:", JSON.stringify(event, null, 2));
   
   try {
     // API Gateway event
@@ -48,26 +48,26 @@ exports.handler = async (event) => {
       const method = event.httpMethod;
       
       // Communications endpoints
-      if (path === '/communications' && method === 'GET') {
+      if (path === "/communications" && method === "GET") {
         return await getCommunications(event);
       }
       
-      if (path.match(/^\/communications\/[\w-]+$/) && method === 'GET') {
-        const id = path.split('/').pop();
+      if (path.match(/^\/communications\/[\w-]+$/) && method === "GET") {
+        const id = path.split("/").pop();
         return await getCommunicationById(id);
       }
       
       // User profile endpoints
-      if (path === '/user-profile' && method === 'GET') {
+      if (path === "/user-profile" && method === "GET") {
         return await getUserProfile(event);
       }
       
-      if (path === '/user-profile' && method === 'PUT') {
+      if (path === "/user-profile" && method === "PUT") {
         return await updateUserProfile(event);
       }
       
       // Archetype endpoints
-      if (path === '/archetypes' && method === 'GET') {
+      if (path === "/archetypes" && method === "GET") {
         return await getArchetypes();
       }
       
@@ -75,31 +75,31 @@ exports.handler = async (event) => {
       return {
         statusCode: 404,
         headers: getCorsHeaders(),
-        body: JSON.stringify({ error: 'Not Found' })
+        body: JSON.stringify({ error: "Not Found" })
       };
     }
     
     // Direct invocation
-    if (event.action === 'getCommunications') {
+    if (event.action === "getCommunications") {
       const result = await exports.queryCommunications(event.filters || {});
       return result;
     }
     
-    if (event.action === 'getCommunicationById') {
+    if (event.action === "getCommunicationById") {
       const result = await exports.getCommunicationData(event.id);
       return result;
     }
     
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Unsupported event type' })
+      body: JSON.stringify({ error: "Unsupported event type" })
     };
   } catch (error) {
-    console.error('Error processing request:', error);
+    console.error("Error processing request:", error);
     return {
       statusCode: 500,
       headers: getCorsHeaders(),
-      body: JSON.stringify({ error: 'Internal Server Error' })
+      body: JSON.stringify({ error: "Internal Server Error" })
     };
   }
 };
@@ -159,7 +159,7 @@ async function getCommunicationById(id) {
     return {
       statusCode: 404,
       headers: getCorsHeaders(),
-      body: JSON.stringify({ error: 'Communication not found' })
+      body: JSON.stringify({ error: "Communication not found" })
     };
   }
   
@@ -176,7 +176,7 @@ async function getCommunicationById(id) {
 async function getUserProfile(event) {
   // Parse query parameters
   const queryParams = event.queryStringParameters || {};
-  const userId = queryParams.userId || 'default-user';
+  const userId = queryParams.userId || "default-user";
   
   // Get user profile from DynamoDB
   const result = await getUserProfileData(userId);
@@ -204,7 +204,7 @@ async function getUserProfile(event) {
  */
 async function updateUserProfile(event) {
   const body = JSON.parse(event.body);
-  const userId = body.id || 'default-user';
+  const userId = body.id || "default-user";
   
   // Update user profile in DynamoDB
   await updateUserProfileData(userId, body);
@@ -222,28 +222,28 @@ async function updateUserProfile(event) {
 async function getArchetypes() {
   const archetypes = [
     {
-      id: 'prioritizer',
-      name: 'Prioritizer',
-      description: 'Time-based organization with urgency indicators',
-      icon: 'calendar'
+      id: "prioritizer",
+      name: "Prioritizer",
+      description: "Time-based organization with urgency indicators",
+      icon: "calendar"
     },
     {
-      id: 'connector',
-      name: 'Connector',
-      description: 'People-centric view with relationship mapping',
-      icon: 'users'
+      id: "connector",
+      name: "Connector",
+      description: "People-centric view with relationship mapping",
+      icon: "users"
     },
     {
-      id: 'visualizer',
-      name: 'Visualizer',
-      description: 'Visual boards with spatial organization',
-      icon: 'image'
+      id: "visualizer",
+      name: "Visualizer",
+      description: "Visual boards with spatial organization",
+      icon: "image"
     },
     {
-      id: 'analyst',
-      name: 'Analyst',
-      description: 'Detailed metadata view with logical hierarchies',
-      icon: 'chart-bar'
+      id: "analyst",
+      name: "Analyst",
+      description: "Detailed metadata view with logical hierarchies",
+      icon: "chart-bar"
     }
   ];
   
@@ -264,10 +264,10 @@ exports.queryCommunications = async function queryCommunications(filters) {
     // If filtering by project, use GSI1 to query by project
     if (filters.project) {
       params = {
-        IndexName: 'GSI1',
-        KeyConditionExpression: 'GSI1PK = :projectPK',
+        IndexName: "GSI1",
+        KeyConditionExpression: "GSI1PK = :projectPK",
         ExpressionAttributeValues: {
-          ':projectPK': `${ENTITY_TYPES.PROJECT}#${filters.project}`
+          ":projectPK": `${ENTITY_TYPES.PROJECT}#${filters.project}`
         },
         Limit: 100
       };
@@ -275,10 +275,10 @@ exports.queryCommunications = async function queryCommunications(filters) {
     // If filtering by sender, use GSI2 to query by sender
     else if (filters.sender) {
       params = {
-        IndexName: 'GSI2',
-        KeyConditionExpression: 'GSI2PK = :senderPK',
+        IndexName: "GSI2",
+        KeyConditionExpression: "GSI2PK = :senderPK",
         ExpressionAttributeValues: {
-          ':senderPK': `${ENTITY_TYPES.ENTITY}#${filters.sender}`
+          ":senderPK": `${ENTITY_TYPES.ENTITY}#${filters.sender}`
         },
         Limit: 100
       };
@@ -286,9 +286,9 @@ exports.queryCommunications = async function queryCommunications(filters) {
     // If no specific filter, query all communications by type
     else {
       params = {
-        KeyConditionExpression: 'PK = :commType',
+        KeyConditionExpression: "PK = :commType",
         ExpressionAttributeValues: {
-          ':commType': ENTITY_TYPES.COMMUNICATION
+          ":commType": ENTITY_TYPES.COMMUNICATION
         },
         Limit: 100
       };
@@ -300,22 +300,22 @@ exports.queryCommunications = async function queryCommunications(filters) {
       let expressionAttributeValues = params.ExpressionAttributeValues || {};
       
       if (filters.type) {
-        filterExpressions.push('commType = :type');
-        expressionAttributeValues[':type'] = filters.type;
+        filterExpressions.push("commType = :type");
+        expressionAttributeValues[":type"] = filters.type;
       }
       
       if (filters.urgency) {
-        filterExpressions.push('metadata.urgency = :urgency');
-        expressionAttributeValues[':urgency'] = filters.urgency;
+        filterExpressions.push("metadata.urgency = :urgency");
+        expressionAttributeValues[":urgency"] = filters.urgency;
       }
       
       if (filterExpressions.length > 0) {
-        params.FilterExpression = filterExpressions.join(' AND ');
+        params.FilterExpression = filterExpressions.join(" AND ");
         params.ExpressionAttributeValues = expressionAttributeValues;
       }
     }
     
-    console.log('Query params:', JSON.stringify(params, null, 2));
+    console.log("Query params:", JSON.stringify(params, null, 2));
     
     // Execute the query using the service
     const result = await exports.services.dynamoService.query(params);
@@ -326,7 +326,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
     
     for (const item of result.Items) {
       // Extract the actual communication ID from the sort key
-      const commId = item.SK.split('#')[1];
+      const commId = item.SK.split("#")[1];
       
       // If we need the full content, get it from S3
       if (filters.includeContent && item.s3Key) {
@@ -358,7 +358,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
       scannedCount: result.ScannedCount
     };
   } catch (error) {
-    console.error('Error querying communications:', error);
+    console.error("Error querying communications:", error);
     throw error;
   }
 };
@@ -370,10 +370,10 @@ exports.getCommunicationData = async function getCommunicationData(id) {
   try {
     // Query the communication directly using its primary key
     const params = {
-      KeyConditionExpression: 'PK = :pk AND SK = :sk',
+      KeyConditionExpression: "PK = :pk AND SK = :sk",
       ExpressionAttributeValues: {
-        ':pk': ENTITY_TYPES.COMMUNICATION,
-        ':sk': `${ENTITY_TYPES.COMMUNICATION}#${id}`
+        ":pk": ENTITY_TYPES.COMMUNICATION,
+        ":sk": `${ENTITY_TYPES.COMMUNICATION}#${id}`
       }
     };
     
@@ -473,13 +473,13 @@ async function updateUserProfileData(userId, data) {
       Key: {
         PK: `${ENTITY_TYPES.USER}#${userId}`
       },
-      UpdateExpression: 'set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences',
+      UpdateExpression: "set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences",
       ExpressionAttributeValues: {
-        ':primaryArchetype': data.primaryArchetype,
-        ':archetypeConfidence': data.archetypeConfidence || {},
-        ':preferences': data.preferences || {}
+        ":primaryArchetype": data.primaryArchetype,
+        ":archetypeConfidence": data.archetypeConfidence || {},
+        ":preferences": data.preferences || {}
       },
-      ReturnValues: 'UPDATED_NEW'
+      ReturnValues: "UPDATED_NEW"
     });
   } catch (error) {
     console.error(`Error updating user profile for ${userId}:`, error);
@@ -493,7 +493,7 @@ async function updateUserProfileData(userId, data) {
 function createDefaultUserProfile(userId) {
   return {
     id: userId,
-    primaryArchetype: 'prioritizer',
+    primaryArchetype: "prioritizer",
     archetypeConfidence: {
       prioritizer: 0.25,
       connector: 0.25,
@@ -509,8 +509,8 @@ function createDefaultUserProfile(userId) {
  */
 function getCorsHeaders() {
   return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"
   };
 }

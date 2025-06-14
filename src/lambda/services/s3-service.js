@@ -4,7 +4,7 @@
  * A service layer for interacting with S3 that can be easily mocked for testing.
  */
 
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 
 class S3Service {
   constructor(options = {}) {
@@ -12,7 +12,7 @@ class S3Service {
     
     // Configure AWS SDK with region for production
     AWS.config.update({
-      region: options.region || process.env.AWS_REGION || 'us-east-1'
+      region: options.region || process.env.AWS_REGION || "us-east-1"
     });
     
     this.s3Client = options.s3Client || new AWS.S3();

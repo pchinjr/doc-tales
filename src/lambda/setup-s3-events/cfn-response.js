@@ -2,12 +2,12 @@
  * Send response to CloudFormation custom resource
  */
 
-const https = require('https');
-const url = require('url');
+const https = require("https");
+const url = require("url");
 
 // Response status values
-exports.SUCCESS = 'SUCCESS';
-exports.FAILED = 'FAILED';
+exports.SUCCESS = "SUCCESS";
+exports.FAILED = "FAILED";
 
 /**
  * Send response to CloudFormation
@@ -16,7 +16,7 @@ exports.send = function(event, context, responseStatus, responseData, physicalRe
   return new Promise((resolve, reject) => {
     const responseBody = JSON.stringify({
       Status: responseStatus,
-      Reason: responseStatus === exports.FAILED ? 'See the details in CloudWatch Log Stream: ' + context.logStreamName : 'See the details in CloudWatch Log Stream: ' + context.logStreamName,
+      Reason: responseStatus === exports.FAILED ? "See the details in CloudWatch Log Stream: " + context.logStreamName : "See the details in CloudWatch Log Stream: " + context.logStreamName,
       PhysicalResourceId: physicalResourceId || context.logStreamName,
       StackId: event.StackId,
       RequestId: event.RequestId,
@@ -25,17 +25,17 @@ exports.send = function(event, context, responseStatus, responseData, physicalRe
       Data: responseData || {}
     });
     
-    console.log('Response body:', responseBody);
+    console.log("Response body:", responseBody);
     
     const parsedUrl = url.parse(event.ResponseURL);
     const options = {
       hostname: parsedUrl.hostname,
       port: 443,
       path: parsedUrl.path,
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'content-type': '',
-        'content-length': responseBody.length
+        "content-type": "",
+        "content-length": responseBody.length
       }
     };
     
@@ -45,7 +45,7 @@ exports.send = function(event, context, responseStatus, responseData, physicalRe
       resolve();
     });
     
-    request.on('error', (error) => {
+    request.on("error", (error) => {
       console.log(`Send response failed: ${error}`);
       reject(error);
     });

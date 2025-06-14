@@ -3,20 +3,20 @@
  * This function is used to break the circular dependency between S3 bucket and Lambda function
  */
 
-const AWS = require('aws-sdk');
-const https = require('https');
-const url = require('url');
+const AWS = require("aws-sdk");
+const https = require("https");
+const url = require("url");
 
 exports.handler = async (event, context) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
+  console.log("Received event:", JSON.stringify(event, null, 2));
   
   try {
     // Always respond to CloudFormation
-    let responseStatus = 'SUCCESS';
+    let responseStatus = "SUCCESS";
     let responseData = {};
     
     // Only process if this is a Create or Update event
-    if (event.RequestType === 'Create' || event.RequestType === 'Update') {
+    if (event.RequestType === "Create" || event.RequestType === "Update") {
       const s3 = new AWS.S3();
       const { BucketName, LambdaArn, Events } = event.ResourceProperties;
       
@@ -41,8 +41,8 @@ exports.handler = async (event, context) => {
     // Send response back to CloudFormation
     await sendResponse(event, context, responseStatus, responseData);
   } catch (error) {
-    console.error('Error:', error);
-    await sendResponse(event, context, 'FAILED', { Error: error.message });
+    console.error("Error:", error);
+    await sendResponse(event, context, "FAILED", { Error: error.message });
   }
 };
 
@@ -50,9 +50,9 @@ exports.handler = async (event, context) => {
 async function sendResponse(event, context, responseStatus, responseData) {
   const responseBody = JSON.stringify({
     Status: responseStatus,
-    Reason: responseStatus === 'FAILED' ? 
+    Reason: responseStatus === "FAILED" ? 
       `Error: ${JSON.stringify(responseData)}` : 
-      'See CloudWatch logs for details',
+      "See CloudWatch logs for details",
     PhysicalResourceId: context.logStreamName,
     StackId: event.StackId,
     RequestId: event.RequestId,
@@ -60,17 +60,17 @@ async function sendResponse(event, context, responseStatus, responseData) {
     Data: responseData
   });
   
-  console.log('Response body:', responseBody);
+  console.log("Response body:", responseBody);
   
   const parsedUrl = url.parse(event.ResponseURL);
   const options = {
     hostname: parsedUrl.hostname,
     port: 443,
     path: parsedUrl.path,
-    method: 'PUT',
+    method: "PUT",
     headers: {
-      'content-type': '',
-      'content-length': responseBody.length
+      "content-type": "",
+      "content-length": responseBody.length
     }
   };
   
@@ -80,7 +80,7 @@ async function sendResponse(event, context, responseStatus, responseData) {
       resolve();
     });
     
-    request.on('error', (error) => {
+    request.on("error", (error) => {
       console.log(`Send response failed: ${error}`);
       reject(error);
     });

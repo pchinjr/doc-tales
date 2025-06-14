@@ -6,9 +6,9 @@
  * Refactored to use service layer for better testability.
  */
 
-const AWS = require('aws-sdk');
-const DynamoDBService = require('../services/dynamodb-service');
-const S3Service = require('../services/s3-service');
+const AWS = require("aws-sdk");
+const DynamoDBService = require("../services/dynamodb-service");
+const S3Service = require("../services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService();
@@ -24,21 +24,21 @@ exports.services = {
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
-  COMMUNICATION: 'COMM',
-  USER: 'USER',
-  PROJECT: 'PROJ',
-  ENTITY: 'ENTITY'
+  COMMUNICATION: "COMM",
+  USER: "USER",
+  PROJECT: "PROJ",
+  ENTITY: "ENTITY"
 };
 
 /**
  * Main handler function
  */
 exports.handler = async (event) => {
-  console.log('Dimension Extraction Lambda received event:', JSON.stringify(event, null, 2));
+  console.log("Dimension Extraction Lambda received event:", JSON.stringify(event, null, 2));
   
   try {
     // For S3 events
-    if (event.Records && event.Records[0].eventSource === 'aws:s3') {
+    if (event.Records && event.Records[0].eventSource === "aws:s3") {
       return await handleS3Event(event);
     }
     
@@ -49,14 +49,14 @@ exports.handler = async (event) => {
     
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Unsupported event type' })
+      body: JSON.stringify({ error: "Unsupported event type" })
     };
   } catch (error) {
-    console.error('Error extracting dimensions:', error.message);
+    console.error("Error extracting dimensions:", error.message);
     console.error(error.stack);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to extract dimensions', details: error.message })
+      body: JSON.stringify({ error: "Failed to extract dimensions", details: error.message })
     };
   }
 };
@@ -67,12 +67,12 @@ exports.handler = async (event) => {
 async function handleS3Event(event) {
   const record = event.Records[0];
   const bucket = record.s3.bucket.name;
-  const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
+  const key = decodeURIComponent(record.s3.object.key.replace(/\+/g, " "));
   
   console.log(`Processing new file in S3: ${bucket}/${key}`);
   
   // Extract communication ID from the key
-  const communicationId = key.split('/').pop().replace('.json', '');
+  const communicationId = key.split("/").pop().replace(".json", "");
   console.log(`Extracted communication ID: ${communicationId}`);
   
   try {
@@ -81,7 +81,7 @@ async function handleS3Event(event) {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        message: 'Dimensions extracted successfully',
+        message: "Dimensions extracted successfully",
         communicationId,
         dimensions: result.dimensions
       })
@@ -125,10 +125,10 @@ async function getCommunicationFromS3(communicationId, providedKey) {
   if (!key) {
     console.log(`Looking up S3 key for communication ID: ${communicationId}`);
     const params = {
-      KeyConditionExpression: 'PK = :pk AND SK = :sk',
+      KeyConditionExpression: "PK = :pk AND SK = :sk",
       ExpressionAttributeValues: {
-        ':pk': ENTITY_TYPES.COMMUNICATION,
-        ':sk': `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
+        ":pk": ENTITY_TYPES.COMMUNICATION,
+        ":sk": `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
       }
     };
     
@@ -149,7 +149,7 @@ async function getCommunicationFromS3(communicationId, providedKey) {
       Key: key
     });
     
-    console.log(`Successfully retrieved communication from S3`);
+    console.log("Successfully retrieved communication from S3");
     return JSON.parse(s3Result.Body.toString());
   } catch (error) {
     console.error(`Error retrieving from S3: ${error.message}`);
@@ -209,16 +209,16 @@ async function extractTemporalDimension(communication) {
   // Use AWS Comprehend to detect dates in the content
   const entities = await detectEntities(communication.content);
   const dates = entities
-    .filter(entity => entity.Type === 'DATE')
+    .filter(entity => entity.Type === "DATE")
     .map(entity => entity.Text);
   
   // Determine if this requires action based on content and urgency
   const requiresAction = 
-    communication.metadata.urgency === 'high' || 
-    communication.content.toLowerCase().includes('please') ||
-    communication.content.toLowerCase().includes('need') ||
-    communication.content.toLowerCase().includes('required') ||
-    communication.content.toLowerCase().includes('action');
+    communication.metadata.urgency === "high" || 
+    communication.content.toLowerCase().includes("please") ||
+    communication.content.toLowerCase().includes("need") ||
+    communication.content.toLowerCase().includes("required") ||
+    communication.content.toLowerCase().includes("action");
   
   return {
     deadline,
@@ -243,53 +243,53 @@ async function extractTemporalDimension(communication) {
  */
 async function extractRelationshipDimension(communication) {
   // Determine connection strength based on communication patterns
-  let connectionStrength = 'medium';
+  let connectionStrength = "medium";
   
   // For the MVP, use simple rules
-  if (communication.type === 'email' && communication.metadata.category === 'finance') {
-    connectionStrength = 'strong'; // Financial communications are important
-  } else if (communication.type === 'social') {
-    connectionStrength = 'weak'; // Social media connections are typically weaker
+  if (communication.type === "email" && communication.metadata.category === "finance") {
+    connectionStrength = "strong"; // Financial communications are important
+  } else if (communication.type === "social") {
+    connectionStrength = "weak"; // Social media connections are typically weaker
   }
   
   // Determine frequency based on metadata
-  let frequency = 'occasional';
+  let frequency = "occasional";
   
   // For the MVP, use the source type to guess frequency
-  if (communication.type === 'email') {
-    frequency = 'frequent';
-  } else if (communication.type === 'document') {
-    frequency = 'occasional';
+  if (communication.type === "email") {
+    frequency = "frequent";
+  } else if (communication.type === "document") {
+    frequency = "occasional";
   } else {
-    frequency = 'rare';
+    frequency = "rare";
   }
   
   // Use AWS Comprehend to detect people and organizations
   const entities = await detectEntities(communication.content);
   const people = entities
-    .filter(entity => entity.Type === 'PERSON')
+    .filter(entity => entity.Type === "PERSON")
     .map(entity => entity.Text);
   
   const organizations = entities
-    .filter(entity => entity.Type === 'ORGANIZATION')
+    .filter(entity => entity.Type === "ORGANIZATION")
     .map(entity => entity.Text);
   
   // Determine context based on project and content
   const personal = 
-    communication.project === 'family-event' || 
-    communication.content.toLowerCase().includes('family') ||
-    communication.content.toLowerCase().includes('friend');
+    communication.project === "family-event" || 
+    communication.content.toLowerCase().includes("family") ||
+    communication.content.toLowerCase().includes("friend");
     
   const professional = 
-    communication.project === 'career-change' || 
-    communication.content.toLowerCase().includes('work') ||
-    communication.content.toLowerCase().includes('job') ||
-    communication.content.toLowerCase().includes('interview');
+    communication.project === "career-change" || 
+    communication.content.toLowerCase().includes("work") ||
+    communication.content.toLowerCase().includes("job") ||
+    communication.content.toLowerCase().includes("interview");
     
   const projectSpecific = 
-    communication.project === 'home-purchase' || 
-    communication.content.toLowerCase().includes('house') ||
-    communication.content.toLowerCase().includes('property');
+    communication.project === "home-purchase" || 
+    communication.content.toLowerCase().includes("house") ||
+    communication.content.toLowerCase().includes("property");
   
   return {
     connectionStrength,
@@ -318,62 +318,62 @@ async function extractVisualDimension(communication) {
   const hasImages = Boolean(
     (communication.attachments && communication.attachments.length > 0) || 
     (communication.metadata.sourceSpecific && 
-     typeof communication.metadata.sourceSpecific === 'object' &&
-     'hasImages' in communication.metadata.sourceSpecific &&
+     typeof communication.metadata.sourceSpecific === "object" &&
+     "hasImages" in communication.metadata.sourceSpecific &&
      communication.metadata.sourceSpecific.hasImages)
   );
   
   // Get document type if available
   const documentType = communication.metadata.sourceSpecific && 
-    typeof communication.metadata.sourceSpecific === 'object' &&
-    'fileType' in communication.metadata.sourceSpecific ? 
+    typeof communication.metadata.sourceSpecific === "object" &&
+    "fileType" in communication.metadata.sourceSpecific ? 
     String(communication.metadata.sourceSpecific.fileType) : undefined;
   
   // Count visual elements
   const charts = communication.metadata.sourceSpecific && 
-    typeof communication.metadata.sourceSpecific === 'object' &&
-    'chartCount' in communication.metadata.sourceSpecific ? 
+    typeof communication.metadata.sourceSpecific === "object" &&
+    "chartCount" in communication.metadata.sourceSpecific ? 
     Number(communication.metadata.sourceSpecific.chartCount) : 0;
   
   const tables = communication.metadata.sourceSpecific && 
-    typeof communication.metadata.sourceSpecific === 'object' &&
-    'tableCount' in communication.metadata.sourceSpecific ? 
+    typeof communication.metadata.sourceSpecific === "object" &&
+    "tableCount" in communication.metadata.sourceSpecific ? 
     Number(communication.metadata.sourceSpecific.tableCount) : 0;
   
   const images = communication.metadata.sourceSpecific && 
-    typeof communication.metadata.sourceSpecific === 'object' &&
-    'imageCount' in communication.metadata.sourceSpecific ? 
+    typeof communication.metadata.sourceSpecific === "object" &&
+    "imageCount" in communication.metadata.sourceSpecific ? 
     Number(communication.metadata.sourceSpecific.imageCount) : 
     (communication.metadata.sourceSpecific && 
-     typeof communication.metadata.sourceSpecific === 'object' &&
-     'hasImages' in communication.metadata.sourceSpecific && 
+     typeof communication.metadata.sourceSpecific === "object" &&
+     "hasImages" in communication.metadata.sourceSpecific && 
      communication.metadata.sourceSpecific.hasImages ? 1 : 0);
   
   const attachments = communication.attachments ? communication.attachments.length : 0;
   
   // Determine visual category
-  let visualCategory = 'text-only';
+  let visualCategory = "text-only";
   
   if (charts > 0 && tables > 0) {
-    visualCategory = 'mixed';
+    visualCategory = "mixed";
   } else if (charts > 0) {
-    visualCategory = 'chart';
+    visualCategory = "chart";
   } else if (images > 0) {
-    visualCategory = 'image';
+    visualCategory = "image";
   } else if (documentType) {
-    visualCategory = 'document';
+    visualCategory = "document";
   }
   
   // Extract location if available
   const location = communication.metadata.sourceSpecific && 
-    typeof communication.metadata.sourceSpecific === 'object' &&
-    'location' in communication.metadata.sourceSpecific ? 
+    typeof communication.metadata.sourceSpecific === "object" &&
+    "location" in communication.metadata.sourceSpecific ? 
     String(communication.metadata.sourceSpecific.location) : undefined;
   
   // Use AWS Comprehend to detect locations
   const entities = await detectEntities(communication.content);
   const locations = entities
-    .filter(entity => entity.Type === 'LOCATION')
+    .filter(entity => entity.Type === "LOCATION")
     .map(entity => entity.Text);
   
   return {
@@ -403,15 +403,15 @@ async function extractAnalyticalDimension(communication) {
   
   // Extract tags using simple keyword matching
   const tags = [];
-  if (communication.content.toLowerCase().includes('urgent')) tags.push('urgent');
-  if (communication.content.toLowerCase().includes('follow up')) tags.push('follow-up');
-  if (communication.content.toLowerCase().includes('review')) tags.push('review');
-  if (communication.content.toLowerCase().includes('approve')) tags.push('approval');
-  if (communication.content.toLowerCase().includes('meeting')) tags.push('meeting');
+  if (communication.content.toLowerCase().includes("urgent")) tags.push("urgent");
+  if (communication.content.toLowerCase().includes("follow up")) tags.push("follow-up");
+  if (communication.content.toLowerCase().includes("review")) tags.push("review");
+  if (communication.content.toLowerCase().includes("approve")) tags.push("approval");
+  if (communication.content.toLowerCase().includes("meeting")) tags.push("meeting");
   
   // Add project as a tag
   if (communication.project) {
-    tags.push(communication.project.replace('-', ' '));
+    tags.push(communication.project.replace("-", " "));
   }
   
   // Use AWS Comprehend for sentiment analysis
@@ -425,19 +425,19 @@ async function extractAnalyticalDimension(communication) {
   
   // Extract entities by type
   const people = entities
-    .filter(entity => entity.Type === 'PERSON')
+    .filter(entity => entity.Type === "PERSON")
     .map(entity => entity.Text);
   
   const organizations = entities
-    .filter(entity => entity.Type === 'ORGANIZATION')
+    .filter(entity => entity.Type === "ORGANIZATION")
     .map(entity => entity.Text);
   
   const locations = entities
-    .filter(entity => entity.Type === 'LOCATION')
+    .filter(entity => entity.Type === "LOCATION")
     .map(entity => entity.Text);
   
   const dates = entities
-    .filter(entity => entity.Type === 'DATE')
+    .filter(entity => entity.Type === "DATE")
     .map(entity => entity.Text);
   
   // Extract concepts from key phrases
@@ -448,11 +448,11 @@ async function extractAnalyticalDimension(communication) {
   const readingTime = Math.ceil(wordCount / 200); // Average reading speed
   
   // Determine complexity
-  let complexity = 'medium';
+  let complexity = "medium";
   if (wordCount > 300) {
-    complexity = 'high';
+    complexity = "high";
   } else if (wordCount < 50) {
-    complexity = 'low';
+    complexity = "low";
   }
   
   // Calculate information density
@@ -502,11 +502,11 @@ async function updateDynamoDBWithDimensions(communicationId, dimensions) {
         PK: ENTITY_TYPES.COMMUNICATION,
         SK: `${ENTITY_TYPES.COMMUNICATION}#${communicationId}`
       },
-      UpdateExpression: 'set dimensions = :dimensions',
+      UpdateExpression: "set dimensions = :dimensions",
       ExpressionAttributeValues: {
-        ':dimensions': dimensions
+        ":dimensions": dimensions
       },
-      ReturnValues: 'UPDATED_NEW'
+      ReturnValues: "UPDATED_NEW"
     };
     
     console.log(`Updating DynamoDB with dimensions for: ${communicationId}`);
@@ -528,7 +528,7 @@ async function detectEntities(text) {
   
   const params = {
     Text: limitedText,
-    LanguageCode: 'en'
+    LanguageCode: "en"
   };
   
   const result = await exports.services.comprehend.detectEntities(params).promise();
@@ -544,7 +544,7 @@ async function detectSentiment(text) {
   
   const params = {
     Text: limitedText,
-    LanguageCode: 'en'
+    LanguageCode: "en"
   };
   
   return await exports.services.comprehend.detectSentiment(params).promise();
@@ -559,7 +559,7 @@ async function detectKeyPhrases(text) {
   
   const params = {
     Text: limitedText,
-    LanguageCode: 'en'
+    LanguageCode: "en"
   };
   
   const result = await exports.services.comprehend.detectKeyPhrases(params).promise();
@@ -594,14 +594,14 @@ function calculateRelevanceScore(communication) {
   let score = 0.5; // Start with neutral score
   
   // Adjust based on urgency
-  if (communication.metadata.urgency === 'high') score += 0.3;
-  if (communication.metadata.urgency === 'low') score -= 0.1;
+  if (communication.metadata.urgency === "high") score += 0.3;
+  if (communication.metadata.urgency === "low") score -= 0.1;
   
   // Adjust based on recency
   if (isRecent(communication.timestamp)) score += 0.2;
   
   // Adjust based on project
-  if (communication.project === 'home-purchase') score += 0.1;
+  if (communication.project === "home-purchase") score += 0.1;
   
   // Ensure score is between 0 and 1
   return Math.max(0, Math.min(1, score));
@@ -624,8 +624,8 @@ function calculateTemporalConfidence(temporal) {
 function calculateRelationshipConfidence(relationship) {
   let score = 0.5;
   
-  if (relationship.connectionStrength === 'strong') score += 0.2;
-  if (relationship.frequency === 'frequent') score += 0.1;
+  if (relationship.connectionStrength === "strong") score += 0.2;
+  if (relationship.frequency === "frequent") score += 0.1;
   if (relationship.networkPosition.sharedConnections > 0) score += 0.1;
   if (relationship.context.personal || relationship.context.professional) score += 0.1;
   if (relationship.detectedPeople && relationship.detectedPeople.length > 0) score += 0.1;
@@ -649,7 +649,7 @@ function calculateAnalyticalConfidence(analytical) {
   
   if (analytical.tags.length > 2) score += 0.1;
   if (analytical.entities.concepts.length > 0) score += 0.1;
-  if (analytical.metrics.complexity === 'high') score += 0.1;
+  if (analytical.metrics.complexity === "high") score += 0.1;
   if (analytical.structure.hasHeadings || 
       analytical.structure.hasBulletPoints || 
       analytical.structure.hasNumberedLists) score += 0.1;

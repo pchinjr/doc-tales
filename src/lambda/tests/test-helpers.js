@@ -4,7 +4,7 @@
  * Helper functions for setting up and tearing down tests
  */
 
-const apiLambda = require('../api/index');
+const apiLambda = require("../api/index");
 
 /**
  * Set up mocks for services
@@ -87,7 +87,7 @@ function createMockDynamoService(mockResponses = {}) {
 function createMockS3Service(mockResponses = {}) {
   return {
     getObject: jest.fn().mockImplementation(() => {
-      return Promise.resolve(mockResponses.getObject || { Body: Buffer.from('{}') });
+      return Promise.resolve(mockResponses.getObject || { Body: Buffer.from("{}") });
     }),
     putObject: jest.fn().mockImplementation(() => {
       return Promise.resolve(mockResponses.putObject || {});
@@ -99,7 +99,7 @@ function createMockS3Service(mockResponses = {}) {
       return Promise.resolve(mockResponses.listObjects || { Contents: [] });
     }),
     getSignedUrl: jest.fn().mockImplementation(() => {
-      return mockResponses.getSignedUrl || 'https://example.com/signed-url';
+      return mockResponses.getSignedUrl || "https://example.com/signed-url";
     })
   };
 }

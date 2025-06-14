@@ -4,7 +4,7 @@
  * A service layer for interacting with DynamoDB that can be easily mocked for testing.
  */
 
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 
 class DynamoDBService {
   constructor(options = {}) {
@@ -13,7 +13,7 @@ class DynamoDBService {
     
     // Configure AWS SDK with region for production
     AWS.config.update({
-      region: options.region || process.env.AWS_REGION || 'us-east-1'
+      region: options.region || process.env.AWS_REGION || "us-east-1"
     });
     
     this.documentClient = options.documentClient || new AWS.DynamoDB.DocumentClient();

@@ -13,15 +13,15 @@
  * @returns {Object} Mock DynamoDB service
  */
 function createMockDynamoDBService(options = {}) {
-  const tableName = options.tableName || 'mock-table';
+  const tableName = options.tableName || "mock-table";
   const responses = options.responses || {};
   
   return {
     tableName,
-    userProfilesTableName: options.userProfilesTableName || 'mock-user-profiles-table',
+    userProfilesTableName: options.userProfilesTableName || "mock-user-profiles-table",
     
     query: (params) => {
-      if (typeof responses.query === 'function') {
+      if (typeof responses.query === "function") {
         return Promise.resolve(responses.query(params));
       }
       
@@ -33,7 +33,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     get: (params) => {
-      if (typeof responses.get === 'function') {
+      if (typeof responses.get === "function") {
         return Promise.resolve(responses.get(params));
       }
       
@@ -41,7 +41,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     put: (params) => {
-      if (typeof responses.put === 'function') {
+      if (typeof responses.put === "function") {
         return Promise.resolve(responses.put(params));
       }
       
@@ -49,7 +49,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     update: (params) => {
-      if (typeof responses.update === 'function') {
+      if (typeof responses.update === "function") {
         return Promise.resolve(responses.update(params));
       }
       
@@ -57,7 +57,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     delete: (params) => {
-      if (typeof responses.delete === 'function') {
+      if (typeof responses.delete === "function") {
         return Promise.resolve(responses.delete(params));
       }
       
@@ -65,7 +65,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     scan: (params) => {
-      if (typeof responses.scan === 'function') {
+      if (typeof responses.scan === "function") {
         return Promise.resolve(responses.scan(params));
       }
       
@@ -73,7 +73,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     batchGet: (params) => {
-      if (typeof responses.batchGet === 'function') {
+      if (typeof responses.batchGet === "function") {
         return Promise.resolve(responses.batchGet(params));
       }
       
@@ -81,7 +81,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     batchWrite: (params) => {
-      if (typeof responses.batchWrite === 'function') {
+      if (typeof responses.batchWrite === "function") {
         return Promise.resolve(responses.batchWrite(params));
       }
       
@@ -89,7 +89,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     getUserProfile: (params) => {
-      if (typeof responses.getUserProfile === 'function') {
+      if (typeof responses.getUserProfile === "function") {
         return Promise.resolve(responses.getUserProfile(params));
       }
       
@@ -97,7 +97,7 @@ function createMockDynamoDBService(options = {}) {
     },
     
     updateUserProfile: (params) => {
-      if (typeof responses.updateUserProfile === 'function') {
+      if (typeof responses.updateUserProfile === "function") {
         return Promise.resolve(responses.updateUserProfile(params));
       }
       
@@ -115,24 +115,24 @@ function createMockDynamoDBService(options = {}) {
  * @returns {Object} Mock S3 service
  */
 function createMockS3Service(options = {}) {
-  const bucketName = options.bucketName || 'mock-bucket';
+  const bucketName = options.bucketName || "mock-bucket";
   const responses = options.responses || {};
   
   return {
     bucketName,
     
     getObject: (params) => {
-      if (typeof responses.getObject === 'function') {
+      if (typeof responses.getObject === "function") {
         return Promise.resolve(responses.getObject(params));
       }
       
       return Promise.resolve(responses.getObject || {
-        Body: Buffer.from('{}')
+        Body: Buffer.from("{}")
       });
     },
     
     putObject: (params) => {
-      if (typeof responses.putObject === 'function') {
+      if (typeof responses.putObject === "function") {
         return Promise.resolve(responses.putObject(params));
       }
       
@@ -140,7 +140,7 @@ function createMockS3Service(options = {}) {
     },
     
     deleteObject: (params) => {
-      if (typeof responses.deleteObject === 'function') {
+      if (typeof responses.deleteObject === "function") {
         return Promise.resolve(responses.deleteObject(params));
       }
       
@@ -148,7 +148,7 @@ function createMockS3Service(options = {}) {
     },
     
     listObjects: (params) => {
-      if (typeof responses.listObjects === 'function') {
+      if (typeof responses.listObjects === "function") {
         return Promise.resolve(responses.listObjects(params));
       }
       
@@ -156,11 +156,11 @@ function createMockS3Service(options = {}) {
     },
     
     getSignedUrl: (operation, params) => {
-      if (typeof responses.getSignedUrl === 'function') {
+      if (typeof responses.getSignedUrl === "function") {
         return responses.getSignedUrl(operation, params);
       }
       
-      return responses.getSignedUrl || 'https://example.com/signed-url';
+      return responses.getSignedUrl || "https://example.com/signed-url";
     }
   };
 }

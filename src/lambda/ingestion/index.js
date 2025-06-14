@@ -6,9 +6,9 @@
  * Refactored to use service layer for better testability.
  */
 
-const { v4: uuidv4 } = require('uuid');
-const DynamoDBService = require('../services/dynamodb-service');
-const S3Service = require('../services/s3-service');
+const { v4: uuidv4 } = require("uuid");
+const DynamoDBService = require("../services/dynamodb-service");
+const S3Service = require("../services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService();
@@ -22,17 +22,17 @@ exports.services = {
 
 // Entity types for partition keys
 const ENTITY_TYPES = {
-  COMMUNICATION: 'COMM',
-  USER: 'USER',
-  PROJECT: 'PROJ',
-  ENTITY: 'ENTITY'
+  COMMUNICATION: "COMM",
+  USER: "USER",
+  PROJECT: "PROJ",
+  ENTITY: "ENTITY"
 };
 
 /**
  * Main handler function
  */
 exports.handler = async (event) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
+  console.log("Received event:", JSON.stringify(event, null, 2));
   
   try {
     // API Gateway event
@@ -56,14 +56,14 @@ exports.handler = async (event) => {
     return {
       statusCode: 400,
       headers: getCorsHeaders(),
-      body: JSON.stringify({ error: 'Unsupported event type' })
+      body: JSON.stringify({ error: "Unsupported event type" })
     };
   } catch (error) {
-    console.error('Error processing communication:', error);
+    console.error("Error processing communication:", error);
     return {
       statusCode: 500,
       headers: getCorsHeaders(),
-      body: JSON.stringify({ error: 'Internal Server Error' })
+      body: JSON.stringify({ error: "Internal Server Error" })
     };
   }
 };
@@ -88,7 +88,7 @@ exports.processCommunication = async function processCommunication(data) {
   return {
     id,
     s3Key,
-    message: 'Communication processed successfully'
+    message: "Communication processed successfully"
   };
 };
 
@@ -100,39 +100,39 @@ exports.normalizeData = function normalizeData(data, id) {
   const normalized = {
     id,
     timestamp: data.timestamp || new Date().toISOString(),
-    type: data.type || 'unknown',
-    project: data.project || 'default',
+    type: data.type || "unknown",
+    project: data.project || "default",
     metadata: {
-      urgency: data.urgency || 'normal',
+      urgency: data.urgency || "normal",
       read: false
     }
   };
   
   // Source-specific normalization
   switch (data.source) {
-    case 'email':
-      normalized.subject = data.subject || '(No Subject)';
-      normalized.sender = data.from || 'unknown';
-      normalized.sender_id = data.from_email || 'unknown';
+    case "email":
+      normalized.subject = data.subject || "(No Subject)";
+      normalized.sender = data.from || "unknown";
+      normalized.sender_id = data.from_email || "unknown";
       normalized.recipients = data.to || [];
-      normalized.content = data.body || '';
+      normalized.content = data.body || "";
       normalized.attachments = data.attachments || [];
       break;
       
-    case 'document':
-      normalized.title = data.title || 'Untitled Document';
-      normalized.sender = data.author || 'unknown';
-      normalized.sender_id = data.author_id || 'unknown';
-      normalized.content = data.content || '';
-      normalized.fileType = data.fileType || 'unknown';
+    case "document":
+      normalized.title = data.title || "Untitled Document";
+      normalized.sender = data.author || "unknown";
+      normalized.sender_id = data.author_id || "unknown";
+      normalized.content = data.content || "";
+      normalized.fileType = data.fileType || "unknown";
       normalized.fileSize = data.fileSize || 0;
       break;
       
-    case 'social':
-      normalized.platform = data.platform || 'unknown';
-      normalized.sender = data.user || 'unknown';
-      normalized.sender_id = data.user_id || 'unknown';
-      normalized.content = data.text || '';
+    case "social":
+      normalized.platform = data.platform || "unknown";
+      normalized.sender = data.user || "unknown";
+      normalized.sender_id = data.user_id || "unknown";
+      normalized.content = data.text || "";
       normalized.mentions = data.mentions || [];
       normalized.hashtags = data.hashtags || [];
       break;
@@ -154,7 +154,7 @@ exports.storeInS3 = async function storeInS3(data, id) {
   await s3Service.putObject({
     Key: key,
     Body: JSON.stringify(data),
-    ContentType: 'application/json'
+    ContentType: "application/json"
   });
   
   return key;
@@ -218,8 +218,8 @@ exports.storeInDynamoDB = async function storeInDynamoDB(item) {
  */
 function getCorsHeaders() {
   return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-    'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+    "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,OPTIONS"
   };
 }

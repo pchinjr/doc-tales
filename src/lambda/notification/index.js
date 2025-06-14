@@ -5,22 +5,22 @@
  * based on DynamoDB stream events.
  */
 
-const AWS = require('aws-sdk');
+const AWS = require("aws-sdk");
 const sns = new AWS.SNS();
 
 // Environment variables
 const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
-const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || '';
+const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || "";
 
 /**
  * Main handler function
  */
 exports.handler = async (event) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
+  console.log("Received event:", JSON.stringify(event, null, 2));
   
   try {
     // For DynamoDB Stream events
-    if (event.Records && event.Records[0].eventSource === 'aws:dynamodb') {
+    if (event.Records && event.Records[0].eventSource === "aws:dynamodb") {
       return await handleDynamoDBEvent(event);
     }
     
@@ -31,13 +31,13 @@ exports.handler = async (event) => {
     
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Unsupported event type' })
+      body: JSON.stringify({ error: "Unsupported event type" })
     };
   } catch (error) {
-    console.error('Error sending notification:', error);
+    console.error("Error sending notification:", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to send notification' })
+      body: JSON.stringify({ error: "Failed to send notification" })
     };
   }
 };
@@ -50,7 +50,7 @@ async function handleDynamoDBEvent(event) {
   
   for (const record of event.Records) {
     // Only process INSERT and MODIFY events
-    if (record.eventName !== 'INSERT' && record.eventName !== 'MODIFY') {
+    if (record.eventName !== "INSERT" && record.eventName !== "MODIFY") {
       continue;
     }
     
@@ -67,7 +67,7 @@ async function handleDynamoDBEvent(event) {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: 'Notifications processed',
+      message: "Notifications processed",
       processedIds
     })
   };
@@ -78,7 +78,7 @@ async function handleDynamoDBEvent(event) {
  */
 function shouldSendNotification(communication) {
   // Check urgency
-  if (communication.metadata && communication.metadata.urgency === 'high') {
+  if (communication.metadata && communication.metadata.urgency === "high") {
     return true;
   }
   
@@ -119,13 +119,13 @@ async function sendNotificationForCommunication(communication) {
  * Create notification message
  */
 function createNotificationMessage(communication) {
-  let subject = 'High Priority Communication';
+  let subject = "High Priority Communication";
   
   if (communication.subject) {
     subject = `High Priority: ${communication.subject}`;
   }
   
-  let message = `You have a high priority communication that requires your attention.\n\n`;
+  let message = "You have a high priority communication that requires your attention.\n\n";
   
   if (communication.subject) {
     message += `Subject: ${communication.subject}\n`;
@@ -136,7 +136,7 @@ function createNotificationMessage(communication) {
   }
   
   if (communication.project) {
-    message += `Project: ${communication.project.replace('-', ' ')}\n`;
+    message += `Project: ${communication.project.replace("-", " ")}\n`;
   }
   
   if (communication.dimensions && 
@@ -145,7 +145,7 @@ function createNotificationMessage(communication) {
     message += `Deadline: ${communication.dimensions.temporal.deadline}\n`;
   }
   
-  message += `\nPlease review this communication as soon as possible.`;
+  message += "\nPlease review this communication as soon as possible.";
   
   return {
     subject,
@@ -159,20 +159,20 @@ function createNotificationMessage(communication) {
 async function sendNotification(communicationId, messageData) {
   // If no topic ARN is provided, just log the notification
   if (!NOTIFICATION_TOPIC_ARN) {
-    console.log('No SNS topic ARN provided. Would have sent notification:', messageData);
+    console.log("No SNS topic ARN provided. Would have sent notification:", messageData);
     return {
       success: true,
-      message: 'Notification logged (no SNS topic configured)'
+      message: "Notification logged (no SNS topic configured)"
     };
   }
   
   const params = {
     TopicArn: NOTIFICATION_TOPIC_ARN,
-    Subject: messageData.subject || 'Doc-Tales Notification',
+    Subject: messageData.subject || "Doc-Tales Notification",
     Message: messageData.message,
     MessageAttributes: {
-      'communicationId': {
-        DataType: 'String',
+      "communicationId": {
+        DataType: "String",
         StringValue: communicationId
       }
     }
@@ -182,6 +182,6 @@ async function sendNotification(communicationId, messageData) {
   
   return {
     success: true,
-    message: 'Notification sent successfully'
+    message: "Notification sent successfully"
   };
 }
