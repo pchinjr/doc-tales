@@ -10,7 +10,7 @@ export AWS_SECRET_ACCESS_KEY=test-secret
 export NODE_OPTIONS="--no-warnings"
 
 echo "Running all Lambda tests..."
-npx tape 'src/lambda/tests/*.test.js' | npx tap-spec
+npx --no-install tape 'src/lambda/tests/*.test.js' | npx --no-install tap-spec
 
 # Check if any tests failed
 if [ $? -ne 0 ]; then
