@@ -1,0 +1,34 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "eslint.validate": ["javascript", "typescript", "typescriptreact"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  
+  "terminal.integrated.defaultProfile.windows": "WSL",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.defaultProfile.osx": "zsh",
+  
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  
+  "aws.telemetry": false,
+  "aws.profile": "default",
+  "aws.lambda.enableLocalExecution": true,
+  
+  "files.associations": {
+    "*.yaml": "yaml",
+    "template.yaml": "yaml",
+    "*.yml": "yaml"
+  },
+  
+  "path-intellisense.mappings": {
+    "/": "${workspaceFolder}"
+  },
+  
+  "npm.nodeVersion": "22.x"
+}

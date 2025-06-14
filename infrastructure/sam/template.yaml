@@ -276,7 +276,7 @@ Resources:
     Properties:
       CodeUri: ../../src/lambda/setup-s3-events/
       Handler: index.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Timeout: 60
       Policies:
         - Statement:

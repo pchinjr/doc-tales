@@ -61,7 +61,7 @@ The current implementation is a TypeScript-based React application that demonstr
 
 ### Prerequisites
 
-- Node.js 18.x or later
+- Node.js 22.x
 - npm or yarn
 - Git
 
@@ -118,6 +118,7 @@ doc-tales/
 - [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)
 - [DynamoDB Access Patterns](docs/technical/dynamodb-access-patterns.md)
 - [Lambda Refactoring Plan](docs/technical/lambda-refactoring-plan.md)
+- [GitHub OIDC Setup Guide](docs/technical/github-oidc-setup-guide.md)
 
 ## Current Progress
 
