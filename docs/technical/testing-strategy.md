@@ -107,8 +107,7 @@ apiLambda.services.dynamoService = originalService;
 ```
 src/lambda/tests/
 ├── api-query.test.js      # Tests for API query functions
-├── ingestion.test.js      # Tests for ingestion functions
-├── dimension-extraction.test.js  # Tests for dimension extraction
+├── mock-services.js       # Mock implementations of services
 └── test-helpers.js        # Common test helpers
 ```
 
@@ -145,6 +144,7 @@ jobs:
         with:
           node-version: '18'
       - run: npm ci
+      - run: npm run lint
       - run: npm test
       
   deploy-dev:
