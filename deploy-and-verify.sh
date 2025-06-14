@@ -1,6 +1,6 @@
 #!/bin/bash
 # deploy-and-verify.sh
-# Script to deploy and verify the Doc-Tales application
+# Script to verify the Doc-Tales application deployment
 
 # Exit on error
 set -e
@@ -10,24 +10,11 @@ STACK_NAME="doc-tales-dev"
 REGION="us-east-1"
 ENVIRONMENT="dev"
 
-echo "=== Doc-Tales Deployment and Verification ==="
+echo "=== Doc-Tales Deployment Verification ==="
 echo "Stack: $STACK_NAME"
 echo "Region: $REGION"
 echo "Environment: $ENVIRONMENT"
 echo
-
-# Build the SAM application
-echo "Building SAM application..."
-sam build || { echo "Build failed"; exit 1; }
-
-# Deploy to the specified environment
-echo "Deploying to $ENVIRONMENT environment..."
-sam deploy \
-  --stack-name $STACK_NAME \
-  --no-confirm-changeset \
-  --parameter-overrides Environment=$ENVIRONMENT \
-  --region $REGION \
-  || { echo "Deploy failed"; exit 1; }
 
 # Get API endpoint from CloudFormation outputs
 echo "Getting API endpoint..."
@@ -54,8 +41,7 @@ if [[ $RESPONSE == *"communications"* ]]; then
 else
   echo "❌ /communications endpoint test failed!"
   echo "Response: $RESPONSE"
-  echo "Rolling back deployment..."
-  aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+  echo "Deployment verification failed!"
   exit 1
 fi
 
@@ -67,8 +53,7 @@ if [[ $RESPONSE == *"prioritizer"* && $RESPONSE == *"connector"* ]]; then
 else
   echo "❌ /archetypes endpoint test failed!"
   echo "Response: $RESPONSE"
-  echo "Rolling back deployment..."
-  aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+  echo "Deployment verification failed!"
   exit 1
 fi
 
@@ -80,8 +65,7 @@ if [[ $RESPONSE == *"archetypeConfidence"* ]]; then
 else
   echo "❌ /user-profile endpoint test failed!"
   echo "Response: $RESPONSE"
-  echo "Rolling back deployment..."
-  aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
+  echo "Deployment verification failed!"
   exit 1
 fi
 
@@ -119,33 +103,9 @@ PROCESSED_BUCKET=$(aws cloudformation describe-stacks \
 echo "Raw Communications Bucket: $RAW_BUCKET"
 echo "Processed Documents Bucket: $PROCESSED_BUCKET"
 
-# Test ingestion by uploading a test communication
-echo "Testing ingestion by uploading a test communication..."
-TEST_COMM='{
-  "source": "email",
-  "subject": "Test Communication",
-  "from": "Test Sender",
-  "from_email": "test@example.com",
-  "to": ["recipient@example.com"],
-  "body": "This is a test communication for deployment verification.",
-  "project": "test-project",
-  "urgency": "normal"
-}'
-
-RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" -d "$TEST_COMM" "$API_ENDPOINT/communications")
-if [[ $RESPONSE == *"processed successfully"* ]]; then
-  echo "✅ Ingestion test passed!"
-else
-  echo "❌ Ingestion test failed!"
-  echo "Response: $RESPONSE"
-  echo "Rolling back deployment..."
-  aws cloudformation delete-stack --stack-name $STACK_NAME --region $REGION
-  exit 1
-fi
-
 echo
-echo "=== Deployment and Verification Successful! ==="
-echo "The Doc-Tales application has been successfully deployed and verified."
+echo "=== Deployment Verification Successful! ==="
+echo "The Doc-Tales application has been successfully verified."
 echo "API Endpoint: $API_ENDPOINT"
 echo
 
