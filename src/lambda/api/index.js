@@ -11,8 +11,14 @@ const DynamoDBService = require('../services/dynamodb-service');
 const S3Service = require('../services/s3-service');
 
 // Create service instances
-const dynamoService = new DynamoDBService();
-const s3Service = new S3Service();
+const dynamoService = new DynamoDBService({
+  tableName: process.env.COMMUNICATIONS_TABLE || 'doc-tales-communications-dev',
+  userProfilesTableName: process.env.USER_PROFILES_TABLE || 'doc-tales-user-profiles-dev'
+});
+
+const s3Service = new S3Service({
+  bucketName: process.env.RAW_BUCKET || 'doc-tales-raw-communications-dev'
+});
 
 // Export services for testing
 exports.services = {
@@ -312,7 +318,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
     console.log('Query params:', JSON.stringify(params, null, 2));
     
     // Execute the query using the service
-    const result = await dynamoService.query(params);
+    const result = await exports.services.dynamoService.query(params);
     console.log(`Query returned ${result.Items.length} items`);
     
     // For each item, get the full communication from S3 if needed
@@ -371,7 +377,7 @@ exports.getCommunicationData = async function getCommunicationData(id) {
       }
     };
     
-    const result = await dynamoService.query(params);
+    const result = await exports.services.dynamoService.query(params);
     
     if (!result.Items || result.Items.length === 0) {
       console.log(`No communication found with ID: ${id}`);
@@ -413,7 +419,7 @@ exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(i
   }
   
   try {
-    const s3Result = await s3Service.getObject({
+    const s3Result = await exports.services.s3Service.getObject({
       Key: item.s3Key
     });
     
@@ -436,7 +442,7 @@ exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(i
  */
 async function getUserProfileData(userId) {
   try {
-    const result = await dynamoService.getUserProfile({
+    const result = await exports.services.dynamoService.getUserProfile({
       Key: {
         PK: `${ENTITY_TYPES.USER}#${userId}`
       }
@@ -463,7 +469,7 @@ async function getUserProfileData(userId) {
  */
 async function updateUserProfileData(userId, data) {
   try {
-    await dynamoService.updateUserProfile({
+    await exports.services.dynamoService.updateUserProfile({
       Key: {
         PK: `${ENTITY_TYPES.USER}#${userId}`
       },

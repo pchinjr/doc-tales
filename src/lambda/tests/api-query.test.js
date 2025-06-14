@@ -14,8 +14,8 @@ test('API queryCommunications - project filter', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
       query: (params) => {
@@ -38,6 +38,8 @@ test('API queryCommunications - project filter', async (t) => {
     }
   });
   
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
   apiLambda.services.s3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev'
   });
@@ -63,8 +65,8 @@ test('API queryCommunications - sender filter', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
       query: (params) => {
@@ -87,6 +89,8 @@ test('API queryCommunications - sender filter', async (t) => {
     }
   });
   
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
   apiLambda.services.s3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev'
   });
@@ -112,8 +116,8 @@ test('API queryCommunications - no filters', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
       query: (params) => {
@@ -132,6 +136,8 @@ test('API queryCommunications - no filters', async (t) => {
     }
   });
   
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
   apiLambda.services.s3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev'
   });
@@ -157,8 +163,8 @@ test('API queryCommunications - type filter', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
       query: (params) => {
@@ -177,6 +183,8 @@ test('API queryCommunications - type filter', async (t) => {
     }
   });
   
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
   apiLambda.services.s3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev'
   });
@@ -202,8 +210,8 @@ test('API getCommunicationData - existing communication', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
       query: (params) => {
@@ -225,7 +233,7 @@ test('API getCommunicationData - existing communication', async (t) => {
     }
   });
   
-  apiLambda.services.s3Service = createMockS3Service({
+  const mockS3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev',
     responses: {
       getObject: (params) => {
@@ -240,6 +248,10 @@ test('API getCommunicationData - existing communication', async (t) => {
       }
     }
   });
+  
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
+  apiLambda.services.s3Service = mockS3Service;
   
   try {
     const result = await apiLambda.getCommunicationData('123');
@@ -263,16 +275,18 @@ test('API getCommunicationData - not found', async (t) => {
   const originalDynamoService = apiLambda.services.dynamoService;
   const originalS3Service = apiLambda.services.s3Service;
   
-  // Create mock services
-  apiLambda.services.dynamoService = createMockDynamoDBService({
+  // Create mock services with proper implementation
+  const mockDynamoService = createMockDynamoDBService({
     tableName: 'doc-tales-communications-dev',
     responses: {
-      query: () => {
+      query: (params) => {
         return { Items: [] };
       }
     }
   });
   
+  // Replace the services
+  apiLambda.services.dynamoService = mockDynamoService;
   apiLambda.services.s3Service = createMockS3Service({
     bucketName: 'doc-tales-raw-communications-dev'
   });
