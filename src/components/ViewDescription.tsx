@@ -23,6 +23,8 @@ const ViewDescription: React.FC<ViewDescriptionProps> = ({ description, archetyp
       return () => clearTimeout(timer);
     } else {
       setVisible(true);
+      // Add an empty return to satisfy TypeScript
+      return () => {};
     }
   }, [description, currentDescription]);
 
