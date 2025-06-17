@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArchetypeType, Communication } from "../types/communication";
+import { ArchetypeType, Communication, ProjectType } from "../types/communication";
 import {
   ArchetypeService,
   InteractionEvent,
@@ -10,7 +10,9 @@ import VisualizerView from "./views/VisualizerView";
 import AnalystView from "./views/AnalystView";
 import ConfigurationUI from "./ConfigurationUI";
 import DemoFlow from "./DemoFlow";
-import { AwsDataService } from "../services/AwsDataService";
+import ViewDescription from "./ViewDescription";
+import ProjectSelector from "./ProjectSelector";
+import { ApiService } from "../services/ApiService";
 
 interface ApiResponse {
   communications: Communication[];
@@ -32,11 +34,13 @@ const Dashboard: React.FC = () => {
   const [showConfig, setShowConfig] = useState<boolean>(false);
   const [showDemoFlow, setShowDemoFlow] = useState<boolean>(true);
   const [viewDescription, setViewDescription] = useState<string>("");
+  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedProject]);
 
   const loadData = async () => {
     try {
@@ -48,14 +52,33 @@ const Dashboard: React.FC = () => {
       setConfidence(archetypeService.getArchetypeConfidence());
       
       // Get communications optimized for the current archetype
-      const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
-      const data: ApiResponse = await response.json();
+      const apiService = ApiService.getInstance();
+      let data;
+      
+      if (selectedProject) {
+        // Fetch communications filtered by project
+        const comms = await apiService.getCommunications(selectedProject);
+        data = { communications: comms, count: comms.length, scannedCount: comms.length };
+      } else {
+        // Fetch all communications
+        const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
+        data = await response.json() as ApiResponse;
+      }
       
       setCommunications(data.communications || []);
       
       // Extract view description if available
       if (data.viewDescription) {
         setViewDescription(data.viewDescription);
+      } else {
+        // Set default view descriptions based on archetype
+        const descriptions = {
+          prioritizer: "Organized by urgency and timeline to help you focus on what matters most.",
+          connector: "Organized by people and relationships to help you manage your network.",
+          visualizer: "Organized visually by project to help you see the big picture.",
+          analyst: "Organized by category with detailed metadata for in-depth analysis."
+        };
+        setViewDescription(descriptions[archetype]);
       }
 
       setLoading(false);
@@ -76,6 +99,9 @@ const Dashboard: React.FC = () => {
   };
 
   const handleArchetypeChange = async (newArchetype: ArchetypeType) => {
+    if (newArchetype === archetype) return;
+    
+    setIsTransitioning(true);
     setArchetype(newArchetype);
     
     // Update the archetype in the service
@@ -85,10 +111,41 @@ const Dashboard: React.FC = () => {
     
     // Update communications to reflect the new archetype
     setLoading(true);
-    const dataService = AwsDataService.getInstance();
-    const comms = await dataService.getCommunicationsForArchetype(newArchetype);
-    setCommunications(comms);
-    setLoading(false);
+    
+    try {
+      const apiService = ApiService.getInstance();
+      let data;
+      
+      if (selectedProject) {
+        // Fetch communications filtered by project
+        const comms = await apiService.getCommunications(selectedProject);
+        data = { communications: comms, count: comms.length, scannedCount: comms.length };
+      } else {
+        // Fetch all communications
+        const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
+        data = await response.json() as ApiResponse;
+      }
+      
+      setCommunications(data.communications || []);
+      
+      // Set view description based on archetype
+      const descriptions = {
+        prioritizer: "Organized by urgency and timeline to help you focus on what matters most.",
+        connector: "Organized by people and relationships to help you manage your network.",
+        visualizer: "Organized visually by project to help you see the big picture.",
+        analyst: "Organized by category with detailed metadata for in-depth analysis."
+      };
+      setViewDescription(descriptions[newArchetype]);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setLoading(false);
+      setIsTransitioning(false);
+    }
+  };
+
+  const handleProjectChange = (project: ProjectType | null) => {
+    setSelectedProject(project);
   };
 
   const handleSourcesChanged = () => {
@@ -197,41 +254,52 @@ const Dashboard: React.FC = () => {
             </div>
           ))}
         </div>
-        {viewDescription && (
-          <div className="view-description">
-            <p>{viewDescription}</p>
-          </div>
-        )}
+        
+        <ViewDescription 
+          description={viewDescription} 
+          archetype={archetype}
+        />
       </section>
+
+      <ProjectSelector 
+        currentProject={selectedProject} 
+        onProjectChange={handleProjectChange}
+      />
 
       <nav className="view-selector" aria-label="Archetype views">
         <button 
           onClick={() => handleArchetypeChange("prioritizer")}
           className={archetype === "prioritizer" ? "active" : ""}
+          disabled={isTransitioning}
         >
           Prioritizer View
         </button>
         <button 
           onClick={() => handleArchetypeChange("connector")}
           className={archetype === "connector" ? "active" : ""}
+          disabled={isTransitioning}
         >
           Connector View
         </button>
         <button 
           onClick={() => handleArchetypeChange("visualizer")}
           className={archetype === "visualizer" ? "active" : ""}
+          disabled={isTransitioning}
         >
           Visualizer View
         </button>
         <button 
           onClick={() => handleArchetypeChange("analyst")}
           className={archetype === "analyst" ? "active" : ""}
+          disabled={isTransitioning}
         >
           Analyst View
         </button>
       </nav>
 
-      <section className="archetype-view">{renderArchetypeView()}</section>
+      <section className={`archetype-view ${isTransitioning ? "transitioning" : ""}`}>
+        {renderArchetypeView()}
+      </section>
     </main>
   );
 };
