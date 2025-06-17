@@ -11,16 +11,16 @@ This document outlines the common access patterns for the Doc-Tales application 
 
 ## Common Access Patterns
 
-| Access Pattern | Description | Key Structure | Index |
-|----------------|-------------|--------------|-------|
-| Get all communications | Retrieve all communications | PK = "COMM" | Base table |
-| Get communication by ID | Retrieve a specific communication | PK = "COMM", SK = "COMM#{id}" | Base table |
-| Get communications by project | Retrieve all communications for a project | GSI1PK = "PROJ#{projectId}" | GSI1 |
-| Get communications by sender | Retrieve all communications from a sender | GSI2PK = "ENTITY#{senderId}" | GSI2 |
-| Get user profile | Retrieve a user's profile | PK = "USER#{userId}" | Base table |
-| Get project details | Retrieve details about a project | PK = "PROJ#{projectId}" | Base table |
-| Get user's projects | Retrieve all projects for a user | GSI1PK = "USER#{userId}" | GSI1 |
-| Get entity details | Retrieve details about an entity | PK = "ENTITY#{entityId}" | Base table |
+| Access Pattern                | Description                               | Key Structure                 | Index       |
+|-------------------------------|-------------------------------------------|-------------------------------|-------------|
+| Get all communications        | Retrieve all communications               | PK = "COMM"                   | Base table  |
+| Get communication by ID       | Retrieve a specific communication         | PK = "COMM", SK = "COMM#{id}" | Base table  |
+| Get communications by project | Retrieve all communications for a project | GSI1PK = "PROJ#{projectId}"   | GSI1        |
+| Get communications by sender  | Retrieve all communications from a sender | GSI2PK = "ENTITY#{senderId}"  | GSI2        |
+| Get user profile              | Retrieve a user's profile                 | PK = "USER#{userId}"          | Base table  |
+| Get project details           | Retrieve details about a project          | PK = "PROJ#{projectId}"       | Base table  |
+| Get user's projects           | Retrieve all projects for a user          | GSI1PK = "USER#{userId}"      | GSI1        |
+| Get entity details            | Retrieve details about an entity          | PK = "ENTITY#{entityId}"      | Base table  |
 
 ## Query Examples
 
