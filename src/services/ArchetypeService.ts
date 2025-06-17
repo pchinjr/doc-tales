@@ -22,7 +22,7 @@ export class ArchetypeService {
     }
   };
   private apiService: ApiService;
-  private isLoading: boolean = false;
+  private isLoading = false;
 
   private constructor() {
     this.apiService = ApiService.getInstance();

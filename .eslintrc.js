@@ -24,10 +24,14 @@ module.exports = {
   ],
   "rules": {
     "quotes": ["error", "double"],
-    "no-console": "warn",
+    "no-console": "off", // Allow console for development
     "@typescript-eslint/no-unused-vars": "warn",
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-var-requires": "off"
+    "@typescript-eslint/no-explicit-any": "off", // Allow any for now
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/no-empty-function": "off", // Allow empty functions
+    "@typescript-eslint/no-inferrable-types": "off", // Allow explicit types
+    "react/react-in-jsx-scope": "off", // Not needed in React 17+
+    "react/prop-types": "off" // Not needed with TypeScript
   },
   "settings": {
     "react": {
@@ -43,5 +47,6 @@ module.exports = {
         "@typescript-eslint/no-var-requires": "off"
       }
     }
-  ]
+  ],
+  "ignorePatterns": ["node_modules", "build", "dist", "coverage", ".github", "public"]
 }
