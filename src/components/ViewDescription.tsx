@@ -28,10 +28,21 @@ const ViewDescription: React.FC<ViewDescriptionProps> = ({ description, archetyp
     }
   }, [description, currentDescription]);
 
+  // Map archetype to a more readable display name
+  const getArchetypeDisplayName = (type: string): string => {
+    switch (type) {
+      case "prioritizer": return "Prioritizer";
+      case "connector": return "Connector";
+      case "visualizer": return "Visualizer";
+      case "analyst": return "Analyst";
+      default: return type;
+    }
+  };
+
   return (
     <div className={`view-description ${visible ? "visible" : "hidden"}`}>
       <div className={`archetype-indicator ${archetype}`}>
-        <span>{archetype}</span>
+        <span>{getArchetypeDisplayName(archetype)}</span>
       </div>
       <p>{currentDescription}</p>
     </div>
