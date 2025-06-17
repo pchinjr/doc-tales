@@ -63,8 +63,6 @@ Highlight the different types of communications across projects:
 
 This is your key differentiator! Demonstrate how the interface adapts based on user archetype:
 
-> **Note:** Before running these commands, ensure the API Lambda function has `DynamoDBCrudPolicy` (not just `DynamoDBReadPolicy`) for the UserProfilesTable in the SAM template. Otherwise, the PUT requests will fail with an AccessDeniedException.
-
 #### Prioritizer View
 ```bash
 # Update user profile to prioritizer archetype

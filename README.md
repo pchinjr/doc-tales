@@ -102,23 +102,28 @@ doc-tales/
 │   ├── components/                # React components
 │   │   └── views/                 # Archetype-specific views
 │   ├── data/                      # Sample data
+│   ├── lambda/                    # Lambda functions
+│   │   ├── api/                   # API Lambda function
+│   │   ├── dimension-extraction/  # Dimension extraction Lambda
+│   │   ├── ingestion/             # Ingestion Lambda
+│   │   ├── notification/          # Notification Lambda
+│   │   └── setup-s3-events/       # S3 events setup Lambda
 │   ├── services/                  # Service layer
 │   │   └── adapters/              # Source-specific adapters
 │   └── types/                     # TypeScript type definitions
-└── infrastructure/                # Infrastructure as code (future)
+└── infrastructure/                # Infrastructure as code
+    └── sam/                       # AWS SAM templates
 ```
 
 ## Documentation
 
-- [Hackathon Master Plan](docs/planning/hackathon-master-plan.md)
+- [Demo Guide](docs/demo-guide.md)
+- [Technical Implementation Summary](docs/technical/implementation-summary.md)
 - [Technical Architecture](docs/technical/technical-architecture.md)
-- [Demo Implementation Guide](docs/technical/demo-implementation-guide.md)
-- [Development Progress Report](docs/technical/development-progress.md)
-- [Architecture Improvements](docs/technical/architecture-improvements.md)
 - [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)
 - [DynamoDB Access Patterns](docs/technical/dynamodb-access-patterns.md)
-- [Lambda Refactoring Plan](docs/technical/lambda-refactoring-plan.md)
 - [GitHub OIDC Setup Guide](docs/technical/github-oidc-setup-guide.md)
+- [Event-Driven Architecture](docs/technical/event-driven-architecture.md)
 
 ## Current Progress
 
@@ -141,14 +146,18 @@ doc-tales/
   - ✅ Set up S3 buckets for document storage
   - ✅ Deployed serverless backend to AWS
   - ✅ Created comprehensive test scripts
+- ✅ **API Enhancements**:
+  - ✅ Implemented archetype-based personalization in API responses
+  - ✅ Added cross-project organization with filtering
+  - ✅ Enhanced metadata for frontend rendering
+  - ✅ Added view descriptions for each archetype
 
 ## Next Steps
 
 1. **Backend Improvements**:
-   - Fix DynamoDB composite key handling in Lambda functions
-   - Refactor API Lambda into multiple single-purpose functions
    - Implement Lambda Layers for shared code
    - Add comprehensive error handling and logging
+   - Enhance security with proper authentication
 
 2. **Enhanced Interaction Tracking**:
    - Improve archetype detection algorithm

@@ -7,10 +7,11 @@ This document outlines the technical architecture of the Doc-Tales application, 
 Doc-Tales is a personalized communications sorter that unifies content from diverse sources into a single dashboard with archetype-based personalization. The system consists of:
 
 1. **Frontend Application**: React-based UI with archetype-specific views
-2. **Data Ingestion Layer**: Adapters for different communication sources
-3. **Dimension Extraction Engine**: Extracts key dimensions from communications
-4. **Archetype Detection System**: Determines user's cognitive style
-5. **AWS Serverless Backend**: Processes and stores communications
+2. **API Gateway**: Provides RESTful endpoints for the frontend
+3. **Lambda Functions**: Process and serve data
+4. **DynamoDB**: Stores communication metadata and user profiles
+5. **S3 Buckets**: Store raw and processed communications
+6. **Event-Driven Processing**: Handles asynchronous workflows
 
 ## Architecture Diagram
 
