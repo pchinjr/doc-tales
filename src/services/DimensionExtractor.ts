@@ -91,9 +91,9 @@ export class DimensionExtractor {
     let connectionStrength: "strong" | "medium" | "weak" = "medium";
     
     // For the MVP, use simple rules
-    if (communication.type === "email" && communication.metadata.category === "finance") {
+    if (communication.commType === "email" && communication.metadata.category === "finance") {
       connectionStrength = "strong"; // Financial communications are important
-    } else if (communication.type === "social") {
+    } else if (communication.commType === "social") {
       connectionStrength = "weak"; // Social media connections are typically weaker
     }
     
@@ -102,9 +102,9 @@ export class DimensionExtractor {
     let frequency: "frequent" | "occasional" | "rare" = "occasional";
     
     // For the MVP, use the source type to guess frequency
-    if (communication.type === "email") {
+    if (communication.commType === "email") {
       frequency = "frequent";
-    } else if (communication.type === "document") {
+    } else if (communication.commType === "document") {
       frequency = "occasional";
     } else {
       frequency = "rare";
@@ -112,18 +112,18 @@ export class DimensionExtractor {
     
     // Determine context based on project and content
     const personal = 
-      communication.project === "family-event" || 
+      communication.project === "Family Event" || 
       communication.content.toLowerCase().includes("family") ||
       communication.content.toLowerCase().includes("friend");
       
     const professional = 
-      communication.project === "career-change" || 
+      communication.project === "Career Change" || 
       communication.content.toLowerCase().includes("work") ||
       communication.content.toLowerCase().includes("job") ||
       communication.content.toLowerCase().includes("interview");
       
     const projectSpecific = 
-      communication.project === "home-purchase" || 
+      communication.project === "Home Purchase" || 
       communication.content.toLowerCase().includes("house") ||
       communication.content.toLowerCase().includes("property");
     
@@ -133,7 +133,7 @@ export class DimensionExtractor {
       lastInteraction: communication.timestamp,
       networkPosition: {
         isDirectConnection: true, // For MVP, assume all are direct connections
-        sharedConnections: communication.recipients.length,
+        sharedConnections: 0, // No recipients in new model
         relevanceScore: this.calculateRelevanceScore(communication)
       },
       context: {
@@ -149,39 +149,42 @@ export class DimensionExtractor {
    */
   private extractVisualDimension(communication: Communication): VisualDimension {
     // Determine if the communication has images
-    const hasImages = Boolean(communication.attachments.length > 0 || 
-      (communication.metadata.sourceSpecific && 
-       typeof communication.metadata.sourceSpecific === "object" &&
-       "hasImages" in communication.metadata.sourceSpecific &&
-       communication.metadata.sourceSpecific.hasImages));
+    const hasImages = Boolean(
+      communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "hasImages" in communication.metadata &&
+      communication.metadata.hasImages);
     
     // Get document type if available
-    const documentType = communication.metadata.sourceSpecific && 
-      typeof communication.metadata.sourceSpecific === "object" &&
-      "fileType" in communication.metadata.sourceSpecific ? 
-      String(communication.metadata.sourceSpecific.fileType) : undefined;
+    const documentType = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "fileType" in communication.metadata ? 
+      String(communication.metadata.fileType) : undefined;
     
     // Count visual elements
-    const charts = communication.metadata.sourceSpecific && 
-      typeof communication.metadata.sourceSpecific === "object" &&
-      "chartCount" in communication.metadata.sourceSpecific ? 
-      Number(communication.metadata.sourceSpecific.chartCount) : 0;
+    const charts = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "chartCount" in communication.metadata ? 
+      Number(communication.metadata.chartCount) : 0;
     
-    const tables = communication.metadata.sourceSpecific && 
-      typeof communication.metadata.sourceSpecific === "object" &&
-      "tableCount" in communication.metadata.sourceSpecific ? 
-      Number(communication.metadata.sourceSpecific.tableCount) : 0;
+    const tables = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "tableCount" in communication.metadata ? 
+      Number(communication.metadata.tableCount) : 0;
     
-    const images = communication.metadata.sourceSpecific && 
-      typeof communication.metadata.sourceSpecific === "object" &&
-      "imageCount" in communication.metadata.sourceSpecific ? 
-      Number(communication.metadata.sourceSpecific.imageCount) : 
-      (communication.metadata.sourceSpecific && 
-       typeof communication.metadata.sourceSpecific === "object" &&
-       "hasImages" in communication.metadata.sourceSpecific && 
-       communication.metadata.sourceSpecific.hasImages ? 1 : 0);
+    const images = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "imageCount" in communication.metadata ? 
+      Number(communication.metadata.imageCount) : 
+      (communication.metadata && 
+       typeof communication.metadata === "object" &&
+       "hasImages" in communication.metadata && 
+       communication.metadata.hasImages ? 1 : 0);
     
-    const attachments = communication.attachments.length;
+    const attachments = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "attachments" in communication.metadata ? 
+      Number(communication.metadata.attachments) : 0;
     
     // Determine visual category
     let visualCategory: "document" | "image" | "chart" | "mixed" | "text-only" = "text-only";
@@ -197,10 +200,10 @@ export class DimensionExtractor {
     }
     
     // Extract location if available
-    const location = communication.metadata.sourceSpecific && 
-      typeof communication.metadata.sourceSpecific === "object" &&
-      "location" in communication.metadata.sourceSpecific ? 
-      String(communication.metadata.sourceSpecific.location) : undefined;
+    const location = communication.metadata && 
+      typeof communication.metadata === "object" &&
+      "location" in communication.metadata ? 
+      String(communication.metadata.location) : undefined;
     
     return {
       hasImages,
@@ -236,7 +239,7 @@ export class DimensionExtractor {
     if (communication.content.toLowerCase().includes("meeting")) tags.push("meeting");
     
     // Add project as a tag
-    tags.push(communication.project.replace("-", " "));
+    tags.push(communication.project);
     
     // Determine sentiment using simple keyword matching
     let sentiment: "positive" | "neutral" | "negative" = "neutral";
@@ -256,16 +259,15 @@ export class DimensionExtractor {
     
     // Extract entities using simple pattern matching
     // In a real implementation, this would use NLP
-    const people = [communication.sender.name, ...communication.recipients.map(r => r.name)];
+    const people = [communication.senderName];
     const organizations: string[] = [];
-    if (communication.sender.organization) organizations.push(communication.sender.organization);
     
     // Extract locations using simple pattern matching
     const locations: string[] = [];
-    if (communication.metadata.sourceSpecific && 
-        typeof communication.metadata.sourceSpecific === "object" &&
-        "location" in communication.metadata.sourceSpecific) {
-      locations.push(String(communication.metadata.sourceSpecific.location));
+    if (communication.metadata && 
+        typeof communication.metadata === "object" &&
+        "location" in communication.metadata) {
+      locations.push(String(communication.metadata.location));
     }
     
     // Extract dates using simple pattern matching
@@ -273,11 +275,11 @@ export class DimensionExtractor {
     
     // Extract concepts using simple keyword matching
     const concepts: string[] = [];
-    if (communication.project === "home-purchase") {
+    if (communication.project === "Home Purchase") {
       concepts.push("real estate", "mortgage", "property");
-    } else if (communication.project === "career-change") {
+    } else if (communication.project === "Career Change") {
       concepts.push("job search", "interview", "resume");
-    } else if (communication.project === "family-event") {
+    } else if (communication.project === "Family Event") {
       concepts.push("reunion", "planning", "family");
     }
     
@@ -359,7 +361,7 @@ export class DimensionExtractor {
     if (this.isRecent(communication.timestamp)) score += 0.2;
     
     // Adjust based on project
-    if (communication.project === "home-purchase") score += 0.1;
+    if (communication.project === "Home Purchase") score += 0.1;
     
     // Ensure score is between 0 and 1
     return Math.max(0, Math.min(1, score));
