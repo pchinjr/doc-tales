@@ -81,16 +81,16 @@ interface ArchetypeConfidence {
 
 User interactions are mapped to archetype confidence adjustments:
 
-| Interaction Type | Archetype Affected | Confidence Adjustment |
-|------------------|-------------------|----------------------|
-| Click on date    | Prioritizer | +2 |
-| Sort by deadline | Prioritizer | +5 |
-| Click on person  | Connector | +2 |
-| View relationship map | Connector | +5 |
-| Engage with image | Visualizer | +2 |
-| Rearrange cards | Visualizer | +5 |
-| View detailed metadata | Analyst | +2 |
-| Apply filters | Analyst | +5 |
+| Interaction Type        | Archetype Affected  | Confidence Adjustment |
+|-------------------------|---------------------|-----------------------|
+| Click on date           | Prioritizer         | +2                    |
+| Sort by deadline        | Prioritizer         | +5                    |
+| Click on person         | Connector           | +2                    |
+| View relationship map   | Connector           | +5                    |
+| Engage with image       | Visualizer          | +2                    |
+| Rearrange cards         | Visualizer          | +5                    |
+| View detailed metadata  | Analyst             | +2                    |
+| Apply filters           | Analyst             | +5                    |
 
 ### Adaptive Dashboard
 
@@ -166,7 +166,7 @@ function updateArchetypeConfidence(
 
 ## Testing and Validation
 
-### Dimension Extraction Testing
+### TOTALLY MADE UP FAKE Dimension Extraction Testing
 
 Tests were conducted on a sample dataset of 500 communications across various sources:
 
@@ -177,7 +177,7 @@ Tests were conducted on a sample dataset of 500 communications across various so
 | Visual | 83% | 80% | 85% | 82.4% |
 | Analytical | 89% | 87% | 90% | 88.5% |
 
-### Archetype Detection Validation
+### TOTALLY MADE UP FAKE Archetype Detection Validation
 
 User studies with 50 participants showed:
 - 78% of users were correctly identified within 10 interactions
