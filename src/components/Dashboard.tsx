@@ -10,9 +10,8 @@ import VisualizerView from "./views/VisualizerView";
 import AnalystView from "./views/AnalystView";
 import ConfigurationUI from "./ConfigurationUI";
 import DemoFlow from "./DemoFlow";
-import { UnifiedDataService } from "../services/UnifiedDataService";
+import { AwsDataService } from "../services/AwsDataService";
 
-// Task 6: Connect to Archetype Views
 const Dashboard: React.FC = () => {
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -25,6 +24,7 @@ const Dashboard: React.FC = () => {
   });
   const [showConfig, setShowConfig] = useState<boolean>(false);
   const [showDemoFlow, setShowDemoFlow] = useState<boolean>(true);
+  const [viewDescription, setViewDescription] = useState<string>("");
 
   useEffect(() => {
     loadData();
@@ -35,16 +35,22 @@ const Dashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // Use the new UnifiedDataService instead of DataService
-      const dataService = UnifiedDataService.getInstance();
-      await dataService.loadAllData();
-      
-      // Get communications optimized for the current archetype
-      setCommunications(dataService.getCommunicationsForArchetype(archetype));
-
+      // Load user profile first
       const archetypeService = ArchetypeService.getInstance();
       setArchetype(archetypeService.getPrimaryArchetype());
       setConfidence(archetypeService.getArchetypeConfidence());
+      
+      // Use the AWS data service
+      const dataService = AwsDataService.getInstance();
+      
+      // Get communications optimized for the current archetype
+      const comms = await dataService.getCommunicationsForArchetype(archetype);
+      setCommunications(comms);
+      
+      // Extract view description if available
+      if (comms && comms.length > 0 && "_viewDescription" in comms[0]) {
+        setViewDescription(comms["_viewDescription"] || "");
+      }
 
       setLoading(false);
     } catch (error) {
@@ -53,23 +59,30 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const trackInteraction = (event: InteractionEvent) => {
+  const trackInteraction = async (event: InteractionEvent) => {
     const archetypeService = ArchetypeService.getInstance();
-    archetypeService.trackInteraction(event);
+    await archetypeService.trackInteraction(event);
     setArchetype(archetypeService.getPrimaryArchetype());
     setConfidence(archetypeService.getArchetypeConfidence());
     
     // Update communications to reflect the new archetype
-    const dataService = UnifiedDataService.getInstance();
-    setCommunications(dataService.getCommunicationsForArchetype(archetype));
+    loadData();
   };
 
-  const handleArchetypeChange = (newArchetype: ArchetypeType) => {
+  const handleArchetypeChange = async (newArchetype: ArchetypeType) => {
     setArchetype(newArchetype);
     
+    // Update the archetype in the service
+    const archetypeService = ArchetypeService.getInstance();
+    await archetypeService.setArchetype(newArchetype);
+    setConfidence(archetypeService.getArchetypeConfidence());
+    
     // Update communications to reflect the new archetype
-    const dataService = UnifiedDataService.getInstance();
-    setCommunications(dataService.getCommunicationsForArchetype(newArchetype));
+    setLoading(true);
+    const dataService = AwsDataService.getInstance();
+    const comms = await dataService.getCommunicationsForArchetype(newArchetype);
+    setCommunications(comms);
+    setLoading(false);
   };
 
   const handleSourcesChanged = () => {
@@ -178,6 +191,11 @@ const Dashboard: React.FC = () => {
             </div>
           ))}
         </div>
+        {viewDescription && (
+          <div className="view-description">
+            <p>{viewDescription}</p>
+          </div>
+        )}
       </section>
 
       <nav className="view-selector" aria-label="Archetype views">

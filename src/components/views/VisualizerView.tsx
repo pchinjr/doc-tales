@@ -11,29 +11,16 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
   communications,
   onInteraction,
 }) => {
-  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(
-    null,
-  );
+  const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
 
   // Group communications by project
-  const projectMap = new Map<ProjectType, Communication[]>();
-
+  const projectGroups: Record<string, Communication[]> = {};
   communications.forEach((comm) => {
-    if (!projectMap.has(comm.project)) {
-      projectMap.set(comm.project, []);
+    if (!projectGroups[comm.project]) {
+      projectGroups[comm.project] = [];
     }
-    projectMap.get(comm.project)?.push(comm);
+    projectGroups[comm.project].push(comm);
   });
-
-  const projects: ProjectType[] = [
-    "home-purchase",
-    "career-change",
-    "family-event",
-  ];
-
-  const handleProjectClick = (project: ProjectType) => {
-    setSelectedProject(project);
-  };
 
   const handleImageView = (communicationId: string) => {
     onInteraction({
@@ -44,22 +31,23 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
     });
   };
 
-  const handlePersonClick = (contactId: string) => {
+  const handleProjectClick = (project: ProjectType) => {
+    setSelectedProject(selectedProject === project ? null : project);
     onInteraction({
-      type: "person_click",
-      target: contactId,
+      type: "image_view", // Viewing a project board is a visual interaction
+      target: project,
       timestamp: Date.now(),
-      metadata: {},
+      metadata: { type: "project_board" },
     });
   };
 
-  const getProjectColor = (project: ProjectType): string => {
+  const getProjectColor = (project: string): string => {
     switch (project) {
-      case "home-purchase":
+      case "Home Purchase":
         return "#4285F4"; // Blue
-      case "career-change":
+      case "Career Change":
         return "#EA4335"; // Red
-      case "family-event":
+      case "Family Event":
         return "#34A853"; // Green
       default:
         return "#FBBC05"; // Yellow
@@ -69,96 +57,99 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
   return (
     <div className="visualizer-view">
       <h2>Visualizer View</h2>
-      <p>Organized by visual and spatial relationships</p>
+      <p>Organized visually by project</p>
 
       <div className="project-boards">
-        {projects.map((project) => (
+        {Object.entries(projectGroups).map(([project, comms]) => (
           <div
             key={project}
-            className={`project-board ${selectedProject === project ? "selected" : ""}`}
+            className={`project-board ${
+              selectedProject === project ? "selected" : ""
+            }`}
             style={{ borderColor: getProjectColor(project) }}
-            role="button"
-            tabIndex={0}
-            onClick={() => handleProjectClick(project)}
+            onClick={() => handleProjectClick(project as ProjectType)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
-                handleProjectClick(project);
+                handleProjectClick(project as ProjectType);
               }
             }}
+            tabIndex={0}
+            role="button"
           >
-            <h3>{project.replace("-", " ")}</h3>
-            <div className="board-preview">
-              {/* This would show a visual preview of the board */}
-              <div
-                className="board-thumbnail"
-                style={{ backgroundColor: getProjectColor(project) }}
-              >
-                {projectMap.get(project)?.length || 0} items
-              </div>
+            <div
+              className="project-header"
+              style={{ backgroundColor: getProjectColor(project) }}
+            >
+              <h3>{project}</h3>
+              <span className="item-count">{comms.length} items</span>
+            </div>
+            <div className="project-cards">
+              {comms.slice(0, 3).map((comm) => (
+                <div
+                  key={comm.id}
+                  className="project-card"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleImageView(comm.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.stopPropagation();
+                      handleImageView(comm.id);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                >
+                  <h4>{comm.subject}</h4>
+                  <p className="card-sender">From: {comm.senderName}</p>
+                  <p className="card-date">
+                    {new Date(comm.timestamp).toLocaleDateString()}
+                  </p>
+                  {comm._highlight === "visual" && (
+                    <div className="highlight-badge visual">Visual Content</div>
+                  )}
+                </div>
+              ))}
+              {comms.length > 3 && (
+                <div className="more-indicator">+{comms.length - 3} more</div>
+              )}
             </div>
           </div>
         ))}
       </div>
 
       {selectedProject && (
-        <div className="visual-board">
-          <h3>{selectedProject.replace("-", " ")} Board</h3>
-          <div className="board-items">
-            {projectMap.get(selectedProject)?.map((comm) => (
-              <div key={comm.id} className="board-item">
-                {/* In a real implementation, this would have actual images */}
-                <div
-                  className="item-visual"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleImageView(comm.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      handleImageView(comm.id);
-                    }
-                  }}
-                  style={{ backgroundColor: getProjectColor(comm.project) }}
-                >
-                  {comm.type === "document"
-                    ? "Document Preview"
-                    : comm.type === "email"
-                      ? "Email Preview"
-                      : "Social Post Preview"}
-                </div>
-                <div className="item-title">{comm.subject}</div>
-                <div
-                  className="item-sender"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handlePersonClick(comm.sender.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      handlePersonClick(comm.sender.id);
-                    }
-                  }}
-                >
-                  {comm.sender.name}
-                </div>
+        <div className="expanded-project">
+          <h3>All {selectedProject} Communications</h3>
+          <div className="expanded-cards">
+            {projectGroups[selectedProject].map((comm) => (
+              <div
+                key={comm.id}
+                className="expanded-card"
+                onClick={() => handleImageView(comm.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    handleImageView(comm.id);
+                  }
+                }}
+                tabIndex={0}
+                role="button"
+              >
+                <h4>{comm.subject}</h4>
+                <p className="card-sender">From: {comm.senderName}</p>
+                <p className="card-date">
+                  {new Date(comm.timestamp).toLocaleDateString()}
+                </p>
+                <p className="card-excerpt">{comm.content.substring(0, 100)}...</p>
+                {comm._highlight === "visual" && (
+                  <div className="highlight-badge visual">Visual Content</div>
+                )}
               </div>
             ))}
           </div>
         </div>
       )}
-
-      <div className="location-map">
-        <h3>Location Map</h3>
-        <div
-          className="map-placeholder"
-          role="img"
-          aria-label="Location map placeholder"
-        >
-          {/* In a real implementation, this would be a map visualization */}
-          <p>
-            Interactive map showing locations across projects would be displayed
-            here
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

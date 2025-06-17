@@ -11,76 +11,20 @@ const AnalystView: React.FC<AnalystViewProps> = ({
   communications,
   onInteraction,
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<string>("timestamp");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+  const [expandedComm, setExpandedComm] = useState<string | null>(null);
 
-  // Extract all unique categories
-  const categories = Array.from(
-    new Set(communications.map((comm) => comm.metadata.category)),
-  );
-
-  // Filter communications by selected category
-  const filteredCommunications = selectedCategory
-    ? communications.filter(
-        (comm) => comm.metadata.category === selectedCategory,
-      )
-    : communications;
-
-  // Sort communications
-  const sortedCommunications = [...filteredCommunications].sort((a, b) => {
-    let valueA, valueB;
-
-    switch (sortField) {
-      case "timestamp":
-        valueA = new Date(a.timestamp).getTime();
-        valueB = new Date(b.timestamp).getTime();
-        break;
-      case "subject":
-        valueA = a.subject;
-        valueB = b.subject;
-        break;
-      case "sender":
-        valueA = a.sender.name;
-        valueB = b.sender.name;
-        break;
-      case "project":
-        valueA = a.project;
-        valueB = b.project;
-        break;
-      case "urgency": {
-        const urgencyOrder = { high: 0, medium: 1, low: 2 };
-        valueA = urgencyOrder[a.metadata.urgency];
-        valueB = urgencyOrder[b.metadata.urgency];
-        break;
-      }
-      default:
-        valueA = a.timestamp;
-        valueB = b.timestamp;
+  // Group communications by category
+  const categoryGroups: Record<string, Communication[]> = {};
+  communications.forEach((comm) => {
+    const category = comm.metadata.category || "uncategorized";
+    if (!categoryGroups[category]) {
+      categoryGroups[category] = [];
     }
-
-    const comparison =
-      typeof valueA === "string"
-        ? valueA.localeCompare(valueB as string)
-        : (valueA as number) - (valueB as number);
-
-    return sortDirection === "asc" ? comparison : -comparison;
+    categoryGroups[category].push(comm);
   });
 
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  };
-
-  const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category === selectedCategory ? null : category);
-  };
-
   const handleDetailsView = (communicationId: string) => {
+    setExpandedComm(expandedComm === communicationId ? null : communicationId);
     onInteraction({
       type: "details_view",
       target: communicationId,
@@ -92,196 +36,89 @@ const AnalystView: React.FC<AnalystViewProps> = ({
   return (
     <div className="analyst-view">
       <h2>Analyst View</h2>
-      <p>Organized by categories and details</p>
+      <p>Organized by category with detailed metadata</p>
 
-      <div className="filter-controls">
-        <div className="category-filters">
-          <h3>Categories</h3>
-          <div className="category-buttons">
-            {categories.map((category) => (
-              <button
-                key={category}
-                className={`category-button ${selectedCategory === category ? "selected" : ""}`}
-                onClick={() => handleCategoryClick(category)}
-              >
-                {category}
-              </button>
-            ))}
-            {selectedCategory && (
-              <button
-                className="category-button clear"
-                onClick={() => setSelectedCategory(null)}
-              >
-                Clear Filter
-              </button>
-            )}
+      <div className="category-tables">
+        {Object.entries(categoryGroups).map(([category, comms]) => (
+          <div key={category} className="category-section">
+            <h3 className="category-header">{category}</h3>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Sender</th>
+                  <th>Date</th>
+                  <th>Project</th>
+                  <th>Urgency</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comms.map((comm) => (
+                  <React.Fragment key={comm.id}>
+                    <tr
+                      className={expandedComm === comm.id ? "expanded" : ""}
+                      onClick={() => handleDetailsView(comm.id)}
+                    >
+                      <td>{comm.subject}</td>
+                      <td>{comm.senderName}</td>
+                      <td>{new Date(comm.timestamp).toLocaleDateString()}</td>
+                      <td>{comm.project}</td>
+                      <td>
+                        <span className={`urgency-badge ${comm.metadata.urgency}`}>
+                          {comm.metadata.urgency}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="details-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDetailsView(comm.id);
+                          }}
+                        >
+                          {expandedComm === comm.id ? "Hide" : "Details"}
+                        </button>
+                      </td>
+                    </tr>
+                    {expandedComm === comm.id && (
+                      <tr className="details-row">
+                        <td colSpan={6}>
+                          <div className="details-content">
+                            <div className="details-section">
+                              <h4>Content</h4>
+                              <p>{comm.content}</p>
+                            </div>
+                            <div className="details-section">
+                              <h4>Metadata</h4>
+                              <ul>
+                                {Object.entries(comm.metadata).map(
+                                  ([key, value]) => (
+                                    <li key={key}>
+                                      <strong>{key}:</strong>{" "}
+                                      {typeof value === "object"
+                                        ? JSON.stringify(value)
+                                        : value.toString()}
+                                    </li>
+                                  )
+                                )}
+                              </ul>
+                            </div>
+                            {comm._highlight === "metadata" && (
+                              <div className="highlight-badge metadata">
+                                Rich Metadata
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
-
-        <div className="sort-controls">
-          <h3>Sort By</h3>
-          <div className="sort-buttons">
-            <button
-              className={`sort-button ${sortField === "timestamp" ? "selected" : ""}`}
-              onClick={() => handleSort("timestamp")}
-            >
-              Date{" "}
-              {sortField === "timestamp" &&
-                (sortDirection === "asc" ? "↑" : "↓")}
-            </button>
-            <button
-              className={`sort-button ${sortField === "subject" ? "selected" : ""}`}
-              onClick={() => handleSort("subject")}
-            >
-              Subject{" "}
-              {sortField === "subject" && (sortDirection === "asc" ? "↑" : "↓")}
-            </button>
-            <button
-              className={`sort-button ${sortField === "sender" ? "selected" : ""}`}
-              onClick={() => handleSort("sender")}
-            >
-              Sender{" "}
-              {sortField === "sender" && (sortDirection === "asc" ? "↑" : "↓")}
-            </button>
-            <button
-              className={`sort-button ${sortField === "project" ? "selected" : ""}`}
-              onClick={() => handleSort("project")}
-            >
-              Project{" "}
-              {sortField === "project" && (sortDirection === "asc" ? "↑" : "↓")}
-            </button>
-            <button
-              className={`sort-button ${sortField === "urgency" ? "selected" : ""}`}
-              onClick={() => handleSort("urgency")}
-            >
-              Urgency{" "}
-              {sortField === "urgency" && (sortDirection === "asc" ? "↑" : "↓")}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="data-table">
-        <table>
-          <thead>
-            <tr>
-              <th
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSort("timestamp")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSort("timestamp");
-                  }
-                }}
-              >
-                Date{" "}
-                {sortField === "timestamp" &&
-                  (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSort("subject")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSort("subject");
-                  }
-                }}
-              >
-                Subject{" "}
-                {sortField === "subject" &&
-                  (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSort("sender")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSort("sender");
-                  }
-                }}
-              >
-                Sender{" "}
-                {sortField === "sender" &&
-                  (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSort("project")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSort("project");
-                  }
-                }}
-              >
-                Project{" "}
-                {sortField === "project" &&
-                  (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th
-                role="button"
-                tabIndex={0}
-                onClick={() => handleSort("urgency")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSort("urgency");
-                  }
-                }}
-              >
-                Urgency{" "}
-                {sortField === "urgency" &&
-                  (sortDirection === "asc" ? "↑" : "↓")}
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedCommunications.map((comm) => (
-              <tr key={comm.id}>
-                <td>{new Date(comm.timestamp).toLocaleDateString()}</td>
-                <td>{comm.subject}</td>
-                <td>{comm.sender.name}</td>
-                <td>{comm.project.replace("-", " ")}</td>
-                <td>{comm.metadata.urgency}</td>
-                <td>
-                  <button onClick={() => handleDetailsView(comm.id)}>
-                    Details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="analytics-section">
-        <h3>Analytics</h3>
-        <div className="analytics-cards">
-          <div className="analytics-card">
-            <h4>Communications by Project</h4>
-            <div className="chart-placeholder">
-              {/* In a real implementation, this would be a chart */}
-              <p>Chart showing communication distribution by project</p>
-            </div>
-          </div>
-          <div className="analytics-card">
-            <h4>Communications by Type</h4>
-            <div className="chart-placeholder">
-              {/* In a real implementation, this would be a chart */}
-              <p>Chart showing communication distribution by type</p>
-            </div>
-          </div>
-          <div className="analytics-card">
-            <h4>Communications by Urgency</h4>
-            <div className="chart-placeholder">
-              {/* In a real implementation, this would be a chart */}
-              <p>Chart showing communication distribution by urgency</p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );
