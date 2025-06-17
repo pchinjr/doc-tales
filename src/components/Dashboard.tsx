@@ -47,9 +47,6 @@ const Dashboard: React.FC = () => {
       setArchetype(archetypeService.getPrimaryArchetype());
       setConfidence(archetypeService.getArchetypeConfidence());
       
-      // Use the AWS data service
-      const dataService = AwsDataService.getInstance();
-      
       // Get communications optimized for the current archetype
       const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
       const data: ApiResponse = await response.json();
