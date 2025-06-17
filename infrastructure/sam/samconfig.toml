@@ -2,8 +2,8 @@ version = 0.1
 [default]
 [default.deploy]
 [default.deploy.parameters]
-stack_name = "y"
-s3_prefix = "y"
+stack_name = "doc-tales"
+s3_prefix = "doc-tales"
 region = "us-east-1"
 confirm_changeset = true
 capabilities = "CAPABILITY_IAM"
