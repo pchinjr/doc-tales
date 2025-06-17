@@ -22,6 +22,23 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
     projectGroups[comm.project].push(comm);
   });
 
+  // Sort projects by visual content
+  const sortedProjects = Object.keys(projectGroups).sort((a, b) => {
+    const aVisualCount = projectGroups[a].filter(comm => 
+      comm._highlight === "visual" || 
+      (comm.metadata && comm.metadata.hasImages) ||
+      (comm.dimensions?.visual?.hasImages)
+    ).length;
+    
+    const bVisualCount = projectGroups[b].filter(comm => 
+      comm._highlight === "visual" || 
+      (comm.metadata && comm.metadata.hasImages) ||
+      (comm.dimensions?.visual?.hasImages)
+    ).length;
+    
+    return bVisualCount - aVisualCount;
+  });
+
   const handleImageView = (communicationId: string) => {
     onInteraction({
       type: "image_view",
@@ -54,79 +71,115 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
     }
   };
 
+  // Sort communications within a project based on visual content
+  const sortProjectCommunications = (comms: Communication[]) => {
+    return [...comms].sort((a, b) => {
+      // First prioritize highlighted items
+      if (a._highlight === "visual" && b._highlight !== "visual") return -1;
+      if (a._highlight !== "visual" && b._highlight === "visual") return 1;
+      
+      // Then use _sortKey if available
+      if (a._sortKey && b._sortKey) return a._sortKey.localeCompare(b._sortKey);
+      
+      // Then prioritize items with images
+      const aHasImages = a.metadata && a.metadata.hasImages;
+      const bHasImages = b.metadata && b.metadata.hasImages;
+      if (aHasImages && !bHasImages) return -1;
+      if (!aHasImages && bHasImages) return 1;
+      
+      // Finally sort by date
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+  };
+
   return (
     <div className="visualizer-view">
       <h2>Visualizer View</h2>
       <p>Organized visually by project</p>
 
       <div className="project-boards">
-        {Object.entries(projectGroups).map(([project, comms]) => (
-          <div
-            key={project}
-            className={`project-board ${
-              selectedProject === project ? "selected" : ""
-            }`}
-            style={{ borderColor: getProjectColor(project) }}
-            onClick={() => handleProjectClick(project as ProjectType)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                handleProjectClick(project as ProjectType);
-              }
-            }}
-            tabIndex={0}
-            role="button"
-          >
+        {sortedProjects.map((project) => {
+          const comms = sortProjectCommunications(projectGroups[project]);
+          const visualCount = comms.filter(comm => 
+            comm._highlight === "visual" || 
+            (comm.metadata && comm.metadata.hasImages) ||
+            (comm.dimensions?.visual?.hasImages)
+          ).length;
+          
+          return (
             <div
-              className="project-header"
-              style={{ backgroundColor: getProjectColor(project) }}
+              key={project}
+              className={`project-board ${
+                selectedProject === project ? "selected" : ""
+              } ${visualCount > 0 ? "has-visual" : ""}`}
+              style={{ borderColor: getProjectColor(project) }}
+              onClick={() => handleProjectClick(project as ProjectType)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleProjectClick(project as ProjectType);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             >
-              <h3>{project}</h3>
-              <span className="item-count">{comms.length} items</span>
-            </div>
-            <div className="project-cards">
-              {comms.slice(0, 3).map((comm) => (
-                <div
-                  key={comm.id}
-                  className="project-card"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleImageView(comm.id);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
+              <div
+                className="project-header"
+                style={{ backgroundColor: getProjectColor(project) }}
+              >
+                <h3>{project}</h3>
+                <span className="item-count">
+                  {comms.length} items {visualCount > 0 && `(${visualCount} visual)`}
+                </span>
+              </div>
+              <div className="project-cards">
+                {comms.slice(0, 3).map((comm) => (
+                  <div
+                    key={comm.id}
+                    className={`project-card ${comm._displayFormat || ""}`}
+                    onClick={(e) => {
                       e.stopPropagation();
                       handleImageView(comm.id);
-                    }
-                  }}
-                  tabIndex={0}
-                  role="button"
-                >
-                  <h4>{comm.subject}</h4>
-                  <p className="card-sender">From: {comm.senderName}</p>
-                  <p className="card-date">
-                    {new Date(comm.timestamp).toLocaleDateString()}
-                  </p>
-                  {comm._highlight === "visual" && (
-                    <div className="highlight-badge visual">Visual Content</div>
-                  )}
-                </div>
-              ))}
-              {comms.length > 3 && (
-                <div className="more-indicator">+{comms.length - 3} more</div>
-              )}
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
+                        handleImageView(comm.id);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                  >
+                    <h4>{comm.subject}</h4>
+                    <p className="card-sender">From: {comm.senderName}</p>
+                    <p className="card-date">
+                      {new Date(comm.timestamp).toLocaleDateString()}
+                    </p>
+                    {comm._highlight && (
+                      <div className={`highlight-badge ${comm._highlight}`}>
+                        {comm._highlight === "visual" ? "Visual Content" : 
+                         comm._highlight === "important" ? "Important" : 
+                         comm._highlight}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {comms.length > 3 && (
+                  <div className="more-indicator">+{comms.length - 3} more</div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {selectedProject && (
         <div className="expanded-project">
           <h3>All {selectedProject} Communications</h3>
           <div className="expanded-cards">
-            {projectGroups[selectedProject].map((comm) => (
+            {sortProjectCommunications(projectGroups[selectedProject]).map((comm) => (
               <div
                 key={comm.id}
-                className="expanded-card"
+                className={`expanded-card ${comm._displayFormat || ""}`}
                 onClick={() => handleImageView(comm.id)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
@@ -142,8 +195,12 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
                   {new Date(comm.timestamp).toLocaleDateString()}
                 </p>
                 <p className="card-excerpt">{comm.content.substring(0, 100)}...</p>
-                {comm._highlight === "visual" && (
-                  <div className="highlight-badge visual">Visual Content</div>
+                {comm._highlight && (
+                  <div className={`highlight-badge ${comm._highlight}`}>
+                    {comm._highlight === "visual" ? "Visual Content" : 
+                     comm._highlight === "important" ? "Important" : 
+                     comm._highlight}
+                  </div>
                 )}
               </div>
             ))}
