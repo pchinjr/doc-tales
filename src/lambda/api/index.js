@@ -113,6 +113,10 @@ async function getCommunications(event) {
   // Parse query parameters
   const queryParams = event.queryStringParameters || {};
   
+  // Get the user's profile to determine their archetype
+  const userId = queryParams.userId || "default-user";
+  const userProfile = await getUserProfileData(userId);
+  
   // Build filters
   const filters = {};
   
@@ -143,12 +147,84 @@ async function getCommunications(event) {
   // Query communications
   const result = await exports.queryCommunications(filters);
   
+  // Customize the view based on the user's archetype
+  const archetype = userProfile ? userProfile.primaryArchetype : "prioritizer";
+  const customizedResult = customizeByArchetype(result, archetype);
+  
   // Format for API response
   return {
     statusCode: 200,
     headers: getCorsHeaders(),
-    body: JSON.stringify(result)
+    body: JSON.stringify(customizedResult)
   };
+}
+
+/**
+ * Customize communications data based on user archetype
+ */
+function customizeByArchetype(result, archetype) {
+  const communications = result.communications || [];
+  let customized = { ...result };
+  
+  switch(archetype) {
+    case "prioritizer":
+      // Sort by timestamp and highlight urgency
+      customized.communications = communications.map(comm => ({
+        ...comm,
+        _archetypeView: "prioritizer",
+        _sortKey: comm.timestamp,
+        _highlight: comm.metadata && comm.metadata.urgency === "high" ? "urgent" : "normal",
+        _displayFormat: "timeline"
+      })).sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      customized.viewDescription = "Communications organized chronologically with urgency indicators";
+      break;
+      
+    case "connector":
+      // Group by sender and highlight relationships
+      customized.communications = communications.map(comm => ({
+        ...comm,
+        _archetypeView: "connector",
+        _sortKey: comm.senderName || comm.sender,
+        _highlight: "relationship",
+        _displayFormat: "people-centric"
+      })).sort((a, b) => (a.senderName || a.sender).localeCompare(b.senderName || b.sender));
+      customized.viewDescription = "Communications organized by people and relationships";
+      break;
+      
+    case "visualizer":
+      // Group by project and highlight visual elements
+      customized.communications = communications.map(comm => ({
+        ...comm,
+        _archetypeView: "visualizer",
+        _sortKey: comm.project,
+        _highlight: "visual",
+        _displayFormat: "board"
+      })).sort((a, b) => a.project.localeCompare(b.project));
+      customized.viewDescription = "Communications organized visually by project";
+      break;
+      
+    case "analyst":
+      // Group by category and highlight metadata
+      customized.communications = communications.map(comm => ({
+        ...comm,
+        _archetypeView: "analyst",
+        _sortKey: comm.metadata ? comm.metadata.category : "uncategorized",
+        _highlight: "metadata",
+        _displayFormat: "detailed"
+      })).sort((a, b) => {
+        const catA = a.metadata ? a.metadata.category : "uncategorized";
+        const catB = b.metadata ? b.metadata.category : "uncategorized";
+        return catA.localeCompare(catB);
+      });
+      customized.viewDescription = "Communications organized by category with detailed metadata";
+      break;
+      
+    default:
+      // Default view
+      customized.viewDescription = "Standard view of communications";
+  }
+  
+  return customized;
 }
 
 /**
