@@ -1,10 +1,8 @@
-import { Communication, Project, Contact, ProjectType } from "../types/communication";
+import { Communication, ProjectType } from "../types/communication";
 
 export class DataService {
   private static instance: DataService;
   private communications: Communication[] = [];
-  private projects: Project[] = [];
-  private contacts: Contact[] = [];
 
   private constructor() {
     // Private constructor for singleton
@@ -25,8 +23,6 @@ export class DataService {
       
       // Type assertion to match our interfaces
       this.communications = data.communications as unknown as Communication[];
-      this.projects = data.projects as unknown as Project[];
-      this.contacts = data.contacts as unknown as Contact[];
     } catch (error) {
       console.error("Failed to load sample data:", error);
       throw error;
@@ -37,35 +33,11 @@ export class DataService {
     return this.communications;
   }
 
-  public getProjects(): Project[] {
-    return this.projects;
-  }
-
-  public getContacts(): Contact[] {
-    return this.contacts;
-  }
-
   public getCommunicationsByProject(projectId: ProjectType): Communication[] {
     return this.communications.filter(comm => comm.project === projectId);
   }
   
   public getCommunicationById(id: string): Communication | undefined {
     return this.communications.find(comm => comm.id === id);
-  }
-  
-  public getProjectById(id: ProjectType): Project | undefined {
-    return this.projects.find(project => project.id === id);
-  }
-  
-  public getContactById(id: string): Contact | undefined {
-    return this.contacts.find(contact => contact.id === id);
-  }
-  
-  public getRelatedCommunications(communicationId: string): Communication[] {
-    const communication = this.getCommunicationById(communicationId);
-    if (!communication) return [];
-    
-    const relatedIds = communication.relationships.map(rel => rel.targetId);
-    return this.communications.filter(comm => relatedIds.includes(comm.id));
   }
 }
