@@ -4,7 +4,6 @@ import { SourceAdapter } from "./SourceAdapter";
 import { EmailAdapter } from "./adapters/EmailAdapter";
 import { DocumentAdapter } from "./adapters/DocumentAdapter";
 import { SocialAdapter } from "./adapters/SocialAdapter";
-import { Dimensions } from "../types/dimensions";
 
 export class UnifiedDataService {
   private static instance: UnifiedDataService;
