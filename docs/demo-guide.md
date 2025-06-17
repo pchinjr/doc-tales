@@ -45,13 +45,13 @@ Show the working API endpoints:
 
 ```bash
 # Get all communications
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 
 # Get user profile with archetype information
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile | jq
 
 # Get available archetypes
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/archetypes
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/archetypes | jq
 ```
 
 Highlight the different types of communications across projects:
@@ -73,7 +73,7 @@ curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-prof
   -d '{"id":"default-user","primaryArchetype":"prioritizer","archetypeConfidence":{"prioritizer":0.7,"connector":0.1,"visualizer":0.1,"analyst":0.1}}'
 
 # Get communications with temporal focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 ```
 
 Explain how the Prioritizer view organizes information chronologically with urgency indicators.
@@ -83,10 +83,10 @@ Explain how the Prioritizer view organizes information chronologically with urge
 # Update user profile to connector archetype
 curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
   -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"connector","archetypeConfidence":{"prioritizer":0.1,"connector":0.7,"visualizer":0.1,"analyst":0.1}}'
+  -d '{"id":"default-user","primaryArchetype":"connector","archetypeConfidence":{"prioritizer":0.1,"connector":0.7,"visualizer":0.1,"analyst":0.1}}' | jq 
 
 # Get communications with relationship focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 ```
 
 Explain how the Connector view emphasizes people and relationships.
@@ -96,10 +96,10 @@ Explain how the Connector view emphasizes people and relationships.
 # Update user profile to visualizer archetype
 curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
   -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"visualizer","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.7,"analyst":0.1}}'
+  -d '{"id":"default-user","primaryArchetype":"visualizer","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.7,"analyst":0.1}}' | jq
 
 # Get communications with visual focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 ```
 
 Explain how the Visualizer view organizes information spatially.
@@ -109,10 +109,10 @@ Explain how the Visualizer view organizes information spatially.
 # Update user profile to analyst archetype
 curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
   -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"analyst","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.1,"analyst":0.7}}'
+  -d '{"id":"default-user","primaryArchetype":"analyst","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.1,"analyst":0.7}}' | jq
 
 # Get communications with analytical focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 ```
 
 Explain how the Analyst view provides detailed metadata and logical hierarchies.
@@ -123,7 +123,7 @@ Explain how Doc-Tales extracts four key dimensions from communications:
 
 ```bash
 # Get a specific communication to show dimensions
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications/comm-001
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications/comm-001 | jq
 ```
 
 Highlight the dimensions:
@@ -138,9 +138,9 @@ Demonstrate how Doc-Tales provides a unified view across different life projects
 
 ```bash
 # Get communications from different projects
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Home%20Purchase
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Career%20Change
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Family%20Event
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Home%20Purchase | jq
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Career%20Change | jq
+curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Family%20Event | jq
 ```
 
 Explain how this unified view helps users see connections between different aspects of their life.
