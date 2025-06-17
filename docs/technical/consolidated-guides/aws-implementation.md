@@ -1,6 +1,6 @@
 # AWS Implementation Guide
 
-This consolidated guide covers all aspects of AWS implementation for the Doc-Tales project, combining information from multiple source documents.
+This consolidated guide covers all aspects of AWS implementation for the Doc-Tales project, reflecting the current state of the application.
 
 ## Table of Contents
 - [Integration Strategy](#integration-strategy)
@@ -8,7 +8,9 @@ This consolidated guide covers all aspects of AWS implementation for the Doc-Tal
 - [Deployment Process](#deployment-process)
 - [Lambda Functions](#lambda-functions)
 - [DynamoDB Implementation](#dynamodb-implementation)
-- [Refactoring and Improvements](#refactoring-and-improvements)
+- [Event-Driven Architecture](#event-driven-architecture)
+- [Monitoring and Logging](#monitoring-and-logging)
+- [Future Improvements](#future-improvements)
 
 ## Integration Strategy
 
@@ -18,49 +20,46 @@ Doc-Tales leverages several AWS services to create a scalable, serverless backen
 - **Lambda**: Handles serverless processing of documents and user requests
 - **DynamoDB**: Stores user profiles, document metadata, and archetype information
 - **S3**: Manages document storage and static assets
-- **Comprehend**: Performs entity extraction and sentiment analysis
-- **Textract**: Processes document content extraction
+- **CloudFormation**: Manages infrastructure as code through SAM templates
 
 ### Key Integration Points
 
 1. **Frontend to Backend**: React application communicates with API Gateway endpoints
 2. **Document Processing Pipeline**: S3 triggers Lambda functions for document analysis
 3. **User Profile Management**: DynamoDB stores and retrieves personalization data
-4. **Archetype Detection**: Lambda functions process user interactions to update archetype confidence
+4. **Archetype Detection**: API Lambda function customizes responses based on user archetype
 
 ## Infrastructure Components
 
 ### API Gateway Configuration
 
 - **API Structure**: RESTful design with resource-based endpoints
-- **Authentication**: Cognito integration for user authentication
-- **Throttling**: Rate limits to prevent abuse
 - **CORS**: Configured for frontend access
+- **Integration**: Direct integration with Lambda functions
 
 ### Lambda Functions
 
 | Function Name | Purpose | Triggers | Resources Accessed |
 |---------------|---------|----------|-------------------|
-| `documentProcessor` | Process uploaded documents | S3 events | S3, DynamoDB, Comprehend |
-| `userProfileManager` | Manage user profiles and preferences | API Gateway | DynamoDB |
-| `archetypeDetector` | Update archetype confidence scores | API Gateway | DynamoDB |
-| `communicationUnifier` | Normalize data from different sources | API Gateway, EventBridge | DynamoDB, S3 |
-| `dimensionExtractor` | Extract dimensions from communications | EventBridge | DynamoDB, Comprehend |
+| `ApiFunction` | Serves data to frontend | API Gateway | DynamoDB, S3 |
+| `IngestionFunction` | Receives and normalizes communications | API Gateway | DynamoDB, S3 |
+| `DimensionExtractionFunction` | Extracts dimensions from communications | S3 events | DynamoDB, S3 |
+| `NotificationFunction` | Sends alerts for high-priority communications | DynamoDB Streams | SNS |
+| `SetupS3EventsFunction` | Sets up S3 event notifications | CloudFormation | S3 |
 
 ### DynamoDB Tables
 
-- **Users**: User profiles and preferences
-- **Documents**: Document metadata and extracted dimensions
-- **Communications**: Unified communication records
-- **Archetypes**: Archetype confidence scores and history
-- **Projects**: Project metadata and relationships
+- **Communications Table**: Single-table design for communications metadata
+  - Partition Key: Entity type (COMM, USER, etc.)
+  - Sort Key: Entity ID
+  - GSI1: Project-based access patterns
+  - GSI2: Sender-based access patterns
+- **User Profiles Table**: User profiles and archetype preferences
 
 ### S3 Buckets
 
-- **document-storage**: Raw document storage
-- **processed-documents**: Processed document data
-- **static-assets**: Frontend static assets
-- **user-uploads**: Temporary storage for user uploads
+- **Raw Communications Bucket**: Raw document storage
+- **Processed Documents Bucket**: Processed document data
 
 ## Deployment Process
 
@@ -68,132 +67,143 @@ Doc-Tales leverages several AWS services to create a scalable, serverless backen
 
 - AWS CLI configured with appropriate permissions
 - SAM CLI installed
-- Node.js 18.x or later
+- Node.js 22.x
 
 ### Deployment Steps
 
 1. **Build the SAM template**:
    ```bash
+   cd infrastructure/sam
    sam build
    ```
 
 2. **Deploy the stack**:
    ```bash
-   sam deploy --guided
+   sam deploy --stack-name doc-tales --parameter-overrides Environment=dev AppName=doc-tales
    ```
 
-3. **Configure frontend environment**:
+3. **Seed the database**:
    ```bash
-   aws cloudformation describe-stacks --stack-name doc-tales --query "Stacks[0].Outputs" > frontend-config.json
+   ./seed-data.sh
    ```
 
 4. **Verify deployment**:
    ```bash
-   aws cloudformation describe-stacks --stack-name doc-tales --query "Stacks[0].StackStatus"
+   ./deploy-and-verify.sh
    ```
 
 ### CI/CD Pipeline
 
 - GitHub Actions workflow for automated testing and deployment
-- Environment-specific configurations for dev, staging, and production
-- Automated rollback on deployment failures
+- GitHub OIDC for secure AWS authentication
 
 ## Lambda Functions
 
-### Development Workflow
+### API Function
 
-1. Create function in `infrastructure/lambda/` directory
-2. Define function in SAM template
-3. Implement handler with appropriate event processing
-4. Add tests in `infrastructure/lambda/tests/`
-5. Deploy using SAM CLI
+The API function (`src/lambda/api/index.js`) is the core of the backend, providing endpoints for:
 
-### Best Practices
+- Getting communications with archetype-based personalization
+- Getting individual communications by ID
+- Getting and updating user profiles
+- Getting available archetypes
 
-- Use Lambda Layers for shared code
-- Implement proper error handling and logging
-- Keep functions focused on single responsibility
-- Use environment variables for configuration
-- Implement retries for transient failures
+Key features:
+- Customizes responses based on user archetype
+- Supports filtering communications by project
+- Adds metadata for frontend rendering
+- Provides view descriptions for each archetype
 
-### Common Issues and Solutions
+### Ingestion Function
 
-- **Cold Start**: Optimize function size and dependencies
-- **Timeout**: Break complex operations into smaller functions
-- **Memory Usage**: Monitor and adjust memory allocation
-- **Permissions**: Use least privilege principle for IAM roles
+The Ingestion function (`src/lambda/ingestion/index.js`) handles:
+
+- Receiving communications from various sources
+- Normalizing data into a standard format
+- Storing raw communications in S3
+- Creating metadata records in DynamoDB
+
+### Dimension Extraction Function
+
+The Dimension Extraction function (`src/lambda/dimension-extraction/index.js`):
+
+- Is triggered by S3 events when new communications are uploaded
+- Extracts temporal, relationship, visual, and analytical dimensions
+- Updates metadata in DynamoDB with extracted dimensions
+
+### Notification Function
+
+The Notification function (`src/lambda/notification/index.js`):
+
+- Is triggered by DynamoDB Streams when high-priority communications are added
+- Sends alerts through SNS for high-priority communications
+
+### Setup S3 Events Function
+
+The Setup S3 Events function (`src/lambda/setup-s3-events/index.js`):
+
+- Acts as a CloudFormation custom resource
+- Configures S3 event notifications to trigger the Dimension Extraction function
 
 ## DynamoDB Implementation
 
-### Schema Design
-
-The DynamoDB schema follows single-table design principles with the following key patterns:
-
-- **Partition Key**: Entity type (USER, DOC, COMM, etc.)
-- **Sort Key**: Composite key with ID and metadata
-- **GSI1**: Project-based access patterns
-- **GSI2**: Time-based access patterns
-- **GSI3**: Relationship-based access patterns
-
 ### Access Patterns
 
-| Access Pattern | Key Structure | Index |
-|----------------|--------------|-------|
-| Get user profile | PK: USER#userId | Base table |
-| Get user documents | PK: USER#userId, SK: begins_with(DOC#) | Base table |
-| Get project communications | PK: PROJECT#projectId | GSI1 |
-| Get recent communications | PK: COMM, SK: timestamp (descending) | GSI2 |
-| Get related communications | PK: ENTITY#entityId | GSI3 |
+| Access Pattern              | Description                           | Key Structure                  | Index      |
+|----------------------------|---------------------------------------|--------------------------------|------------|
+| Get all communications     | Retrieve all communications           | PK = "COMM"                    | Base table |
+| Get communication by ID    | Retrieve a specific communication     | PK = "COMM", SK = "COMM#{id}"  | Base table |
+| Get communications by project | Retrieve all communications for a project | GSI1PK = "PROJECT#{projectId}" | GSI1       |
+| Get communications by sender | Retrieve all communications from a sender | GSI2PK = "ENTITY#{senderId}"  | GSI2       |
+| Get user profile           | Retrieve a user's profile             | PK = "USER#{userId}"           | Base table |
 
-### Query Optimization
+### Data Model
 
-- Use sparse indexes for efficient queries
-- Implement pagination for large result sets
-- Use batch operations for multiple items
-- Consider caching for frequently accessed data
+The communications table uses a dimension-based data model with four key dimensions:
 
-## Refactoring and Improvements
+1. **Temporal**: Deadlines, urgency, chronology, follow-up dates
+2. **Relationship**: Connection strength, frequency, network position
+3. **Visual**: Document types, visual elements, spatial organization
+4. **Analytical**: Categories, tags, sentiment, structure
 
-### Lambda Refactoring
+These dimensions are used to customize the view based on the user's archetype.
 
-Current issues with Lambda implementation:
+## Event-Driven Architecture
 
-1. Monolithic functions handling multiple responsibilities
-2. Duplicate code across functions
-3. Inconsistent error handling
-4. Limited test coverage
+Doc-Tales uses an event-driven architecture for asynchronous processing:
 
-Refactoring plan:
+1. **S3 Events**: Trigger the Dimension Extraction function when new communications are uploaded
+2. **DynamoDB Streams**: Trigger the Notification function when high-priority communications are added
 
-1. Split monolithic functions into smaller, focused functions
-2. Implement Lambda Layers for shared code
-3. Standardize error handling and logging
-4. Improve test coverage with unit and integration tests
-
-### DynamoDB Improvements
-
-1. Optimize composite key handling
-2. Implement more efficient query patterns
-3. Add TTL for temporary data
-4. Implement versioning for conflict resolution
-
-### API Gateway Enhancements
-
-1. Implement API versioning
-2. Add request validation
-3. Improve error responses
-4. Implement caching where appropriate
+This architecture enables:
+- Decoupled, scalable processing
+- Real-time updates and notifications
+- Efficient resource utilization
 
 ## Monitoring and Logging
 
 - CloudWatch Logs for Lambda function logs
 - CloudWatch Metrics for performance monitoring
-- X-Ray for distributed tracing
-- CloudWatch Alarms for critical thresholds
+- Custom logging in Lambda functions for debugging
 
-## Security Considerations
+## Future Improvements
 
-- IAM roles with least privilege
-- API Gateway authorization
-- Encryption at rest and in transit
-- Regular security audits and updates
+1. **Backend Improvements**:
+   - Implement Lambda Layers for shared code
+   - Add comprehensive error handling and logging
+   - Enhance security with proper authentication
+
+2. **Enhanced Interaction Tracking**:
+   - Improve archetype detection algorithm
+   - Add more interaction types to track
+
+3. **UI Enhancements**:
+   - Add animations for archetype transitions
+   - Implement relationship visualization with D3.js
+   - Create project timeline visualization
+   - Connect frontend to deployed AWS backend
+
+4. **Advanced Analytics**:
+   - Implement AWS Comprehend for entity extraction
+   - Use AWS Textract for document processing
+   - Add sentiment analysis for communications
