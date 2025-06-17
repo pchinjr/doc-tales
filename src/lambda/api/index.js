@@ -28,14 +28,6 @@ exports.services = {
   s3Service
 };
 
-// Entity types for partition keys
-const ENTITY_TYPES = {
-  COMMUNICATION: "COMM",
-  USER: "USER",
-  PROJECT: "PROJ",
-  ENTITY: "ENTITY"
-};
-
 /**
  * Main handler function
  */
@@ -345,7 +337,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
         IndexName: "GSI1",
         KeyConditionExpression: "GSI1PK = :projectPK",
         ExpressionAttributeValues: {
-          ":projectPK": `${ENTITY_TYPES.PROJECT}#${filters.project}`
+          ":projectPK": `PROJECT#${filters.project}`
         },
         Limit: 100
       };
@@ -356,7 +348,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
         IndexName: "GSI2",
         KeyConditionExpression: "GSI2PK = :senderPK",
         ExpressionAttributeValues: {
-          ":senderPK": `${ENTITY_TYPES.ENTITY}#${filters.sender}`
+          ":senderPK": `ENTITY#${filters.sender}`
         },
         Limit: 100
       };
@@ -366,7 +358,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
       params = {
         KeyConditionExpression: "PK = :commType",
         ExpressionAttributeValues: {
-          ":commType": ENTITY_TYPES.COMMUNICATION
+          ":commType": "COMM"
         },
         Limit: 100
       };
@@ -450,8 +442,8 @@ exports.getCommunicationData = async function getCommunicationData(id) {
     const params = {
       KeyConditionExpression: "PK = :pk AND SK = :sk",
       ExpressionAttributeValues: {
-        ":pk": ENTITY_TYPES.COMMUNICATION,
-        ":sk": `${ENTITY_TYPES.COMMUNICATION}#${id}`
+        ":pk": "COMM",
+        ":sk": `COMM#${id}`
       }
     };
     
