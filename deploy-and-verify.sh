@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-STACK_NAME="doc-tales-dev"
+STACK_NAME="doc-tales"
 REGION="us-east-1"
 ENVIRONMENT="dev"
 

@@ -7,8 +7,8 @@
  * Refactored to use single-table design with composite keys and service layer
  */
 
-const DynamoDBService = require("../services/dynamodb-service");
-const S3Service = require("../services/s3-service");
+const DynamoDBService = require("./services/dynamodb-service");
+const AWS = require("aws-sdk");
 
 // Create service instances
 const dynamoService = new DynamoDBService({
@@ -16,9 +16,11 @@ const dynamoService = new DynamoDBService({
   userProfilesTableName: process.env.USER_PROFILES_TABLE || "doc-tales-user-profiles-dev"
 });
 
-const s3Service = new S3Service({
-  bucketName: process.env.RAW_BUCKET || "doc-tales-raw-communications-dev"
-});
+// Create S3 service directly
+const s3 = new AWS.S3();
+const s3Service = {
+  getObject: (params) => s3.getObject(params).promise()
+};
 
 // Export services for testing
 exports.services = {
