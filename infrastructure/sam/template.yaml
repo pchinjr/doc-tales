@@ -117,7 +117,7 @@ Resources:
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref CommunicationsTable
-        - DynamoDBReadPolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref UserProfilesTable
         - S3ReadPolicy:
             BucketName: !Ref RawCommunicationsBucket
