@@ -15,9 +15,9 @@ export class UnifiedDataService {
   
   private constructor() {
     // Initialize with default adapters
-    this.registerAdapter(new EmailAdapter("gmail"));
-    this.registerAdapter(new DocumentAdapter("dropbox"));
-    this.registerAdapter(new SocialAdapter("twitter"));
+    this.registerAdapter(new EmailAdapter("Gmail"));
+    this.registerAdapter(new DocumentAdapter("Email Attachment"));
+    this.registerAdapter(new SocialAdapter("Twitter"));
   }
   
   public static getInstance(): UnifiedDataService {
@@ -129,39 +129,26 @@ export class UnifiedDataService {
           
           if (urgencyDiff !== 0) return urgencyDiff;
           
-          // Then sort by deadline if available
-          const aDeadline = a.dimensions.temporal.deadline ? 
-            new Date(a.dimensions.temporal.deadline).getTime() : Infinity;
-          const bDeadline = b.dimensions.temporal.deadline ? 
-            new Date(b.dimensions.temporal.deadline).getTime() : Infinity;
-          
-          return aDeadline - bDeadline;
+          // Then sort by timestamp
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
         });
         
       case "connector":
-        // Sort by relationship strength
+        // Group by sender
         return [...this.communications].sort((a, b) => {
-          const strengthOrder = { strong: 0, medium: 1, weak: 2 };
-          return (
-            strengthOrder[a.dimensions.relationship.connectionStrength] - 
-            strengthOrder[b.dimensions.relationship.connectionStrength]
-          );
+          return a.senderName.localeCompare(b.senderName);
         });
         
       case "visualizer":
-        // Prioritize communications with visual elements
+        // Group by project
         return [...this.communications].sort((a, b) => {
-          const aVisualScore = this.calculateVisualScore(a.dimensions);
-          const bVisualScore = this.calculateVisualScore(b.dimensions);
-          return bVisualScore - aVisualScore;
+          return a.project.localeCompare(b.project);
         });
         
       case "analyst":
-        // Prioritize communications with rich metadata and structure
+        // Group by category
         return [...this.communications].sort((a, b) => {
-          const aAnalyticalScore = this.calculateAnalyticalScore(a.dimensions);
-          const bAnalyticalScore = this.calculateAnalyticalScore(b.dimensions);
-          return bAnalyticalScore - aAnalyticalScore;
+          return a.metadata.category.localeCompare(b.metadata.category);
         });
         
       default:
@@ -177,7 +164,7 @@ export class UnifiedDataService {
     return this.communications.filter(comm => 
       comm.subject.toLowerCase().includes(lowerQuery) || 
       comm.content.toLowerCase().includes(lowerQuery) ||
-      comm.sender.name.toLowerCase().includes(lowerQuery)
+      comm.senderName.toLowerCase().includes(lowerQuery)
     );
   }
   
@@ -193,42 +180,5 @@ export class UnifiedDataService {
    */
   public getLastRefreshTime(): Date | null {
     return this.lastRefresh;
-  }
-  
-  /**
-   * Helper method to calculate visual score for sorting
-   */
-  private calculateVisualScore(dimensions: Dimensions): number {
-    let score = 0;
-    
-    if (dimensions.visual.hasImages) score += 3;
-    score += dimensions.visual.visualElements.images * 2;
-    score += dimensions.visual.visualElements.charts * 2;
-    score += dimensions.visual.visualElements.tables;
-    score += dimensions.visual.visualElements.attachments;
-    
-    if (dimensions.visual.spatialContext?.location) score += 2;
-    
-    return score;
-  }
-  
-  /**
-   * Helper method to calculate analytical score for sorting
-   */
-  private calculateAnalyticalScore(dimensions: Dimensions): number {
-    let score = 0;
-    
-    score += dimensions.analytical.tags.length;
-    score += dimensions.analytical.categories.length * 2;
-    score += Object.values(dimensions.analytical.entities)
-      .reduce((sum, arr) => sum + arr.length, 0);
-    
-    if (dimensions.analytical.structure.hasHeadings) score += 2;
-    if (dimensions.analytical.structure.hasBulletPoints) score += 1;
-    if (dimensions.analytical.structure.hasNumberedLists) score += 1;
-    
-    score += Math.min(5, dimensions.analytical.metrics.readingTime);
-    
-    return score;
   }
 }
