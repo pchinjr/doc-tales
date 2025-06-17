@@ -514,7 +514,7 @@ async function getUserProfileData(userId) {
   try {
     const result = await exports.services.dynamoService.getUserProfile({
       Key: {
-        PK: `${ENTITY_TYPES.USER}#${userId}`
+        PK: `USER#${userId}`
       }
     });
     
@@ -541,7 +541,7 @@ async function updateUserProfileData(userId, data) {
   try {
     await exports.services.dynamoService.updateUserProfile({
       Key: {
-        PK: `${ENTITY_TYPES.USER}#${userId}`
+        PK: `USER#${userId}`
       },
       UpdateExpression: "set primaryArchetype = :primaryArchetype, archetypeConfidence = :archetypeConfidence, preferences = :preferences",
       ExpressionAttributeValues: {
