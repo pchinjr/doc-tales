@@ -1,4 +1,5 @@
-import { ArchetypeType, UserProfile } from "../types/communication";
+import { ArchetypeType } from "../types/communication";
+import { ApiService, UserProfile } from "./ApiService";
 
 export interface InteractionEvent {
   type: string;
@@ -11,19 +12,21 @@ export class ArchetypeService {
   private static instance: ArchetypeService;
   private interactions: InteractionEvent[] = [];
   private userProfile: UserProfile = {
-    id: "demo-user",
+    id: "default-user",
     primaryArchetype: "connector",
     archetypeConfidence: {
       prioritizer: 0.25,
       connector: 0.25,
       visualizer: 0.25,
       analyst: 0.25
-    },
-    preferences: {}
+    }
   };
+  private apiService: ApiService;
+  private isLoading: boolean = false;
 
   private constructor() {
-    // Private constructor for singleton
+    this.apiService = ApiService.getInstance();
+    this.loadUserProfile();
   }
 
   public static getInstance(): ArchetypeService {
@@ -33,12 +36,25 @@ export class ArchetypeService {
     return ArchetypeService.instance;
   }
 
-  public trackInteraction(event: InteractionEvent): void {
-    this.interactions.push(event);
-    this.updateArchetype();
+  private async loadUserProfile(): Promise<void> {
+    try {
+      this.isLoading = true;
+      const profile = await this.apiService.getUserProfile();
+      this.userProfile = profile;
+    } catch (error) {
+      console.error("Failed to load user profile:", error);
+      // Keep using default profile
+    } finally {
+      this.isLoading = false;
+    }
   }
 
-  private updateArchetype(): void {
+  public async trackInteraction(event: InteractionEvent): Promise<void> {
+    this.interactions.push(event);
+    await this.updateArchetype();
+  }
+
+  private async updateArchetype(): Promise<void> {
     // Simple rule-based classification for hackathon
     // In a real implementation, this would use ML
     
@@ -50,25 +66,34 @@ export class ArchetypeService {
     const total = Math.max(1, dateInteractions + peopleInteractions + 
                           visualInteractions + detailInteractions);
     
-    this.userProfile.archetypeConfidence = {
-      prioritizer: dateInteractions / total,
-      connector: peopleInteractions / total,
-      visualizer: visualInteractions / total,
-      analyst: detailInteractions / total
+    const newConfidence = {
+      prioritizer: Math.max(0.1, dateInteractions / total),
+      connector: Math.max(0.1, peopleInteractions / total),
+      visualizer: Math.max(0.1, visualInteractions / total),
+      analyst: Math.max(0.1, detailInteractions / total)
     };
     
     // Find the archetype with highest confidence
     let maxConfidence = 0;
     let primaryArchetype: ArchetypeType = "connector";
     
-    Object.entries(this.userProfile.archetypeConfidence).forEach(([archetype, confidence]) => {
+    Object.entries(newConfidence).forEach(([archetype, confidence]) => {
       if (confidence > maxConfidence) {
         maxConfidence = confidence;
         primaryArchetype = archetype as ArchetypeType;
       }
     });
     
+    // Update local state
+    this.userProfile.archetypeConfidence = newConfidence;
     this.userProfile.primaryArchetype = primaryArchetype;
+    
+    // Update API
+    try {
+      await this.apiService.updateUserProfile(this.userProfile);
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+    }
   }
   
   private countInteractionsByType(type: string): number {
@@ -87,13 +112,49 @@ export class ArchetypeService {
     return this.userProfile.archetypeConfidence;
   }
   
-  public resetInteractions(): void {
+  public async setArchetype(archetype: ArchetypeType): Promise<void> {
+    // Update confidence to heavily favor the selected archetype
+    const newConfidence = {
+      prioritizer: 0.1,
+      connector: 0.1,
+      visualizer: 0.1,
+      analyst: 0.1
+    };
+    newConfidence[archetype] = 0.7;
+    
+    // Update local state
+    this.userProfile.archetypeConfidence = newConfidence;
+    this.userProfile.primaryArchetype = archetype;
+    
+    // Update API
+    try {
+      await this.apiService.updateUserProfile(this.userProfile);
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+    }
+  }
+  
+  public async resetInteractions(): Promise<void> {
     this.interactions = [];
-    this.userProfile.archetypeConfidence = {
+    const defaultConfidence = {
       prioritizer: 0.25,
       connector: 0.25,
       visualizer: 0.25,
       analyst: 0.25
     };
+    
+    // Update local state
+    this.userProfile.archetypeConfidence = defaultConfidence;
+    
+    // Update API
+    try {
+      await this.apiService.updateUserProfile(this.userProfile);
+    } catch (error) {
+      console.error("Failed to update user profile:", error);
+    }
+  }
+  
+  public isProfileLoading(): boolean {
+    return this.isLoading;
   }
 }

@@ -33,10 +33,10 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
     });
   };
 
-  const handlePersonClick = (contactId: string) => {
+  const handlePersonClick = (senderId: string) => {
     onInteraction({
       type: "person_click",
-      target: contactId,
+      target: senderId,
       timestamp: Date.now(),
       metadata: {},
     });
@@ -72,17 +72,17 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
                 className="timeline-sender"
                 role="button"
                 tabIndex={0}
-                onClick={() => handlePersonClick(comm.sender.id)}
+                onClick={() => handlePersonClick(comm.sender)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
-                    handlePersonClick(comm.sender.id);
+                    handlePersonClick(comm.sender);
                   }
                 }}
               >
-                From: {comm.sender.name}
+                From: {comm.senderName}
               </div>
               <div className="timeline-project">
-                Project: {comm.project.replace("-", " ")}
+                Project: {comm.project}
               </div>
               <div className="timeline-urgency">
                 Urgency: {comm.metadata.urgency}
@@ -90,6 +90,9 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
               <p className="timeline-excerpt">
                 {comm.content.substring(0, 100)}...
               </p>
+              {comm._highlight === "urgent" && (
+                <div className="highlight-badge urgent">Urgent</div>
+              )}
             </div>
           </div>
         ))}

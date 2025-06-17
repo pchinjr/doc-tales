@@ -1,173 +1,98 @@
-// Task 7: Add Simple Configuration UI
-import React, { useState, useEffect } from "react";
-import { UnifiedDataService } from "../services/UnifiedDataService";
-import { SourceType } from "../types/communication";
+import React, { useState } from "react";
+import { ApiService } from "../services/ApiService";
 
 interface ConfigurationUIProps {
   onSourcesChanged: () => void;
 }
 
 const ConfigurationUI: React.FC<ConfigurationUIProps> = ({ onSourcesChanged }) => {
-  const [availableSources, setAvailableSources] = useState<{
-    type: SourceType;
-    enabled: boolean;
-    connected: boolean;
-    name: string;
-    icon: string;
-  }[]>([
-    { type: "gmail", enabled: true, connected: true, name: "Gmail", icon: "📧" },
-    { type: "outlook", enabled: false, connected: false, name: "Outlook", icon: "📨" },
-    { type: "dropbox", enabled: true, connected: true, name: "Dropbox", icon: "📁" },
-    { type: "gdrive", enabled: false, connected: false, name: "Google Drive", icon: "📄" },
-    { type: "twitter", enabled: true, connected: true, name: "Twitter", icon: "🐦" },
-    { type: "linkedin", enabled: false, connected: false, name: "LinkedIn", icon: "💼" },
-    { type: "slack", enabled: false, connected: false, name: "Slack", icon: "💬" }
-  ]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
   
-  const [isConnecting, setIsConnecting] = useState<SourceType | null>(null);
-  const [demoMode, setDemoMode] = useState<boolean>(true);
-  
-  useEffect(() => {
-    // Initialize with current adapters from UnifiedDataService
-    const dataService = UnifiedDataService.getInstance();
-    const adapters = dataService.getAdapters();
-    
-    setAvailableSources(prevSources => {
-      return prevSources.map(source => {
-        const adapter = adapters.find(a => a.getSourceType() === source.type);
-        return {
-          ...source,
-          enabled: !!adapter,
-          connected: adapter ? adapter.isConnected() : false
-        };
-      });
-    });
-  }, []);
-  
-  const handleToggleSource = (sourceType: SourceType) => {
-    setAvailableSources(prevSources => {
-      return prevSources.map(source => {
-        if (source.type === sourceType) {
-          return { ...source, enabled: !source.enabled };
-        }
-        return source;
-      });
-    });
-    
-    // Update the UnifiedDataService
-    const dataService = UnifiedDataService.getInstance();
-    const source = availableSources.find(s => s.type === sourceType);
-    
-    if (source?.enabled) {
-      // If it was enabled, now disable it
-      dataService.removeAdapter(sourceType);
-    } else {
-      // If it was disabled, now enable it
-      // In a real implementation, this would create the appropriate adapter
-      // For the demo, we'll just show a connecting state
-      setIsConnecting(sourceType);
+  const handleResetProfile = async () => {
+    try {
+      setLoading(true);
+      setMessage("Resetting user profile...");
       
-      // Simulate connection delay
-      setTimeout(() => {
-        setIsConnecting(null);
-        setAvailableSources(prevSources => {
-          return prevSources.map(source => {
-            if (source.type === sourceType) {
-              return { ...source, connected: true };
-            }
-            return source;
-          });
-        });
-        onSourcesChanged();
-      }, 1500);
-    }
-  };
-  
-  const handleConnectSource = (sourceType: SourceType) => {
-    setIsConnecting(sourceType);
-    
-    // Simulate connection delay
-    setTimeout(() => {
-      setIsConnecting(null);
-      setAvailableSources(prevSources => {
-        return prevSources.map(source => {
-          if (source.type === sourceType) {
-            return { ...source, connected: true };
-          }
-          return source;
-        });
+      const apiService = ApiService.getInstance();
+      await apiService.updateUserProfile({
+        id: "default-user",
+        primaryArchetype: "connector",
+        archetypeConfidence: {
+          prioritizer: 0.25,
+          connector: 0.25,
+          visualizer: 0.25,
+          analyst: 0.25
+        }
       });
+      
+      setMessage("User profile reset successfully!");
       onSourcesChanged();
-    }, 1500);
-  };
-  
-  const handleToggleDemoMode = () => {
-    setDemoMode(!demoMode);
+    } catch (error) {
+      console.error("Failed to reset profile:", error);
+      setMessage("Failed to reset profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
   
   return (
     <div className="configuration-ui">
-      <h2>Data Sources Configuration</h2>
+      <h2>Configuration</h2>
       
-      <div className="demo-mode-toggle">
-        <label>
-          <input 
-            type="checkbox" 
-            checked={demoMode} 
-            onChange={handleToggleDemoMode} 
-          />
-          Demo Mode {demoMode ? "(On)" : "(Off)"}
-        </label>
-        <p className="demo-mode-description">
-          {demoMode 
-            ? "Using sample data for demonstration purposes." 
-            : "Connect to real data sources (not implemented in MVP)."}
-        </p>
-      </div>
-      
-      <div className="sources-list">
-        <h3>Available Sources</h3>
-        {availableSources.map(source => (
-          <div key={source.type} className="source-item">
-            <div className="source-icon">{source.icon}</div>
+      <div className="config-section">
+        <h3>Connected Data Sources</h3>
+        <div className="source-list">
+          <div className="source-item connected">
+            <div className="source-icon">📧</div>
             <div className="source-details">
-              <div className="source-name">{source.name}</div>
-              <div className="source-status">
-                {source.connected ? "Connected" : "Not connected"}
-              </div>
+              <h4>Email</h4>
+              <p>Connected to API</p>
             </div>
-            <div className="source-actions">
-              <label className="toggle-switch">
-                <input
-                  type="checkbox"
-                  checked={source.enabled}
-                  onChange={() => handleToggleSource(source.type)}
-                  disabled={isConnecting !== null}
-                />
-                <span className="toggle-slider"></span>
-              </label>
-              {!source.connected && source.enabled && (
-                <button 
-                  onClick={() => handleConnectSource(source.type)}
-                  disabled={isConnecting !== null}
-                  className="connect-button"
-                >
-                  {isConnecting === source.type ? "Connecting..." : "Connect"}
-                </button>
-              )}
-            </div>
+            <div className="source-status">✅</div>
           </div>
-        ))}
+          
+          <div className="source-item connected">
+            <div className="source-icon">📁</div>
+            <div className="source-details">
+              <h4>Documents</h4>
+              <p>Connected to API</p>
+            </div>
+            <div className="source-status">✅</div>
+          </div>
+          
+          <div className="source-item connected">
+            <div className="source-icon">🐦</div>
+            <div className="source-details">
+              <h4>Social</h4>
+              <p>Connected to API</p>
+            </div>
+            <div className="source-status">✅</div>
+          </div>
+        </div>
       </div>
       
-      <div className="configuration-actions">
+      <div className="config-section">
+        <h3>User Profile</h3>
         <button 
-          onClick={onSourcesChanged}
-          className="refresh-button"
-          disabled={isConnecting !== null}
+          className="reset-button"
+          onClick={handleResetProfile}
+          disabled={loading}
         >
-          Refresh Data
+          Reset Archetype Preferences
         </button>
+        {message && <p className="message">{message}</p>}
+      </div>
+      
+      <div className="config-section">
+        <h3>API Connection</h3>
+        <div className="api-status">
+          <div className="status-indicator connected"></div>
+          <p>Connected to AWS API</p>
+        </div>
+        <p className="api-endpoint">
+          Endpoint: https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/
+        </p>
       </div>
     </div>
   );
