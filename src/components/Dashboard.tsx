@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
         <ConfigurationUI onSourcesChanged={handleSourcesChanged} />
       )}
 
-      <section className="archetype-indicator">
+      <section className="archetype-section">
         <h3>Detected Archetype: {archetype}</h3>
         <div className="confidence-bars">
           {Object.entries(confidence).map(([type, value]) => (

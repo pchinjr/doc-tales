@@ -60,7 +60,7 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-.archetype-indicator {
+.archetype-section {
   background-color: white;
   padding: 15px;
   border-radius: 8px;
@@ -123,10 +123,10 @@ body {
   margin: 0;
   font-size: 1rem;
   line-height: 1.5;
-  padding-left: 60px; /* Make room for the archetype indicator */
+  padding-left: 60px; /* Make room for the archetype badge */
 }
 
-.archetype-indicator {
+.archetype-badge {
   position: absolute;
   top: 15px; /* Move down to be inside the view description */
   left: 15px;
@@ -139,20 +139,20 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Add shadow for better visibility */
 }
 
-.archetype-indicator.prioritizer {
+.archetype-badge.prioritizer {
   background-color: #EA4335;
 }
 
-.archetype-indicator.connector {
+.archetype-badge.connector {
   background-color: #4285F4;
 }
 
-.archetype-indicator.visualizer {
+.archetype-badge.visualizer {
   background-color: #FBBC05;
   color: #333; /* Dark text for better contrast on yellow */
 }
 
-.archetype-indicator.analyst {
+.archetype-badge.analyst {
   background-color: #34A853;
 }
 

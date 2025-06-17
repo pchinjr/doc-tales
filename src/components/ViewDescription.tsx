@@ -41,7 +41,7 @@ const ViewDescription: React.FC<ViewDescriptionProps> = ({ description, archetyp
 
   return (
     <div className={`view-description ${visible ? "visible" : "hidden"}`}>
-      <div className={`archetype-indicator ${archetype}`}>
+      <div className={`archetype-badge ${archetype}`}>
         <span>{getArchetypeDisplayName(archetype)}</span>
       </div>
       <p>{currentDescription}</p>
