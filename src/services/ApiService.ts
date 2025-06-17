@@ -15,7 +15,10 @@ export interface UserProfile {
 export class ApiService {
   private static instance: ApiService;
   
-  private constructor() {}
+  // Private constructor with comment to satisfy ESLint
+  private constructor() {
+    // Private constructor for singleton pattern
+  }
   
   public static getInstance(): ApiService {
     if (!ApiService.instance) {
@@ -67,7 +70,7 @@ export class ApiService {
   /**
    * Get user profile
    */
-  public async getUserProfile(userId: string = "default-user"): Promise<UserProfile> {
+  public async getUserProfile(userId = "default-user"): Promise<UserProfile> {
     try {
       const response = await fetch(`${API_BASE_URL}/user-profile?userId=${userId}`);
       if (!response.ok) {

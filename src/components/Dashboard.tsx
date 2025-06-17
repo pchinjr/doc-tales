@@ -12,6 +12,13 @@ import ConfigurationUI from "./ConfigurationUI";
 import DemoFlow from "./DemoFlow";
 import { AwsDataService } from "../services/AwsDataService";
 
+interface ApiResponse {
+  communications: Communication[];
+  count: number;
+  scannedCount: number;
+  viewDescription?: string;
+}
+
 const Dashboard: React.FC = () => {
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -44,12 +51,14 @@ const Dashboard: React.FC = () => {
       const dataService = AwsDataService.getInstance();
       
       // Get communications optimized for the current archetype
-      const comms = await dataService.getCommunicationsForArchetype(archetype);
-      setCommunications(comms);
+      const response = await fetch(`https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications`);
+      const data: ApiResponse = await response.json();
+      
+      setCommunications(data.communications || []);
       
       // Extract view description if available
-      if (comms && comms.length > 0 && "_viewDescription" in comms[0]) {
-        setViewDescription(comms["_viewDescription"] || "");
+      if (data.viewDescription) {
+        setViewDescription(data.viewDescription);
       }
 
       setLoading(false);
