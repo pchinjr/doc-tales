@@ -7,7 +7,7 @@ export class EmailAdapter extends BaseSourceAdapter {
   private mockData: any[] = [];
   private dimensionExtractor: DimensionExtractor;
   
-  constructor(sourceType: SourceType = "gmail") {
+  constructor(sourceType: SourceType = "Gmail") {
     super(sourceType, "email");
     this.dimensionExtractor = new DimensionExtractor();
     this.loadMockData();
@@ -34,7 +34,7 @@ export class EmailAdapter extends BaseSourceAdapter {
         ],
         date: "2025-06-05T10:30:00Z",
         body: "Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?",
-        project: "home-purchase",
+        project: "Home Purchase",
         urgency: "high",
         category: "finance",
         hasAttachments: true,
@@ -64,7 +64,7 @@ export class EmailAdapter extends BaseSourceAdapter {
         ],
         date: "2025-06-07T14:15:00Z",
         body: "This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!",
-        project: "career-change",
+        project: "Career Change",
         urgency: "high",
         category: "interviews",
         hasAttachments: false,
@@ -92,7 +92,7 @@ export class EmailAdapter extends BaseSourceAdapter {
         ],
         date: "2025-06-01T09:45:00Z",
         body: "Hi everyone! I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.",
-        project: "family-event",
+        project: "Family Event",
         urgency: "medium",
         category: "planning",
         hasAttachments: true,
@@ -120,42 +120,20 @@ export class EmailAdapter extends BaseSourceAdapter {
       // Create a basic communication object
       const communication: Partial<Communication> = {
         id: email.id,
-        type: "email",
+        commType: "email",
         source: this.sourceType,
         timestamp: email.date,
         subject: email.subject,
         content: email.body,
         project: email.project,
-        sender: {
-          id: email.from.id,
-          name: email.from.name,
-          email: email.from.email,
-          projects: [email.project]
-        },
-        recipients: email.to.map((recipient: any) => ({
-          id: recipient.id,
-          name: recipient.name,
-          email: recipient.email,
-          projects: [email.project]
-        })),
-        attachments: email.attachments.map((att: any) => ({
-          id: att.id,
-          name: att.name,
-          type: att.type,
-          size: att.size
-        })),
+        sender: email.from.email,
+        senderName: email.from.name,
         metadata: {
           urgency: email.urgency,
           category: email.category,
-          read: false,
-          flagged: false,
-          sourceSpecific: {
-            isStarred: email.id === "email-001", // Example of source-specific data
-            folder: email.project === "home-purchase" ? "Important" : "Inbox"
-          }
-        },
-        entities: [],
-        relationships: []
+          isStarred: email.id === "email-001", // Example of source-specific data
+          folder: email.project === "Home Purchase" ? "Important" : "Inbox"
+        }
       };
       
       // Extract dimensions using the dimension extractor

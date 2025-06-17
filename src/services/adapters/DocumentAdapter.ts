@@ -7,7 +7,7 @@ export class DocumentAdapter extends BaseSourceAdapter {
   private mockData: any[] = [];
   private dimensionExtractor: DimensionExtractor;
   
-  constructor(sourceType: SourceType = "dropbox") {
+  constructor(sourceType: SourceType = "Email Attachment") {
     super(sourceType, "document");
     this.dimensionExtractor = new DimensionExtractor();
     this.loadMockData();
@@ -40,7 +40,7 @@ export class DocumentAdapter extends BaseSourceAdapter {
         dateCreated: "2025-06-03T15:20:00Z",
         dateModified: "2025-06-03T16:45:00Z",
         content: "This comprehensive inspection report details the condition of the property at 123 Main Street. Several issues were identified that require attention: 1) Roof shingles showing signs of wear, 2) Minor water damage in basement, 3) Electrical panel needs updating. Overall, the property is in good condition with these exceptions.",
-        project: "home-purchase",
+        project: "Home Purchase",
         urgency: "medium",
         category: "inspection",
         fileType: "pdf",
@@ -69,7 +69,7 @@ export class DocumentAdapter extends BaseSourceAdapter {
         dateCreated: "2025-05-28T11:10:00Z",
         dateModified: "2025-06-08T20:15:00Z",
         content: "Professional resume highlighting 10+ years of experience in software development. Skills include: JavaScript, TypeScript, React, Node.js, AWS, and team leadership. Previous roles at TechCorp, InnovateSoft, and DevStudio with progressive responsibility.",
-        project: "career-change",
+        project: "Career Change",
         urgency: "high",
         category: "application",
         fileType: "docx",
@@ -103,7 +103,7 @@ export class DocumentAdapter extends BaseSourceAdapter {
         dateCreated: "2025-06-04T14:30:00Z",
         dateModified: "2025-06-04T14:30:00Z",
         content: "Budget breakdown for family reunion: Venue rental: $500, Food and beverages: $750, Activities and games: $200, Decorations: $150, Photography: $300, Miscellaneous: $100. Total estimated cost: $2,000. Suggested contribution per family: $250.",
-        project: "family-event",
+        project: "Family Event",
         urgency: "low",
         category: "finance",
         fileType: "xlsx",
@@ -130,45 +130,28 @@ export class DocumentAdapter extends BaseSourceAdapter {
       // Create a basic communication object
       const communication: Partial<Communication> = {
         id: doc.id,
-        type: "document",
+        commType: "document",
         source: this.sourceType,
         timestamp: doc.dateModified || doc.dateCreated,
         subject: doc.title,
         content: doc.content,
         project: doc.project,
-        sender: {
-          id: doc.creator.id,
-          name: doc.creator.name,
-          email: doc.creator.email,
-          projects: [doc.project]
-        },
-        recipients: doc.sharedWith.map((recipient: any) => ({
-          id: recipient.id,
-          name: recipient.name,
-          email: recipient.email,
-          projects: [doc.project]
-        })),
-        attachments: [],
+        sender: doc.creator.email,
+        senderName: doc.creator.name,
         metadata: {
           urgency: doc.urgency,
           category: doc.category,
-          read: false,
-          flagged: false,
-          sourceSpecific: {
-            fileType: doc.fileType,
-            fileSize: doc.fileSize,
-            dateCreated: doc.dateCreated,
-            dateModified: doc.dateModified,
-            hasImages: doc.hasImages,
-            imageCount: doc.imageCount,
-            hasCharts: doc.hasCharts,
-            chartCount: doc.chartCount,
-            hasTables: doc.hasTables,
-            tableCount: doc.tableCount
-          }
-        },
-        entities: [],
-        relationships: []
+          fileType: doc.fileType,
+          fileSize: doc.fileSize,
+          dateCreated: doc.dateCreated,
+          dateModified: doc.dateModified,
+          hasImages: doc.hasImages,
+          imageCount: doc.imageCount,
+          hasCharts: doc.hasCharts,
+          chartCount: doc.chartCount,
+          hasTables: doc.hasTables,
+          tableCount: doc.tableCount
+        }
       };
       
       // Extract dimensions using the dimension extractor
