@@ -100,10 +100,55 @@ body {
 
 .view-description {
   margin-top: 15px;
-  padding: 10px;
+  padding: 15px;
   background-color: #f5f5f5;
-  border-radius: 4px;
-  font-style: italic;
+  border-radius: 8px;
+  position: relative;
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+  border-left: 4px solid #4285F4;
+}
+
+.view-description.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.view-description.hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.view-description p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.archetype-indicator {
+  position: absolute;
+  top: -10px;
+  left: 15px;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+}
+
+.archetype-indicator.prioritizer {
+  background-color: #EA4335;
+}
+
+.archetype-indicator.connector {
+  background-color: #4285F4;
+}
+
+.archetype-indicator.visualizer {
+  background-color: #FBBC05;
+}
+
+.archetype-indicator.analyst {
+  background-color: #34A853;
 }
 
 .view-selector {
@@ -135,6 +180,12 @@ body {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.archetype-view.transitioning {
+  opacity: 0.5;
+  transform: translateY(10px);
 }
 
 /* Configuration UI Styles */
@@ -771,5 +822,76 @@ body {
 
 .analyst-view .urgency-badge.low {
   background-color: #34A853;
+  color: white;
+}
+.project-selector {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.project-selector h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.project-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.project-buttons button {
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.project-buttons button:hover {
+  background-color: #e0e0e0;
+}
+
+.project-buttons button.active {
+  background-color: #4285F4;
+  color: white;
+}
+.connector-view .person-card.highlighted {
+  border: 2px solid #4285F4;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.3);
+}
+
+.connector-view .person-avatar.highlighted {
+  background-color: #4285F4;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.5);
+}
+
+.connector-view .person-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #4285F4;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.highlight-badge.relationship {
+  background-color: #4285F4;
+  color: white;
+}
+
+.highlight-badge.important {
+  background-color: #FBBC05;
+  color: white;
+}
+
+.highlight-badge.deadline {
+  background-color: #EA4335;
   color: white;
 }
