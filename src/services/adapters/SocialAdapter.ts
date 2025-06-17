@@ -7,7 +7,7 @@ export class SocialAdapter extends BaseSourceAdapter {
   private mockData: any[] = [];
   private dimensionExtractor: DimensionExtractor;
   
-  constructor(sourceType: SourceType = "twitter") {
+  constructor(sourceType: SourceType = "Twitter") {
     super(sourceType, "social");
     this.dimensionExtractor = new DimensionExtractor();
     this.loadMockData();
@@ -19,7 +19,7 @@ export class SocialAdapter extends BaseSourceAdapter {
     this.mockData = [
       {
         id: "social-001",
-        platform: "twitter",
+        platform: "Twitter",
         content: "Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome",
         author: {
           name: "User",
@@ -43,7 +43,7 @@ export class SocialAdapter extends BaseSourceAdapter {
             id: "contact-008"
           }
         ],
-        project: "home-purchase",
+        project: "Home Purchase",
         urgency: "low",
         category: "updates",
         hasMedia: true,
@@ -53,7 +53,7 @@ export class SocialAdapter extends BaseSourceAdapter {
       },
       {
         id: "social-002",
-        platform: "linkedin",
+        platform: "LinkedIn",
         content: "Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs",
         author: {
           name: "User",
@@ -82,7 +82,7 @@ export class SocialAdapter extends BaseSourceAdapter {
             id: "contact-002"
           }
         ],
-        project: "career-change",
+        project: "Career Change",
         urgency: "medium",
         category: "networking",
         hasMedia: false,
@@ -90,7 +90,7 @@ export class SocialAdapter extends BaseSourceAdapter {
       },
       {
         id: "social-003",
-        platform: "twitter",
+        platform: "Twitter",
         content: "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
         author: {
           name: "User",
@@ -120,7 +120,7 @@ export class SocialAdapter extends BaseSourceAdapter {
             id: "contact-004"
           }
         ],
-        project: "family-event",
+        project: "Family Event",
         urgency: "low",
         category: "planning",
         hasMedia: false,
@@ -138,66 +138,29 @@ export class SocialAdapter extends BaseSourceAdapter {
     
     // Transform mock data into standardized Communication objects
     return this.mockData.map(post => {
-      // Create recipients list from mentions and commenters
-      const recipients = [
-        ...post.mentions.map((mention: any) => ({
-          id: mention.id,
-          name: mention.name,
-          projects: [post.project]
-        })),
-        ...post.commenters.map((commenter: any) => ({
-          id: commenter.id,
-          name: commenter.name,
-          projects: [post.project]
-        }))
-      ];
-      
-      // Remove duplicates from recipients
-      const uniqueRecipients = Array.from(
-        new Map(recipients.map(item => [item.id, item])).values()
-      );
-      
       // Create a basic communication object
       const communication: Partial<Communication> = {
         id: post.id,
-        type: "social",
+        commType: "social",
         source: this.sourceType,
         timestamp: post.timestamp,
         subject: post.content.substring(0, 50) + (post.content.length > 50 ? "..." : ""),
         content: post.content,
         project: post.project,
-        sender: {
-          id: post.author.id,
-          name: post.author.name,
-          projects: [post.project]
-        },
-        recipients: uniqueRecipients,
-        attachments: post.hasMedia ? [
-          {
-            id: `${post.id}-media-1`,
-            name: `${post.mediaType}-1`,
-            type: `image/${post.mediaType === "image" ? "jpeg" : "mp4"}`,
-            size: 500000
-          }
-        ] : [],
+        sender: post.author.handle,
+        senderName: post.author.name,
         metadata: {
           urgency: post.urgency,
           category: post.category,
-          read: true,
-          flagged: false,
-          sourceSpecific: {
-            platform: post.platform,
-            likes: post.likes,
-            shares: post.shares,
-            comments: post.comments,
-            hasMedia: post.hasMedia,
-            mediaType: post.mediaType,
-            mediaCount: post.mediaCount,
-            location: post.location
-          }
-        },
-        entities: [],
-        relationships: []
+          platform: post.platform,
+          likes: post.likes,
+          shares: post.shares,
+          comments: post.comments,
+          hasMedia: post.hasMedia,
+          mediaType: post.mediaType,
+          mediaCount: post.mediaCount,
+          location: post.location
+        }
       };
       
       // Extract dimensions using the dimension extractor
