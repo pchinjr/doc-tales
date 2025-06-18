@@ -11,7 +11,8 @@
     "tsc": "tsc",
     "dev": "ts-node src/index.tsx",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix"
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+    "test:parsers": "ts-node src/scripts/test-parsers.ts"
   },
   "keywords": [
     "document",

@@ -1,0 +1,45 @@
+From: Aunt Lisa <lisa.family@gmail.com>
+To: John Smith <john.smith@example.com>, Uncle Bob <bob.family@gmail.com>
+Subject: Family Reunion Planning
+Date: Tue, 1 Jun 2025 09:45:00 +0000
+Content-Type: multipart/mixed; boundary="boundary-string"
+MIME-Version: 1.0
+
+--boundary-string
+Content-Type: text/plain; charset=UTF-8
+
+Hi everyone!
+
+I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.
+
+Love,
+Aunt Lisa
+
+--boundary-string
+Content-Type: text/html; charset=UTF-8
+
+<!DOCTYPE html>
+<html>
+<body>
+  <p>Hi everyone!</p>
+  <p>I'm thinking about hosting the family reunion at my place this year. Would <strong>July 15th</strong> work for everyone? Please let me know your thoughts on food and activities we should plan.</p>
+  <p>Love,<br>Aunt Lisa</p>
+</body>
+</html>
+
+--boundary-string
+Content-Type: application/pdf; name="family-reunion-location.pdf"
+Content-Disposition: attachment; filename="family-reunion-location.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjMKJcTl8uXrp/Og0MTGCjQgMCBvYmoKPDwgL0xlbmd0aCA1IDAgUiAvRmlsdGVyIC9GbGF0ZURl
+Y29kZSA+PgpzdHJlYW0KeAFLK89PSVWwVUhOzFMoLcnIL1JIzkjMS08tLlGwVSjPL8pJUQQAx+YJ+AplbmRz
+dHJlYW0KZW5kb2JqCjUgMCBvYmoKNTcKZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAz
+IDAgUiAvUmVzb3VyY2VzIDYgMCBSIC9Db250ZW50cyA0IDAgUiAvTWVkaWFCb3ggWzAgMCA1OTUgODQyXQo+
+PgplbmRvYmoKNiAwIG9iago8PCAvUHJvY1NldCBbIC9QREYgL1RleHQgXSAvQ29sb3JTcGFjZSA8PCAvQ3Mg
+MSAwIFIgPj4gL0ZvbnQgPDwgL1RUMiA3IDAgUgo+PiA+PgplbmRvYmoKOCAwIG9iago8PCAvTGVuZ3RoIDkg
+MCBSIC9OIDEgL0FsdGVybmF0ZSAvRGV2aWNlR3JheSAvRmlsdGVyIC9GbGF0ZURlY29kZSA+PgpzdHJlYW0K
+eAGFkTsOwjAQRHs+xZQgEafwNVThCCk4QFo6SJHSxEVOj7MbhECiYMt+M/tWTgxMGCjnHjY2TgzM0+JjRDfq
+K3UDT/RcxSFa78+T0bJ5jFAZUcnQUcpI5ynGVoQx3mnNXbEqFqqKtVJ7YUxRXJQol2rZcCNKFSXL0o9yvdHR
+J9XmFu5XzgZfboJ34/XH/X5Y5X6LfXyXv+jaPmS+Aw==
+--boundary-string--

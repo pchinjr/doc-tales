@@ -1,0 +1,59 @@
+JOHN SMITH
+Software Developer
+john.smith@example.com | (555) 123-4567 | linkedin.com/in/johnsmith
+San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Experienced software developer with 10+ years of experience in full-stack development, specializing in JavaScript, TypeScript, React, and Node.js. Proven track record of delivering high-quality, scalable applications in fast-paced environments. Strong problem-solving skills and passion for clean, maintainable code.
+
+SKILLS
+Programming Languages: JavaScript, TypeScript, Python, Java
+Frontend: React, Redux, HTML5, CSS3, SASS, Webpack
+Backend: Node.js, Express, REST APIs, GraphQL
+Cloud: AWS (Lambda, S3, DynamoDB, EC2), Azure
+DevOps: Docker, Kubernetes, CI/CD, Jenkins
+Testing: Jest, Mocha, Cypress
+Methodologies: Agile, Scrum, TDD
+
+PROFESSIONAL EXPERIENCE
+
+TECHCORP | Senior Software Developer
+San Francisco, CA | January 2022 - Present
+- Led development of a microservices-based e-commerce platform serving 1M+ users
+- Implemented CI/CD pipeline reducing deployment time by 70%
+- Mentored junior developers and conducted code reviews
+- Optimized React application performance, improving load time by 40%
+
+INNOVATESOFT | Software Developer
+San Francisco, CA | March 2018 - December 2021
+- Developed and maintained multiple client-facing web applications
+- Created reusable component library used across 5 different projects
+- Implemented authentication system using OAuth 2.0 and JWT
+- Collaborated with UX designers to implement responsive designs
+
+DEVSTUDIO | Junior Developer
+San Jose, CA | June 2015 - February 2018
+- Assisted in development of mobile-responsive websites
+- Fixed bugs and implemented new features for existing applications
+- Participated in daily stand-ups and sprint planning
+- Wrote unit tests to ensure code quality
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of California, Berkeley
+Graduated: May 2015
+
+CERTIFICATIONS
+- AWS Certified Developer - Associate
+- MongoDB Certified Developer
+- Certified Scrum Developer
+
+PROJECTS
+Personal Finance Tracker
+- React/Node.js application for tracking expenses and budgeting
+- Features include categorization, visualization, and budget alerts
+- GitHub: github.com/johnsmith/finance-tracker
+
+Open Source Contributions
+- Contributed to React, Node.js, and various npm packages
+- Fixed bugs and added features to community projects
