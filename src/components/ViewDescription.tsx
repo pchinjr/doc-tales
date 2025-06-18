@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 
 interface ViewDescriptionProps {
   description: string;
-  archetype: string;
+  archetype: string; // Keep in interface for future use if needed
 }
 
-const ViewDescription: React.FC<ViewDescriptionProps> = ({ description, archetype }) => {
+const ViewDescription: React.FC<ViewDescriptionProps> = ({ description }) => {
   const [visible, setVisible] = useState(false);
   const [currentDescription, setCurrentDescription] = useState(description);
 
