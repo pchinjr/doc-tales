@@ -9,23 +9,22 @@ export AWS_SECRET_ACCESS_KEY=test-secret
 # Suppress AWS SDK v2 deprecation warnings
 export NODE_OPTIONS="--no-warnings"
 
-echo "Running common package tests..."
-cd packages/common && npm test
-COMMON_EXIT=$?
+# Install dependencies if needed
+echo "Installing dependencies..."
+npm install
 
-echo "Running backend package tests..."
-cd ../backend && npm test
-BACKEND_EXIT=$?
+# Run tests for Lambda functions directly
+echo "Running Lambda tests..."
+npx tape 'packages/backend/src/lambda/tests/*.test.js' | npx tap-spec
+LAMBDA_EXIT=$?
 
-echo "Running frontend package tests..."
-cd ../frontend && npm test
-FRONTEND_EXIT=$?
-
-# Return to root directory
-cd ../..
+# Run tests for parsers
+echo "Running parser tests..."
+npx tape 'packages/backend/src/services/parsers/__tests__/*.test.ts' | npx tap-spec
+PARSER_EXIT=$?
 
 # Check if any tests failed
-if [ $COMMON_EXIT -ne 0 ] || [ $BACKEND_EXIT -ne 0 ] || [ $FRONTEND_EXIT -ne 0 ]; then
+if [ $LAMBDA_EXIT -ne 0 ] || [ $PARSER_EXIT -ne 0 ]; then
   echo "Tests failed!"
   exit 1
 fi

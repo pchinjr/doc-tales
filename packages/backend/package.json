@@ -8,7 +8,7 @@
     "clean": "rimraf dist",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
-    "test": "ts-node node_modules/tape/bin/tape \"src/**/*.test.ts\" | tap-spec",
+    "test": "tape \"src/**/*.test.{js,ts}\" | tap-spec",
     "deploy": "sam build && sam deploy",
     "package": "sam package --s3-bucket ${DEPLOYMENT_BUCKET} --output-template-file packaged.yaml",
     "deploy:dev": "npm run build && npm run package && sam deploy --template-file packaged.yaml --stack-name doc-tales --capabilities CAPABILITY_IAM --parameter-overrides Environment=dev",
