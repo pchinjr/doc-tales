@@ -92,14 +92,16 @@ const AnalystView: React.FC<AnalystViewProps> = ({
           return sortDirection === "asc" 
             ? new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime() 
             : new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-        case "project":
+        case "project": {
           return sortDirection === "asc" 
             ? a.project.localeCompare(b.project) 
             : b.project.localeCompare(a.project);
-        case "urgency":
+        }
+        case "urgency": {
           const urgencyOrder = { high: 0, medium: 1, low: 2 };
           const urgencyDiff = urgencyOrder[a.metadata.urgency] - urgencyOrder[b.metadata.urgency];
           return sortDirection === "asc" ? urgencyDiff : -urgencyDiff;
+        }
         default:
           return 0;
       }

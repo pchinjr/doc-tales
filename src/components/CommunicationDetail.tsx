@@ -204,7 +204,7 @@ const CommunicationDetail: React.FC<CommunicationDetailProps> = ({
             <div className="detail-content">
               <h3>Content</h3>
               <div className="content-text">
-                {communication.content.split('\n').map((paragraph, index) => (
+                {communication.content.split("\\n").map((paragraph, index) => (
                   <p key={index}>{paragraph}</p>
                 ))}
               </div>

@@ -12,6 +12,15 @@ export interface ArchetypeChangeListener {
   (profile: UserProfile): void;
 }
 
+interface InteractionWeights {
+  [key: string]: {
+    prioritizer: number;
+    connector: number;
+    visualizer: number;
+    analyst: number;
+  };
+}
+
 export class ArchetypeService {
   private static instance: ArchetypeService;
   private interactions: InteractionEvent[] = [];
@@ -28,7 +37,7 @@ export class ArchetypeService {
   private apiService: ApiService;
   private isLoading = false;
   private changeListeners: ArchetypeChangeListener[] = [];
-  private interactionWeights = {
+  private interactionWeights: InteractionWeights = {
     date_click: { prioritizer: 0.15, connector: 0.05, visualizer: 0.05, analyst: 0.05 },
     person_click: { prioritizer: 0.05, connector: 0.15, visualizer: 0.05, analyst: 0.05 },
     image_view: { prioritizer: 0.05, connector: 0.05, visualizer: 0.15, analyst: 0.05 },
@@ -147,10 +156,6 @@ export class ArchetypeService {
   
   public removeChangeListener(listener: ArchetypeChangeListener): void {
     this.changeListeners = this.changeListeners.filter(l => l !== listener);
-  }
-  
-  private countInteractionsByType(type: string): number {
-    return this.interactions.filter(event => event.type === type).length;
   }
   
   public getUserProfile(): UserProfile {

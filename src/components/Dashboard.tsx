@@ -40,7 +40,7 @@ const Dashboard: React.FC = () => {
   const [archetypeChanged, setArchetypeChanged] = useState<boolean>(false);
 
   // Handle archetype service updates
-  const handleArchetypeChange: ArchetypeChangeListener = useCallback((profile: UserProfile) => {
+  const handleProfileUpdate: ArchetypeChangeListener = useCallback((profile: UserProfile) => {
     setConfidence(profile.archetypeConfidence);
     
     // Check if primary archetype has changed
@@ -58,12 +58,12 @@ const Dashboard: React.FC = () => {
   // Set up archetype change listener
   useEffect(() => {
     const archetypeService = ArchetypeService.getInstance();
-    archetypeService.addChangeListener(handleArchetypeChange);
+    archetypeService.addChangeListener(handleProfileUpdate);
     
     return () => {
-      archetypeService.removeChangeListener(handleArchetypeChange);
+      archetypeService.removeChangeListener(handleProfileUpdate);
     };
-  }, [handleArchetypeChange]);
+  }, [handleProfileUpdate]);
 
   useEffect(() => {
     loadData();
@@ -124,7 +124,7 @@ const Dashboard: React.FC = () => {
     // The change listener will handle updates when the archetype service changes
   };
 
-  const handleArchetypeChange = async (newArchetype: ArchetypeType) => {
+  const handleArchetypeSelect = async (newArchetype: ArchetypeType) => {
     if (newArchetype === archetype) return;
     
     setIsTransitioning(true);
@@ -225,7 +225,7 @@ const Dashboard: React.FC = () => {
     return (
       <DemoFlow 
         onComplete={handleDemoComplete} 
-        onArchetypeSelect={handleArchetypeChange}
+        onArchetypeSelect={handleArchetypeSelect}
       />
     );
   }
@@ -293,28 +293,28 @@ const Dashboard: React.FC = () => {
 
       <nav className="view-selector" aria-label="Archetype views">
         <button 
-          onClick={() => handleArchetypeChange("prioritizer")}
+          onClick={() => handleArchetypeSelect("prioritizer")}
           className={archetype === "prioritizer" ? "active" : ""}
           disabled={isTransitioning}
         >
           Prioritizer View
         </button>
         <button 
-          onClick={() => handleArchetypeChange("connector")}
+          onClick={() => handleArchetypeSelect("connector")}
           className={archetype === "connector" ? "active" : ""}
           disabled={isTransitioning}
         >
           Connector View
         </button>
         <button 
-          onClick={() => handleArchetypeChange("visualizer")}
+          onClick={() => handleArchetypeSelect("visualizer")}
           className={archetype === "visualizer" ? "active" : ""}
           disabled={isTransitioning}
         >
           Visualizer View
         </button>
         <button 
-          onClick={() => handleArchetypeChange("analyst")}
+          onClick={() => handleArchetypeSelect("analyst")}
           className={archetype === "analyst" ? "active" : ""}
           disabled={isTransitioning}
         >
