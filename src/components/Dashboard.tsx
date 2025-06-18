@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { ArchetypeType, Communication, ProjectType } from "../types/communication";
 import {
   ArchetypeService,
@@ -25,6 +25,7 @@ interface ApiResponse {
 const Dashboard: React.FC = () => {
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [initialLoad, setInitialLoad] = useState<boolean>(true);
   const [archetype, setArchetype] = useState<ArchetypeType>("connector");
   const [confidence, setConfidence] = useState<Record<ArchetypeType, number>>({
     prioritizer: 0.25,
@@ -38,6 +39,11 @@ const Dashboard: React.FC = () => {
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [archetypeChanged, setArchetypeChanged] = useState<boolean>(false);
+  
+  // Use refs to track previous values for comparison
+  const prevArchetypeRef = useRef<ArchetypeType>(archetype);
+  const prevProjectRef = useRef<ProjectType | null>(selectedProject);
+  const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Handle archetype service updates
   const handleProfileUpdate: ArchetypeChangeListener = useCallback((profile: UserProfile) => {
@@ -65,15 +71,43 @@ const Dashboard: React.FC = () => {
     };
   }, [handleProfileUpdate]);
 
+  // Load data when component mounts or when selectedProject changes
   useEffect(() => {
-    loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedProject]);
+    // Only show loading indicator on initial load or if data actually changes
+    const shouldShowLoading = initialLoad || 
+      (prevProjectRef.current !== selectedProject || prevArchetypeRef.current !== archetype);
+    
+    if (shouldShowLoading) {
+      // Use a small delay before showing loading indicator to prevent flashing
+      loadingTimeoutRef.current = setTimeout(() => {
+        setLoading(true);
+      }, 300); // Small delay to prevent flashing for quick loads
+    }
+    
+    loadData().finally(() => {
+      // Clear the timeout if it hasn't fired yet
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+      
+      setLoading(false);
+      setInitialLoad(false);
+      
+      // Update refs with current values
+      prevArchetypeRef.current = archetype;
+      prevProjectRef.current = selectedProject;
+    });
+    
+    // Cleanup function
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
+    };
+  }, [selectedProject, archetype]);
 
   const loadData = async () => {
     try {
-      setLoading(true);
-      
       // Load user profile first
       const archetypeService = ArchetypeService.getInstance();
       setArchetype(archetypeService.getPrimaryArchetype());
@@ -89,8 +123,8 @@ const Dashboard: React.FC = () => {
         data = { communications: comms, count: comms.length, scannedCount: comms.length };
       } else {
         // Fetch all communications
-        const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
-        data = await response.json() as ApiResponse;
+        const comms = await apiService.getCommunications();
+        data = { communications: comms, count: comms.length, scannedCount: comms.length };
       }
       
       setCommunications(data.communications || []);
@@ -108,11 +142,8 @@ const Dashboard: React.FC = () => {
         };
         setViewDescription(descriptions[archetype]);
       }
-
-      setLoading(false);
     } catch (error) {
       console.error("Failed to load data:", error);
-      setLoading(false);
     }
   };
 
@@ -134,39 +165,20 @@ const Dashboard: React.FC = () => {
     const archetypeService = ArchetypeService.getInstance();
     await archetypeService.setArchetype(newArchetype);
     
-    // Update communications to reflect the new archetype
-    setLoading(true);
+    // Set view description based on archetype
+    const descriptions = {
+      prioritizer: "Organized by urgency and timeline to help you focus on what matters most.",
+      connector: "Organized by people and relationships to help you manage your network.",
+      visualizer: "Organized visually by project to help you see the big picture.",
+      analyst: "Organized by category with detailed metadata for in-depth analysis."
+    };
+    setViewDescription(descriptions[newArchetype]);
     
-    try {
-      const apiService = ApiService.getInstance();
-      let data;
-      
-      if (selectedProject) {
-        // Fetch communications filtered by project
-        const comms = await apiService.getCommunications(selectedProject);
-        data = { communications: comms, count: comms.length, scannedCount: comms.length };
-      } else {
-        // Fetch all communications
-        const response = await fetch("https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications");
-        data = await response.json() as ApiResponse;
-      }
-      
-      setCommunications(data.communications || []);
-      
-      // Set view description based on archetype
-      const descriptions = {
-        prioritizer: "Organized by urgency and timeline to help you focus on what matters most.",
-        connector: "Organized by people and relationships to help you manage your network.",
-        visualizer: "Organized visually by project to help you see the big picture.",
-        analyst: "Organized by category with detailed metadata for in-depth analysis."
-      };
-      setViewDescription(descriptions[newArchetype]);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    } finally {
-      setLoading(false);
+    // The useEffect will handle loading the data
+    // We just need to end the transition after a short delay
+    setTimeout(() => {
       setIsTransitioning(false);
-    }
+    }, 500);
   };
 
   const handleProjectChange = (project: ProjectType | null) => {
@@ -174,6 +186,12 @@ const Dashboard: React.FC = () => {
   };
 
   const handleSourcesChanged = () => {
+    // Clear the cache when sources change
+    const apiService = ApiService.getInstance();
+    // @ts-ignore - clearCache is a new method we added
+    if (apiService.clearCache) {
+      apiService.clearCache();
+    }
     loadData();
   };
 
@@ -182,6 +200,15 @@ const Dashboard: React.FC = () => {
   };
 
   const renderArchetypeView = () => {
+    // Don't re-render the view if we're transitioning
+    if (isTransitioning) {
+      return (
+        <div className="transitioning-placeholder">
+          <div className="loading-spinner-small"></div>
+        </div>
+      );
+    }
+    
     switch (archetype) {
       case "prioritizer":
         return (
@@ -227,15 +254,6 @@ const Dashboard: React.FC = () => {
         onComplete={handleDemoComplete} 
         onArchetypeSelect={handleArchetypeSelect}
       />
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading your communications...</p>
-      </div>
     );
   }
 
@@ -323,7 +341,14 @@ const Dashboard: React.FC = () => {
       </nav>
 
       <section className={`archetype-view ${isTransitioning ? "transitioning" : ""}`}>
-        {renderArchetypeView()}
+        {loading && initialLoad ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading your communications...</p>
+          </div>
+        ) : (
+          renderArchetypeView()
+        )}
       </section>
     </main>
   );

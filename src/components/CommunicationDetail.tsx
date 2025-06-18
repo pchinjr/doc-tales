@@ -14,25 +14,49 @@ const CommunicationDetail: React.FC<CommunicationDetailProps> = ({
   const [communication, setCommunication] = useState<Communication | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadingTimeout, setLoadingTimeout] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchCommunication = async () => {
       try {
-        setLoading(true);
+        // Use a small delay before showing loading indicator to prevent flashing
+        const timeout = setTimeout(() => {
+          setLoading(true);
+        }, 300);
+        
+        setLoadingTimeout(timeout);
         setError(null);
         
         const apiService = ApiService.getInstance();
         const comm = await apiService.getCommunicationById(communicationId);
+        
+        // Clear the timeout if it hasn't fired yet
+        clearTimeout(timeout);
+        setLoadingTimeout(null);
+        
         setCommunication(comm);
+        setLoading(false);
       } catch (err) {
         console.error("Failed to fetch communication details:", err);
         setError("Failed to load communication details. Please try again.");
-      } finally {
         setLoading(false);
+        
+        // Clear the timeout if it hasn't fired yet
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout);
+          setLoadingTimeout(null);
+        }
       }
     };
 
     fetchCommunication();
+    
+    return () => {
+      // Clean up timeout on unmount
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+    };
   }, [communicationId]);
 
   // Handle click outside to close
@@ -163,6 +187,67 @@ const CommunicationDetail: React.FC<CommunicationDetailProps> = ({
     );
   };
 
+  // If we have the communication data, render it immediately
+  // even if loading is true (this prevents flashing)
+  if (communication) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content communication-detail">
+          <button className="close-button" onClick={onClose}>×</button>
+          
+          <div className="detail-header">
+            <h2>{communication.subject}</h2>
+            <div className="detail-meta">
+              <div className="sender-info">
+                <strong>From:</strong> {communication.senderName} ({communication.sender})
+              </div>
+              <div className="date-info">
+                <strong>Date:</strong> {formatDate(communication.timestamp)}
+              </div>
+              <div className="project-info">
+                <strong>Project:</strong> {communication.project}
+              </div>
+              <div className="urgency-info">
+                <strong>Urgency:</strong> 
+                <span className={`urgency-badge ${communication.metadata.urgency}`}>
+                  {communication.metadata.urgency}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="detail-content">
+            <h3>Content</h3>
+            <div className="content-text">
+              {communication.content.split("\\n").map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+          
+          <div className="detail-metadata">
+            <h3>Metadata</h3>
+            <div className="metadata-grid">
+              {Object.entries(communication.metadata).map(([key, value]) => (
+                <div key={key} className="metadata-item">
+                  <strong>{key}:</strong> 
+                  <span>
+                    {typeof value === "object" 
+                      ? JSON.stringify(value) 
+                      : String(value)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {renderDimensions()}
+        </div>
+      </div>
+    );
+  }
+
+  // Otherwise show loading or error
   return (
     <div className="modal-overlay">
       <div className="modal-content communication-detail">
@@ -178,56 +263,6 @@ const CommunicationDetail: React.FC<CommunicationDetailProps> = ({
             <p>{error}</p>
             <button onClick={onClose}>Close</button>
           </div>
-        ) : communication ? (
-          <>
-            <div className="detail-header">
-              <h2>{communication.subject}</h2>
-              <div className="detail-meta">
-                <div className="sender-info">
-                  <strong>From:</strong> {communication.senderName} ({communication.sender})
-                </div>
-                <div className="date-info">
-                  <strong>Date:</strong> {formatDate(communication.timestamp)}
-                </div>
-                <div className="project-info">
-                  <strong>Project:</strong> {communication.project}
-                </div>
-                <div className="urgency-info">
-                  <strong>Urgency:</strong> 
-                  <span className={`urgency-badge ${communication.metadata.urgency}`}>
-                    {communication.metadata.urgency}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="detail-content">
-              <h3>Content</h3>
-              <div className="content-text">
-                {communication.content.split("\\n").map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
-              </div>
-            </div>
-            
-            <div className="detail-metadata">
-              <h3>Metadata</h3>
-              <div className="metadata-grid">
-                {Object.entries(communication.metadata).map(([key, value]) => (
-                  <div key={key} className="metadata-item">
-                    <strong>{key}:</strong> 
-                    <span>
-                      {typeof value === "object" 
-                        ? JSON.stringify(value) 
-                        : String(value)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {renderDimensions()}
-          </>
         ) : (
           <div className="error-message">
             <p>Communication not found.</p>
