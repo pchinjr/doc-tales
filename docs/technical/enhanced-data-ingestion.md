@@ -22,7 +22,7 @@ The source parsers transform raw data from various sources into structured Commu
 
 ### EmailParser
 
-The `EmailParser` class parses raw email data using the `mailparser` library:
+The `EmailParser` class parses raw email data:
 
 - Extracts email headers, body, and attachments
 - Determines urgency based on headers and content
