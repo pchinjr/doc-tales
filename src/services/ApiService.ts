@@ -34,7 +34,7 @@ export class ApiService {
    * Get all communications
    */
   public async getCommunications(project?: string): Promise<Communication[]> {
-    const cacheKey = `communications${project ? `-${project}` : ''}`;
+    const cacheKey = `communications${project ? `-${project}` : ""}`;
     
     return this.cacheService.getOrFetch(
       cacheKey,
@@ -141,7 +141,7 @@ export class ApiService {
    * Get available archetypes
    */
   public async getArchetypes(): Promise<any[]> {
-    const cacheKey = 'archetypes';
+    const cacheKey = "archetypes";
     
     return this.cacheService.getOrFetch(
       cacheKey,

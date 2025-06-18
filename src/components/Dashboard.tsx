@@ -188,9 +188,9 @@ const Dashboard: React.FC = () => {
   const handleSourcesChanged = () => {
     // Clear the cache when sources change
     const apiService = ApiService.getInstance();
-    // @ts-ignore - clearCache is a new method we added
-    if (apiService.clearCache) {
-      apiService.clearCache();
+    // Access the clearCache method if it exists
+    if (typeof (apiService as any).clearCache === "function") {
+      (apiService as any).clearCache();
     }
     loadData();
   };
