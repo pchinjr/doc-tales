@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { ArchetypeType, Communication, ProjectType } from "../types/communication";
 import {
   ArchetypeService,
   InteractionEvent,
+  ArchetypeChangeListener,
 } from "../services/ArchetypeService";
 import PrioritizerView from "./views/PrioritizerView";
 import ConnectorView from "./views/ConnectorView";
@@ -12,7 +13,7 @@ import ConfigurationUI from "./ConfigurationUI";
 import DemoFlow from "./DemoFlow";
 import ViewDescription from "./ViewDescription";
 import ProjectSelector from "./ProjectSelector";
-import { ApiService } from "../services/ApiService";
+import { ApiService, UserProfile } from "../services/ApiService";
 
 interface ApiResponse {
   communications: Communication[];
@@ -36,6 +37,33 @@ const Dashboard: React.FC = () => {
   const [viewDescription, setViewDescription] = useState<string>("");
   const [selectedProject, setSelectedProject] = useState<ProjectType | null>(null);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
+  const [archetypeChanged, setArchetypeChanged] = useState<boolean>(false);
+
+  // Handle archetype service updates
+  const handleArchetypeChange: ArchetypeChangeListener = useCallback((profile: UserProfile) => {
+    setConfidence(profile.archetypeConfidence);
+    
+    // Check if primary archetype has changed
+    if (profile.primaryArchetype !== archetype) {
+      setArchetypeChanged(true);
+      
+      // Show notification that archetype has changed
+      setTimeout(() => {
+        setArchetype(profile.primaryArchetype);
+        setArchetypeChanged(false);
+      }, 2000); // Wait 2 seconds before changing the view
+    }
+  }, [archetype]);
+
+  // Set up archetype change listener
+  useEffect(() => {
+    const archetypeService = ArchetypeService.getInstance();
+    archetypeService.addChangeListener(handleArchetypeChange);
+    
+    return () => {
+      archetypeService.removeChangeListener(handleArchetypeChange);
+    };
+  }, [handleArchetypeChange]);
 
   useEffect(() => {
     loadData();
@@ -91,11 +119,9 @@ const Dashboard: React.FC = () => {
   const trackInteraction = async (event: InteractionEvent) => {
     const archetypeService = ArchetypeService.getInstance();
     await archetypeService.trackInteraction(event);
-    setArchetype(archetypeService.getPrimaryArchetype());
-    setConfidence(archetypeService.getArchetypeConfidence());
     
-    // Update communications to reflect the new archetype
-    loadData();
+    // Note: We don't need to manually update state here anymore
+    // The change listener will handle updates when the archetype service changes
   };
 
   const handleArchetypeChange = async (newArchetype: ArchetypeType) => {
@@ -107,7 +133,6 @@ const Dashboard: React.FC = () => {
     // Update the archetype in the service
     const archetypeService = ArchetypeService.getInstance();
     await archetypeService.setArchetype(newArchetype);
-    setConfidence(archetypeService.getArchetypeConfidence());
     
     // Update communications to reflect the new archetype
     setLoading(true);
@@ -246,7 +271,7 @@ const Dashboard: React.FC = () => {
               <span>{type}</span>
               <div className="bar">
                 <div
-                  className="fill"
+                  className={`fill ${archetypeChanged && type === archetype ? "pulse" : ""}`}
                   style={{ width: `${value * 100}%` }}
                 ></div>
               </div>
