@@ -10,15 +10,19 @@ The Doc-Tales AWS infrastructure consists of:
 - API Gateway for frontend communication
 - DynamoDB tables for storing metadata and user profiles
 - S3 buckets for storing raw communications and processed documents
+- S3 bucket for hosting the frontend application
 - SNS topics for notifications
 
 ## Directory Structure
 
 ```
-infrastructure/sam/
-├── template.yaml       # Main SAM template
-├── samconfig.toml      # SAM CLI configuration
-└── README.md           # This file
+infrastructure/
+├── sam/
+│   ├── template.yaml       # Main SAM template
+│   ├── samconfig.toml      # SAM CLI configuration
+│   └── README.md           # This file
+└── scripts/
+    └── deploy-frontend.sh  # Script to deploy the frontend
 ```
 
 ## Lambda Functions
@@ -47,7 +51,7 @@ src/lambda/
    aws configure
    ```
 
-### Deploy the Application
+### Deploy the Backend
 
 1. Build the SAM application:
    ```bash
@@ -61,6 +65,31 @@ src/lambda/
 
    Follow the prompts to configure the deployment.
 
+### Deploy the Frontend
+
+After deploying the backend, deploy the frontend:
+
+1. Navigate to the project root directory:
+   ```bash
+   cd /path/to/doc-tales
+   ```
+
+2. Run the frontend deployment script:
+   ```bash
+   ./infrastructure/scripts/deploy-frontend.sh [environment] [region]
+   ```
+
+   Where:
+   - `environment` is the environment name (default: dev)
+   - `region` is the AWS region (default: us-east-1)
+
+   This script will:
+   - Get the API endpoint from the CloudFormation outputs
+   - Create a `.env` file with the API endpoint
+   - Build the React app
+   - Upload the build to the S3 bucket
+   - Output the website URL
+
 ### Update the Application
 
 To update the application after making changes:
@@ -73,6 +102,11 @@ To update the application after making changes:
 2. Deploy the updates:
    ```bash
    sam deploy
+   ```
+
+3. Redeploy the frontend if needed:
+   ```bash
+   ./infrastructure/scripts/deploy-frontend.sh [environment] [region]
    ```
 
 ## Testing Locally

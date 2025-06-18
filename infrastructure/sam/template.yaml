@@ -242,6 +242,37 @@ Resources:
             AllowedOrigins:
               - '*'
             MaxAge: 3600
+            
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AppName}-frontend-${Environment}-${AWS::AccountId}
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:GetObject
+            Effect: Allow
+            Resource: !Sub ${FrontendBucket.Arn}/*
+            Principal: '*'
 
   # SNS Topics
   NotificationTopic:
@@ -308,3 +339,11 @@ Outputs:
   UserProfilesTableName:
     Description: "DynamoDB table for user profiles"
     Value: !Ref UserProfilesTable
+    
+  FrontendWebsiteURL:
+    Description: "URL for the frontend website"
+    Value: !GetAtt FrontendBucket.WebsiteURL
+    
+  FrontendBucketName:
+    Description: "S3 bucket for frontend hosting"
+    Value: !Ref FrontendBucket
