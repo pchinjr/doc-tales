@@ -22,7 +22,7 @@ doc-tales/
 │   ├── backend/                   # AWS Lambda functions and backend services
 │   └── common/                    # Shared code, types, and utilities
 ├── infrastructure/                # Infrastructure as code
-│   ├── cloudformation/            # AWS CloudFormation templates
+│   ├── sam/                       # AWS SAM templates
 │   └── scripts/                   # Deployment scripts
 ├── scripts/                       # Build and utility scripts
 ├── docs/                          # Documentation
