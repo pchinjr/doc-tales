@@ -6,6 +6,7 @@ export type SourceType = "Gmail" | "Outlook" | "Email Attachment" | "Google Driv
 
 // Import dimensions for Task 2: Build Unified Communication Model
 import { Dimensions } from "./dimensions";
+import { Relationship } from "../services/RelationshipDetector";
 
 export interface Communication {
   id: string;
@@ -25,6 +26,7 @@ export interface Communication {
   metadata: {
     urgency: UrgencyLevel;
     category: string;
+    tags?: string[];
     [key: string]: any;
   };
   project: ProjectType;
@@ -38,6 +40,20 @@ export interface Communication {
   // May not be present in all responses
   dimensions?: Dimensions;
   attachments?: any[];
+  
+  // Added by the relationship detector
+  relationships?: Relationship[];
+  
+  // Added by the ingestion pipeline
+  processingMetadata?: {
+    processedAt: string;
+    processingSteps: {
+      adapter: string;
+      dimensions: string;
+      classification: string;
+      relationships: string;
+    };
+  };
 }
 
 export interface UserProfile {

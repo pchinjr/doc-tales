@@ -247,7 +247,14 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${AppName}-frontend-${Environment}-${AWS::AccountId}
-      AccessControl: PublicRead
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerPreferred
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
       WebsiteConfiguration:
         IndexDocument: index.html
         ErrorDocument: index.html
