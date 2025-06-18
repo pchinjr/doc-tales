@@ -11,58 +11,31 @@ Doc-Tales is a personalized communications sorter for the intelligent document p
 - Frictionless onboarding for diverse data sources
 - Cross-project organization to provide a complete picture
 
-## Current Implementation
+## Repository Structure
 
-The current implementation is a TypeScript-based React application that demonstrates the core concept of archetype-based personalization:
+This is a monorepo containing all the code for the Doc-Tales application:
 
-- **Four Archetype Views**:
-  - **Prioritizer**: Time-based organization with urgency indicators
-  - **Connector**: People-centric view with relationship mapping
-  - **Visualizer**: Visual boards with spatial organization
-  - **Analyst**: Detailed metadata view with logical hierarchies
-
-- **Sample Dataset**: Includes communications across three life projects:
-  - Home Purchase
-  - Career Change
-  - Family Event
-
-- **Interaction Tracking**: Monitors user behavior to determine their archetype
-  - Clicking on dates increases Prioritizer confidence
-  - Clicking on people increases Connector confidence
-  - Viewing visual elements increases Visualizer confidence
-  - Viewing detailed information increases Analyst confidence
-
-- **Adaptive Dashboard**: Changes the organization of information based on detected archetype
-
-- **Dimension-Based Data Model**: Extracts and utilizes four key dimensions from communications
-  - **Temporal**: Deadlines, urgency, chronology, follow-up dates
-  - **Relationship**: Connection strength, frequency, network position
-  - **Visual**: Document types, visual elements, spatial organization
-  - **Analytical**: Categories, tags, sentiment, structure
-
-- **Unified Data Ingestion API**: Standardizes data from multiple sources
-  - Source-specific adapters for email, documents, and social media
-  - Dimension extraction for personalized views
-  - Configuration UI for managing data sources
-
-## Tech Stack
-
-- **Frontend**: React with TypeScript
-- **Code Quality**: ESLint for code quality and consistency
-- **AWS Services** (planned):
-  - Lambda for serverless processing
-  - S3 for document storage
-  - DynamoDB for metadata and user profiles
-  - Comprehend for entity extraction
-  - Textract for document processing
-  - API Gateway for frontend communication
+```
+doc-tales/
+├── packages/                      # Packages directory
+│   ├── frontend/                  # React frontend application
+│   ├── backend/                   # AWS Lambda functions and backend services
+│   └── common/                    # Shared code, types, and utilities
+├── infrastructure/                # Infrastructure as code
+│   ├── cloudformation/            # AWS CloudFormation templates
+│   └── scripts/                   # Deployment scripts
+├── scripts/                       # Build and utility scripts
+├── docs/                          # Documentation
+└── .github/                       # GitHub Actions workflows
+```
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 22.x
-- npm or yarn
+- npm 10.x or yarn
+- AWS CLI configured with appropriate permissions
 - Git
 
 ### Setup Instructions
@@ -78,42 +51,97 @@ The current implementation is a TypeScript-based React application that demonstr
    npm install
    ```
 
-3. Start the development server:
+3. Build all packages:
    ```bash
-   npm start
+   npm run build
    ```
 
-4. Open your browser to `http://localhost:3000`
-
-5. Lint the code (optional):
+4. Start the frontend development server:
    ```bash
-   npm run lint
+   npm run start:frontend
    ```
 
-## Project Structure
+5. Open your browser to `http://localhost:3000`
 
+## Development Workflow
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests for a specific package
+npm test -w @doc-tales/frontend
+npm test -w @doc-tales/backend
+npm test -w @doc-tales/common
 ```
-doc-tales/
-├── docs/                          # Project documentation
-│   ├── planning/                  # Planning documents
-│   └── technical/                 # Technical documentation
-├── public/                        # Static assets
-├── src/                           # Source code
-│   ├── components/                # React components
-│   │   └── views/                 # Archetype-specific views
-│   ├── data/                      # Sample data
-│   ├── lambda/                    # Lambda functions
-│   │   ├── api/                   # API Lambda function
-│   │   ├── dimension-extraction/  # Dimension extraction Lambda
-│   │   ├── ingestion/             # Ingestion Lambda
-│   │   ├── notification/          # Notification Lambda
-│   │   └── setup-s3-events/       # S3 events setup Lambda
-│   ├── services/                  # Service layer
-│   │   └── adapters/              # Source-specific adapters
-│   └── types/                     # TypeScript type definitions
-└── infrastructure/                # Infrastructure as code
-    └── sam/                       # AWS SAM templates
+
+### Linting
+
+```bash
+# Lint all packages
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
 ```
+
+### Building
+
+```bash
+# Build all packages
+npm run build
+
+# Build specific packages
+npm run build:frontend
+npm run build:backend
+npm run build:common
+```
+
+## Deployment
+
+### Frontend Deployment
+
+```bash
+npm run deploy:frontend
+```
+
+### Backend Deployment
+
+```bash
+# Deploy to development environment
+npm run deploy:backend:dev
+
+# Deploy to staging environment
+npm run deploy:backend:staging
+
+# Deploy to production environment
+npm run deploy:backend:prod
+```
+
+### Full Deployment
+
+```bash
+npm run deploy:all
+```
+
+## CI/CD Pipeline
+
+This repository uses GitHub Actions for CI/CD:
+
+- **CI Workflow**: Runs on every push and pull request to main and develop branches
+  - Linting
+  - Testing
+  - Building
+
+- **CD Development Workflow**: Deploys to development environment when code is pushed to the develop branch
+  - Deploys backend to AWS
+  - Deploys frontend to S3
+
+- **CD Production Workflow**: Deploys to production environment when code is pushed to the main branch
+  - Deploys backend to AWS
+  - Deploys frontend to S3
 
 ## Documentation
 
@@ -124,63 +152,7 @@ doc-tales/
 - [DynamoDB Access Patterns](docs/technical/dynamodb-access-patterns.md)
 - [GitHub OIDC Setup Guide](docs/technical/github-oidc-setup-guide.md)
 - [Event-Driven Architecture](docs/technical/event-driven-architecture.md)
-
-## Current Progress
-
-- ✅ Defined archetype-based personalization concept
-- ✅ Created TypeScript type definitions
-- ✅ Implemented service layer for data and archetype detection
-- ✅ Built four archetype-specific views
-- ✅ Created sample dataset with cross-project elements
-- ✅ Implemented interaction tracking and archetype detection
-- ✅ Built adaptive dashboard that changes based on archetype
-- ✅ Implemented dimension-based data model
-- ✅ Created unified data ingestion API with source adapters
-- ✅ Added configuration UI for data sources
-- ✅ Built interactive demo flow for onboarding
-- ✅ Set up ESLint for code quality
-- ✅ **AWS Integration**:
-  - ✅ Created SAM template for infrastructure as code
-  - ✅ Implemented Lambda functions for document processing
-  - ✅ Created DynamoDB tables for user profiles and metadata
-  - ✅ Set up S3 buckets for document storage
-  - ✅ Deployed serverless backend to AWS
-  - ✅ Created comprehensive test scripts
-- ✅ **API Enhancements**:
-  - ✅ Implemented archetype-based personalization in API responses
-  - ✅ Added cross-project organization with filtering
-  - ✅ Enhanced metadata for frontend rendering
-  - ✅ Added view descriptions for each archetype
-
-## Next Steps
-
-1. **Backend Improvements**:
-   - Implement Lambda Layers for shared code
-   - Add comprehensive error handling and logging
-   - Enhance security with proper authentication
-
-2. **Enhanced Interaction Tracking**:
-   - Improve archetype detection algorithm
-   - Add more interaction types to track
-   - Implement confidence threshold for archetype switching
-
-3. **UI Enhancements**:
-   - Add animations for archetype transitions
-   - Implement relationship visualization with D3.js
-   - Create project timeline visualization
-   - Connect frontend to deployed AWS backend
-
-4. **Demo Refinement**:
-   - Polish the guided tour experience
-   - Create "Time Travel Inbox" demo scenario
-   - Add more realistic sample data
-
-## Development Notes
-
-- The current implementation uses a simplified rule-based approach for archetype detection instead of ML
-- Mock adapters simulate connections to email, document, and social media sources
-- Dimension extraction uses simple pattern matching rather than advanced NLP
-- UI components are functional but could benefit from additional visual polish
+- [Parser Implementation](docs/technical/parser-implementation.md)
 
 ## License
 

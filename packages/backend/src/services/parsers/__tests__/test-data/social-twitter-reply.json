@@ -1,0 +1,22 @@
+{
+  "id": "tweet-002",
+  "platform": "Twitter",
+  "timestamp": "2025-06-01T18:40:00Z",
+  "author": {
+    "id": "user-001",
+    "name": "John Smith",
+    "username": "@johnsmith",
+    "profileUrl": "https://twitter.com/johnsmith"
+  },
+  "content": "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
+  "mediaUrls": [],
+  "likes": 3,
+  "shares": 0,
+  "comments": 2,
+  "hashtags": ["FamilyTime"],
+  "mentions": ["aunt_lisa"],
+  "urls": [],
+  "isReply": true,
+  "replyToId": "tweet-original",
+  "replyToUser": "@aunt_lisa"
+}

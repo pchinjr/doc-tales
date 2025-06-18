@@ -1,0 +1,13 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "doc-tales"
+s3_prefix = "doc-tales"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"dev\" AppName=\"doc-tales\""
+image_repositories = []
+resolve_s3 = true
+disable_rollback = true

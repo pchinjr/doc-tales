@@ -1,0 +1,16 @@
+{
+  "Records": [
+    {
+      "eventSource": "aws:s3",
+      "eventName": "ObjectCreated:Put",
+      "s3": {
+        "bucket": {
+          "name": "doc-tales-raw-communications-dev-123456789012"
+        },
+        "object": {
+          "key": "email/2025/06/05/email-001.json"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "name": "@doc-tales/backend",
+  "version": "0.1.0",
+  "description": "Backend services for Doc-Tales application",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+    "test": "jest",
+    "deploy": "sam build && sam deploy",
+    "package": "sam package --s3-bucket ${DEPLOYMENT_BUCKET} --output-template-file packaged.yaml",
+    "deploy:dev": "npm run build && npm run package && sam deploy --template-file packaged.yaml --stack-name doc-tales --capabilities CAPABILITY_IAM --parameter-overrides Environment=dev",
+    "deploy:staging": "npm run build && npm run package && sam deploy --template-file packaged.yaml --stack-name doc-tales-staging --capabilities CAPABILITY_IAM --parameter-overrides Environment=staging",
+    "deploy:prod": "npm run build && npm run package && sam deploy --template-file packaged.yaml --stack-name doc-tales-prod --capabilities CAPABILITY_IAM --parameter-overrides Environment=prod"
+  },
+  "dependencies": {
+    "@aws-sdk/client-comprehend": "^3.32.0",
+    "@aws-sdk/client-dynamodb": "^3.32.0",
+    "@aws-sdk/client-s3": "^3.32.0",
+    "@aws-sdk/client-textract": "^3.32.0",
+    "@doc-tales/common": "^0.1.0",
+    "mailparser": "^3.6.5"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.92",
+    "@types/jest": "^29.5.0",
+    "@types/mailparser": "^3.4.0",
+    "@types/node": "^17.0.21",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "aws-sdk-mock": "^6.2.1",
+    "eslint": "^8.57.0",
+    "jest": "^29.5.0",
+    "rimraf": "^5.0.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^4.5.5"
+  }
+}

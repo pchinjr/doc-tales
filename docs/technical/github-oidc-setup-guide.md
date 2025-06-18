@@ -1,231 +1,99 @@
-# Guide to Implementing GitHub Actions OIDC with AWS
+# GitHub OIDC Setup Guide for AWS Deployments
 
-This guide will walk you through setting up OpenID Connect (OIDC) between GitHub Actions and AWS, allowing your workflows to obtain temporary AWS credentials without storing long-lived secrets.
+This guide explains how to set up GitHub OpenID Connect (OIDC) for secure, token-based authentication between GitHub Actions and AWS. This approach eliminates the need to store AWS credentials as GitHub secrets.
 
-## Benefits of OIDC
+## Overview
 
-- **Enhanced Security**: No long-lived credentials stored in GitHub
-- **Simplified Management**: No need to rotate credentials
-- **Fine-grained Control**: Limit access based on repository, branch, or environment
-- **Temporary Access**: Credentials are short-lived and scoped to specific workflows
+GitHub Actions can use OpenID Connect (OIDC) to authenticate with AWS. This provides several benefits:
 
-## Prerequisites
+1. **No long-lived credentials**: No need to store AWS access keys in GitHub secrets
+2. **Automatic rotation**: Tokens are short-lived and automatically rotated
+3. **Conditional access**: You can restrict access based on repository, branch, or other conditions
 
-- AWS account with administrator access
-- GitHub repository where you'll run workflows
-- Basic familiarity with AWS IAM and GitHub Actions
+## Setup Instructions
 
-## Step 1: Create an Identity Provider in AWS
+### 1. Create an Identity Provider in AWS
 
-1. Sign in to the AWS Management Console
-2. Navigate to IAM > Identity providers
-3. Click "Add Provider"
-4. Select "OpenID Connect"
-5. For the Provider URL, enter: `https://token.actions.githubusercontent.com`
-6. For the Audience, enter: `sts.amazonaws.com`
-7. Click "Get thumbprint" to retrieve the certificate thumbprint
-8. Click "Add provider"
+1. Open the AWS IAM console
+2. Navigate to "Identity providers" and click "Add provider"
+3. Select "OpenID Connect" as the provider type
+4. For the provider URL, enter: `https://token.actions.githubusercontent.com`
+5. For the Audience, enter: `sts.amazonaws.com`
+6. Click "Get thumbprint" to retrieve the certificate thumbprint
+7. Click "Add provider"
 
-## Step 2: Create an IAM Role with Trust Policy
+### 2. Create an IAM Role for GitHub Actions
 
-1. Navigate to IAM > Roles
-2. Click "Create role"
-3. Select "Web identity"
-4. Choose the identity provider you just created (`token.actions.githubusercontent.com`)
-5. For Audience, select `sts.amazonaws.com`
-6. Click "Next: Permissions"
-7. Attach policies that grant the permissions your workflow needs (e.g., `AmazonS3FullAccess`, `AmazonDynamoDBFullAccess`, etc.)
-8. Click "Next: Tags" (add optional tags)
-9. Click "Next: Review"
-10. Name your role (e.g., `github-actions-role`)
-11. Click "Create role"
+1. In the IAM console, navigate to "Roles" and click "Create role"
+2. Select "Web identity" as the trusted entity type
+3. Select the identity provider you just created
+4. For Audience, select `sts.amazonaws.com`
+5. Add a condition to restrict access to your repository:
+   ```
+   {
+     "StringLike": {
+       "token.actions.githubusercontent.com:sub": "repo:pchinjr/doc-tales:*"
+     }
+   }
+   ```
+6. Click "Next"
+7. Attach the necessary permissions policies:
+   - `AmazonS3FullAccess` (for frontend deployment)
+   - `AWSCloudFormationFullAccess` (for CloudFormation operations)
+   - `AWSLambda_FullAccess` (for Lambda functions)
+   - `IAMFullAccess` (for creating roles and policies)
+   - `AmazonDynamoDBFullAccess` (for DynamoDB operations)
+8. Name the role (e.g., `GitHubActionsDocTales`) and create it
+9. Note the Role ARN for the next step
 
-## Step 3: Customize the Trust Policy
+### 3. Configure GitHub Repository Secrets
 
-After creating the role, you need to customize the trust policy to restrict which repositories can assume this role:
+1. In your GitHub repository, go to "Settings" > "Secrets and variables" > "Actions"
+2. Add the following repository secrets:
+   - `AWS_ROLE_TO_ASSUME`: The ARN of the IAM role you created (e.g., `arn:aws:iam::123456789012:role/GitHubActionsDocTales`)
+   - `DEPLOYMENT_BUCKET`: The name of the S3 bucket for CloudFormation artifacts
 
-1. Navigate to the role you just created
-2. Click the "Trust relationships" tab
-3. Click "Edit trust policy"
-4. Replace the policy with the following (update the values as needed):
+### 4. Update GitHub Workflows
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Federated": "arn:aws:iam::<YOUR_AWS_ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
-      },
-      "Action": "sts:AssumeRoleWithWebIdentity",
-      "Condition": {
-        "StringEquals": {
-          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
-        },
-        "StringLike": {
-          "token.actions.githubusercontent.com:sub": "repo:pchinjr/doc-tales:*"
-        }
-      }
-    }
-  ]
-}
-```
+The GitHub workflow files in `.github/workflows/` are already configured to use OIDC authentication with AWS. They use the `aws-actions/configure-aws-credentials` action with the `role-to-assume` parameter.
 
-This policy restricts access to workflows running in your `pchinjr/doc-tales` repository.
-
-## Step 4: Update Your GitHub Actions Workflow
-
-Update your workflow file (`.github/workflows/test-and-deploy.yml`) to use the OIDC provider:
-
+Example:
 ```yaml
-name: Test and Deploy
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  test:
-    # Test job remains unchanged
-    runs-on: ubuntu-latest
-    steps:
-      # Your existing test steps...
-
-  deploy-backend:
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required for OIDC
-      contents: read   # Required to checkout the code
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: npm ci
-        
-      - name: Set up Python
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.9'
-          
-      - name: Install AWS SAM CLI
-        run: |
-          pip install aws-sam-cli
-          
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::<YOUR_AWS_ACCOUNT_ID>:role/github-actions-role
-          aws-region: us-east-1
-          
-      - name: Deploy and verify backend
-        run: |
-          cd infrastructure/sam
-          sam build
-          sam deploy --stack-name doc-tales-dev --no-confirm-changeset --parameter-overrides Environment=dev --region us-east-1
-          cd ../../
-          ./deploy-and-verify.sh
-        env:
-          SAM_CLI_TELEMETRY: 0
-
-  deploy-frontend:
-    # Frontend job with similar OIDC configuration
-    needs: deploy-backend
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required for OIDC
-      contents: read   # Required to checkout the code
-    steps:
-      - uses: actions/checkout@v3
-      
-      # Other steps remain the same
-      
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::<YOUR_AWS_ACCOUNT_ID>:role/github-actions-role
-          aws-region: us-east-1
-      
-      # Rest of your frontend deployment steps...
+- name: Configure AWS credentials
+  uses: aws-actions/configure-aws-credentials@v2
+  with:
+    role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+    aws-region: us-east-1
 ```
 
-## Step 5: Add Permissions to Your Repository
+## Environment-Specific Deployment
 
-You need to allow your workflow to request the OIDC JWT token:
+For environment-specific deployments (dev, staging, prod), you can create separate IAM roles with different permission boundaries and configure GitHub environments with different secrets.
 
-1. Go to your GitHub repository
-2. Click "Settings"
-3. Click "Actions" > "General" in the sidebar
-4. Scroll down to "Workflow permissions"
-5. Select "Read and write permissions"
-6. Check "Allow GitHub Actions to create and approve pull requests"
-7. Click "Save"
+### Setting Up GitHub Environments
 
-## Step 6: Test Your Workflow
-
-1. Make a small change to your repository
-2. Push the change to trigger the workflow
-3. Monitor the workflow execution in the "Actions" tab
-4. Check AWS CloudTrail logs to verify the role assumption
+1. In your GitHub repository, go to "Settings" > "Environments"
+2. Create environments for "development", "staging", and "production"
+3. For each environment, add environment-specific secrets
+4. Optionally, add protection rules like required reviewers for production deployments
 
 ## Troubleshooting
 
-### Common Issues:
+If you encounter issues with OIDC authentication:
 
-1. **"Error: No OpenID Connect provider found"**
-   - Verify the identity provider was created correctly in AWS IAM
-
-2. **"Error: Role cannot be assumed"**
-   - Check the trust policy conditions
-   - Ensure the repository name is correct
-   - Verify the role has the necessary permissions
-
-3. **"Error: Missing id-token permission"**
-   - Make sure you've added `permissions: id-token: write` to your job
+1. Check the IAM role trust policy to ensure it correctly specifies your GitHub repository
+2. Verify that the GitHub workflow is using the correct role ARN
+3. Check CloudTrail logs for authentication failures
+4. Ensure the IAM role has the necessary permissions for the actions being performed
 
 ## Security Considerations
 
-- Limit the permissions of the IAM role to only what's needed
-- Consider adding branch restrictions in the trust policy
-- Regularly audit the role's permissions and usage
+- Limit the permissions of the IAM role to only what is necessary
+- Use condition keys in the trust policy to restrict which repositories and branches can assume the role
+- Consider adding environment protection rules in GitHub for sensitive environments
+- Regularly audit the permissions and access patterns
 
-## Advanced Configuration
+## References
 
-### Restrict by Branch
-
-To only allow workflows on specific branches to assume the role:
-
-```json
-"Condition": {
-  "StringEquals": {
-    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-    "token.actions.githubusercontent.com:sub": "repo:pchinjr/doc-tales:ref:refs/heads/main"
-  }
-}
-```
-
-### Restrict by Environment
-
-For workflows using GitHub environments:
-
-```json
-"Condition": {
-  "StringEquals": {
-    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-    "token.actions.githubusercontent.com:sub": "repo:pchinjr/doc-tales:environment:production"
-  }
-}
-```
-
-By following this guide, you'll have a secure, credential-free way for your GitHub Actions workflows to interact with AWS resources, eliminating the need to manage long-lived access keys.
+- [GitHub Actions: Configuring OpenID Connect in AWS](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services)
+- [AWS IAM: Creating OIDC providers](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html)

@@ -1,0 +1,17 @@
+From: Sarah Johnson <sarah.johnson@bankofamerica.com>
+To: John Smith <john.smith@example.com>
+Subject: Mortgage Pre-Approval Update
+Date: Sat, 5 Jun 2025 10:30:00 +0000
+Content-Type: text/plain
+Importance: High
+
+Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?
+
+The pre-approval is for $450,000 with an interest rate of 3.75%. This is valid for 90 days from today.
+
+Please review the attached document and let me know if you have any questions.
+
+Best regards,
+Sarah Johnson
+Mortgage Specialist
+Bank of America

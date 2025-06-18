@@ -2,17 +2,26 @@
   "name": "doc-tales",
   "version": "0.1.0",
   "description": "Smart Document & Feed Unification Processor",
-  "main": "dist/index.js",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "./run-tests.sh",
-    "eject": "react-scripts eject",
-    "tsc": "tsc",
-    "dev": "ts-node src/index.tsx",
-    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
-    "test:parsers": "ts-node src/scripts/test-parsers.ts"
+    "build": "npm run build --workspaces",
+    "clean": "npm run clean --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "start:frontend": "npm run start -w @doc-tales/frontend",
+    "build:frontend": "npm run build -w @doc-tales/frontend",
+    "build:backend": "npm run build -w @doc-tales/backend",
+    "build:common": "npm run build -w @doc-tales/common",
+    "deploy:frontend": "node ./scripts/deploy-frontend.js",
+    "deploy:backend": "npm run deploy -w @doc-tales/backend",
+    "deploy:backend:dev": "npm run deploy:dev -w @doc-tales/backend",
+    "deploy:backend:staging": "npm run deploy:staging -w @doc-tales/backend",
+    "deploy:backend:prod": "npm run deploy:prod -w @doc-tales/backend",
+    "deploy:all": "npm run build && npm run deploy:backend && npm run deploy:frontend"
   },
   "keywords": [
     "document",
@@ -23,45 +32,10 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@aws-sdk/client-comprehend": "^3.32.0",
-    "@aws-sdk/client-dynamodb": "^3.32.0",
-    "@aws-sdk/client-s3": "^3.32.0",
-    "@aws-sdk/client-textract": "^3.32.0",
-    "aws-amplify": "^4.3.14",
-    "mailparser": "^3.6.5",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-router-dom": "^6.2.1",
-    "react-scripts": "5.0.0"
-  },
   "devDependencies": {
-    "@types/mailparser": "^3.4.0",
-    "@types/node": "^17.0.21",
-    "@types/react": "^17.0.39",
-    "@types/react-dom": "^17.0.11",
-    "@types/react-router-dom": "^5.3.3",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "aws-sdk-mock": "^6.2.1",
+    "aws-sdk": "^2.1354.0",
+    "dotenv": "^16.0.3",
     "eslint": "^8.57.0",
-    "eslint-plugin-react": "^7.34.1",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "tap-spec": "^5.0.0",
-    "tape": "^5.9.0",
-    "ts-node": "^10.5.0",
     "typescript": "^4.5.5"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }
