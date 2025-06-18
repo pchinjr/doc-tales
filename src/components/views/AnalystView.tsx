@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Communication } from "../../types/communication";
 import { InteractionEvent } from "../../services/ArchetypeService";
+import CommunicationDetail from "../CommunicationDetail";
 
 interface AnalystViewProps {
   communications: Communication[];
@@ -14,6 +15,7 @@ const AnalystView: React.FC<AnalystViewProps> = ({
   const [expandedComm, setExpandedComm] = useState<string | null>(null);
   const [sortField, setSortField] = useState<string>("category");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [selectedCommunication, setSelectedCommunication] = useState<string | null>(null);
 
   // Group communications by category
   const categoryGroups: Record<string, Communication[]> = {};
@@ -41,6 +43,16 @@ const AnalystView: React.FC<AnalystViewProps> = ({
       target: communicationId,
       timestamp: Date.now(),
       metadata: {},
+    });
+  };
+
+  const handleCommunicationClick = (communicationId: string) => {
+    setSelectedCommunication(communicationId);
+    onInteraction({
+      type: "details_view",
+      target: communicationId,
+      timestamp: Date.now(),
+      metadata: { fullView: true },
     });
   };
 
@@ -166,15 +178,26 @@ const AnalystView: React.FC<AnalystViewProps> = ({
                           </span>
                         </td>
                         <td>
-                          <button
-                            className="details-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDetailsView(comm.id);
-                            }}
-                          >
-                            {expandedComm === comm.id ? "Hide" : "Details"}
-                          </button>
+                          <div className="action-buttons">
+                            <button
+                              className="details-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDetailsView(comm.id);
+                              }}
+                            >
+                              {expandedComm === comm.id ? "Hide" : "Quick View"}
+                            </button>
+                            <button
+                              className="full-details-button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCommunicationClick(comm.id);
+                              }}
+                            >
+                              Full Details
+                            </button>
+                          </div>
                         </td>
                       </tr>
                       {expandedComm === comm.id && (
@@ -243,6 +266,13 @@ const AnalystView: React.FC<AnalystViewProps> = ({
           );
         })}
       </div>
+
+      {selectedCommunication && (
+        <CommunicationDetail
+          communicationId={selectedCommunication}
+          onClose={() => setSelectedCommunication(null)}
+        />
+      )}
     </div>
   );
 };

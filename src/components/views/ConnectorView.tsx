@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Communication } from "../../types/communication";
 import { InteractionEvent } from "../../services/ArchetypeService";
+import CommunicationDetail from "../CommunicationDetail";
 
 interface ConnectorViewProps {
   communications: Communication[];
@@ -12,6 +13,7 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
   onInteraction,
 }) => {
   const [selectedSender, setSelectedSender] = useState<string | null>(null);
+  const [selectedCommunication, setSelectedCommunication] = useState<string | null>(null);
 
   // Use _sortKey if available, otherwise group by sender
   const senderGroups: Record<string, Communication[]> = {};
@@ -48,6 +50,16 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
   const handleDateClick = (communicationId: string) => {
     onInteraction({
       type: "date_click",
+      target: communicationId,
+      timestamp: Date.now(),
+      metadata: {},
+    });
+  };
+
+  const handleCommunicationClick = (communicationId: string) => {
+    setSelectedCommunication(communicationId);
+    onInteraction({
+      type: "details_view",
       target: communicationId,
       timestamp: Date.now(),
       metadata: {},
@@ -120,13 +132,18 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
                 <div 
                   key={comm.id} 
                   className={`communication-item ${comm._displayFormat || ""}`}
+                  onClick={() => handleCommunicationClick(comm.id)}
                 >
                   <h4>{comm.subject}</h4>
                   <div
                     className="communication-date"
-                    onClick={() => handleDateClick(comm.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDateClick(comm.id);
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
+                        e.stopPropagation();
                         handleDateClick(comm.id);
                       }
                     }}
@@ -150,6 +167,13 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
               ))}
           </div>
         </div>
+      )}
+
+      {selectedCommunication && (
+        <CommunicationDetail
+          communicationId={selectedCommunication}
+          onClose={() => setSelectedCommunication(null)}
+        />
       )}
     </div>
   );

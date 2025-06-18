@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Communication } from "../../types/communication";
 import { InteractionEvent } from "../../services/ArchetypeService";
+import CommunicationDetail from "../CommunicationDetail";
 
 interface PrioritizerViewProps {
   communications: Communication[];
@@ -11,6 +12,8 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
   communications,
   onInteraction,
 }) => {
+  const [selectedCommunication, setSelectedCommunication] = useState<string | null>(null);
+
   // Use _sortKey if available, otherwise sort by urgency and date
   const sortedCommunications = [...communications].sort((a, b) => {
     // If _sortKey is available, use it
@@ -42,6 +45,16 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
     onInteraction({
       type: "person_click",
       target: senderId,
+      timestamp: Date.now(),
+      metadata: {},
+    });
+  };
+
+  const handleCommunicationClick = (communicationId: string) => {
+    setSelectedCommunication(communicationId);
+    onInteraction({
+      type: "details_view",
+      target: communicationId,
       timestamp: Date.now(),
       metadata: {},
     });
@@ -93,14 +106,19 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
           <div
             key={comm.id}
             className={`timeline-item urgency-${comm.metadata.urgency} ${comm._displayFormat || ""}`}
+            onClick={() => handleCommunicationClick(comm.id)}
           >
             <div
               className="timeline-date"
               role="button"
               tabIndex={0}
-              onClick={() => handleDateClick(comm.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDateClick(comm.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
                   handleDateClick(comm.id);
                 }
               }}
@@ -113,9 +131,13 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
                 className="timeline-sender"
                 role="button"
                 tabIndex={0}
-                onClick={() => handlePersonClick(comm.sender)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePersonClick(comm.sender);
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") {
+                    e.stopPropagation();
                     handlePersonClick(comm.sender);
                   }
                 }}
@@ -158,6 +180,13 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
           <p>No upcoming deadlines found.</p>
         )}
       </div>
+
+      {selectedCommunication && (
+        <CommunicationDetail
+          communicationId={selectedCommunication}
+          onClose={() => setSelectedCommunication(null)}
+        />
+      )}
     </div>
   );
 };
