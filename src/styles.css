@@ -955,3 +955,315 @@ body {
 .analyst-view tr.rich-metadata {
   background-color: #e8f5e9;
 }
+/* Modal and Communication Detail Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  position: relative;
+  animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-button:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.communication-detail .detail-header {
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.communication-detail .detail-header h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.communication-detail .detail-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  font-size: 0.9rem;
+}
+
+.communication-detail .detail-content {
+  margin-bottom: 20px;
+}
+
+.communication-detail .content-text {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+  white-space: pre-wrap;
+}
+
+.communication-detail .detail-metadata {
+  margin-bottom: 20px;
+}
+
+.communication-detail .metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.communication-detail .metadata-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.communication-detail .dimensions-container {
+  margin-top: 20px;
+}
+
+.communication-detail .dimensions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.communication-detail .dimension-card {
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.communication-detail .dimension-card h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.communication-detail .dimension-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.communication-detail .dimension-card li {
+  margin-bottom: 5px;
+}
+
+.communication-detail .dimension-card.temporal {
+  background-color: #fef2f2;
+  border-left: 4px solid #EA4335;
+}
+
+.communication-detail .dimension-card.relationship {
+  background-color: #eff6ff;
+  border-left: 4px solid #4285F4;
+}
+
+.communication-detail .dimension-card.visual {
+  background-color: #fffbeb;
+  border-left: 4px solid #FBBC05;
+}
+
+.communication-detail .dimension-card.analytical {
+  background-color: #f0fdf4;
+  border-left: 4px solid #34A853;
+}
+
+.communication-detail .confidence-section {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.communication-detail .confidence-section h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.communication-detail .confidence-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.communication-detail .confidence-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.communication-detail .confidence-bar span {
+  width: 80px;
+}
+
+.communication-detail .confidence-bar .bar {
+  flex-grow: 1;
+  height: 8px;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.communication-detail .confidence-bar .fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.communication-detail .confidence-bar .fill.temporal {
+  background-color: #EA4335;
+}
+
+.communication-detail .confidence-bar .fill.relationship {
+  background-color: #4285F4;
+}
+
+.communication-detail .confidence-bar .fill.visual {
+  background-color: #FBBC05;
+}
+
+.communication-detail .confidence-bar .fill.analytical {
+  background-color: #34A853;
+}
+
+/* Enhanced archetype view transitions */
+.archetype-view {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+}
+
+.archetype-view.transitioning {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.analyst-view .action-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.analyst-view .details-button,
+.analyst-view .full-details-button {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.analyst-view .details-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.analyst-view .full-details-button {
+  background-color: #4285F4;
+  color: white;
+}
+
+.visualizer-view .project-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.visualizer-view .project-card.expanded {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+.visualizer-view .card-actions {
+  margin-top: 10px;
+}
+
+.visualizer-view .view-details-button {
+  padding: 4px 8px;
+  background-color: #4285F4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+/* Pulse animation for confidence bars */
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+}
+
+.confidence-bar .fill.pulse {
+  animation: pulse 1s infinite;
+  box-shadow: 0 0 10px rgba(66, 133, 244, 0.7);
+}
+
+/* Enhanced transitions for archetype switching */
+.view-selector button {
+  position: relative;
+  overflow: hidden;
+}
+
+.view-selector button::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.view-selector button:hover::after {
+  transform: translateX(0);
+}
