@@ -290,7 +290,7 @@ export class RelationshipDetector {
   ): void {
     // Add relationship for the timestamp
     const date = new Date(communication.timestamp);
-    const dateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
+    const dateString = date.toISOString().split("T")[0]; // YYYY-MM-DD
     
     relationships.push({
       type: "time",
@@ -326,7 +326,7 @@ export class RelationshipDetector {
           
           // Check if the communication has the same date
           const commDate = new Date(comm.timestamp);
-          const commDateString = commDate.toISOString().split('T')[0];
+          const commDateString = commDate.toISOString().split("T")[0];
           
           if (timeValues.includes(commDateString)) {
             return true;

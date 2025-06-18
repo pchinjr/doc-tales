@@ -5,8 +5,6 @@ import { EmailAdapter } from "./adapters/EmailAdapter";
 import { DocumentAdapter } from "./adapters/DocumentAdapter";
 import { SocialAdapter } from "./adapters/SocialAdapter";
 import { IngestionPipeline, IngestionResult } from "./IngestionPipeline";
-import { Relationship } from "./RelationshipDetector";
-import { Dimensions } from "../types/dimensions";
 
 export interface CommunicationFilter {
   sources?: SourceType[];
@@ -148,7 +146,10 @@ export class UnifiedDataService {
       if (!resultsBySource.has(source)) {
         resultsBySource.set(source, []);
       }
-      resultsBySource.get(source)!.push(result);
+      const sourceResults = resultsBySource.get(source);
+      if (sourceResults) {
+        sourceResults.push(result);
+      }
     }
     
     // Update status for each source
@@ -270,7 +271,7 @@ export class UnifiedDataService {
         // Filter by relationship types
         if (filter.relationshipTypes && filter.relationshipTypes.length > 0) {
           if (!comm.relationships.some(rel => 
-            filter.relationshipTypes!.includes(rel.type)
+            filter.relationshipTypes && filter.relationshipTypes.includes(rel.type)
           )) {
             return false;
           }

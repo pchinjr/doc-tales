@@ -107,7 +107,7 @@ export class ClassificationService {
     const project = communication.project;
     
     // Determine category
-    let category = communication.metadata?.category || this.determineCategory(communication, dimensions);
+    const category = communication.metadata?.category || this.determineCategory(communication, dimensions);
     
     // Extract tags
     const existingTags = Array.isArray(communication.metadata?.tags) 
