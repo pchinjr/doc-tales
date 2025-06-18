@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
       
       // Get communications optimized for the current archetype
       const apiService = ApiService.getInstance();
-      let data;
+      let data: { communications: Communication[]; count: number; scannedCount: number; viewDescription?: string };
       
       if (selectedProject) {
         // Fetch communications filtered by project
