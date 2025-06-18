@@ -15,13 +15,6 @@ import ViewDescription from "./ViewDescription";
 import ProjectSelector from "./ProjectSelector";
 import { ApiService, UserProfile } from "../services/ApiService";
 
-interface ApiResponse {
-  communications: Communication[];
-  count: number;
-  scannedCount: number;
-  viewDescription?: string;
-}
-
 const Dashboard: React.FC = () => {
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
