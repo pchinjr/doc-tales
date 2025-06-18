@@ -2,12 +2,25 @@
 // Transforms raw email data into structured Communication objects
 
 import { Communication, SourceType } from "../../types/communication";
-import { simpleParser, ParsedMail } from 'mailparser';
 
+// Simple email parser without external dependencies
 export interface RawEmail {
   id: string;
   raw: string | Buffer;
   source: SourceType;
+}
+
+interface EmailHeader {
+  key: string;
+  value: string;
+}
+
+interface EmailAttachment {
+  filename: string;
+  contentType: string;
+  contentId?: string;
+  size: number;
+  isInline: boolean;
 }
 
 export class EmailParser {
@@ -16,20 +29,22 @@ export class EmailParser {
    */
   public async parseEmail(rawEmail: RawEmail): Promise<Partial<Communication>> {
     try {
-      // Parse the raw email using mailparser
-      const parsed = await simpleParser(rawEmail.raw);
+      // Parse the raw email using our simple parser
+      const emailString = rawEmail.raw.toString();
+      const { headers, body } = this.parseRawEmail(emailString);
       
       // Extract basic email information
       const id = rawEmail.id;
-      const timestamp = parsed.date?.toISOString() || new Date().toISOString();
-      const subject = parsed.subject || "(No Subject)";
-      const content = this.extractContent(parsed);
+      const timestamp = this.getHeaderValue(headers, 'Date') || new Date().toISOString();
+      const subject = this.getHeaderValue(headers, 'Subject') || "(No Subject)";
+      const content = body;
       
       // Extract sender information
-      const { senderName, senderEmail } = this.extractSender(parsed);
+      const from = this.getHeaderValue(headers, 'From') || '';
+      const { senderName, senderEmail } = this.parseSender(from);
       
       // Extract attachments
-      const attachments = this.extractAttachments(parsed);
+      const attachments = this.extractAttachments(emailString);
       
       // Create a partial Communication object
       const communication: Partial<Communication> = {
@@ -42,18 +57,13 @@ export class EmailParser {
         sender: senderEmail,
         senderName,
         metadata: {
-          urgency: this.determineUrgency(parsed),
-          category: this.determineCategory(parsed),
-          hasImages: this.hasImages(parsed),
+          urgency: this.determineUrgency(headers, content),
+          category: this.determineCategory(subject, content),
+          hasImages: this.hasImages(content),
           hasAttachments: attachments.length > 0,
           attachmentCount: attachments.length,
-          recipients: this.extractRecipients(parsed),
-          cc: this.extractCC(parsed),
-          bcc: this.extractBCC(parsed),
-          headers: this.extractRelevantHeaders(parsed),
-          messageId: parsed.messageId,
-          inReplyTo: parsed.inReplyTo,
-          references: parsed.references
+          recipients: this.extractRecipients(headers),
+          headers: this.extractRelevantHeaders(headers)
         }
       };
       
@@ -70,130 +80,140 @@ export class EmailParser {
   }
   
   /**
-   * Extract the content from a parsed email
+   * Parse a raw email into headers and body
    */
-  private extractContent(parsed: ParsedMail): string {
-    // Prefer HTML content if available and convert to plain text
-    if (parsed.html) {
-      // In a real implementation, we would use a library like html-to-text
-      // For now, we'll use a simple regex to strip HTML tags
-      return this.stripHtml(parsed.html);
+  private parseRawEmail(rawEmail: string): { headers: EmailHeader[], body: string } {
+    // Split the email into headers and body
+    const parts = rawEmail.split(/\r?\n\r?\n/);
+    const headerSection = parts[0];
+    const bodySection = parts.slice(1).join('\n\n');
+    
+    // Parse headers
+    const headers: EmailHeader[] = [];
+    const headerLines = headerSection.split(/\r?\n/);
+    let currentHeader: EmailHeader | null = null;
+    
+    for (const line of headerLines) {
+      // If the line starts with whitespace, it's a continuation of the previous header
+      if (/^\s+/.test(line) && currentHeader) {
+        currentHeader.value += ' ' + line.trim();
+        continue;
+      }
+      
+      // Otherwise, it's a new header
+      const match = line.match(/^([^:]+):\s*(.*)$/);
+      if (match) {
+        currentHeader = {
+          key: match[1].trim(),
+          value: match[2].trim()
+        };
+        headers.push(currentHeader);
+      }
     }
     
-    // Fall back to plain text
-    return parsed.text || "";
+    return { headers, body: bodySection };
   }
   
   /**
-   * Strip HTML tags from a string
+   * Get the value of a specific header
    */
-  private stripHtml(html: string): string {
-    // Simple regex to strip HTML tags
-    // In a real implementation, we would use a more robust solution
-    return html.replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
+  private getHeaderValue(headers: EmailHeader[], key: string): string | undefined {
+    const header = headers.find(h => h.key.toLowerCase() === key.toLowerCase());
+    return header?.value;
   }
   
   /**
-   * Extract sender information from a parsed email
+   * Parse sender information from a From header
    */
-  private extractSender(parsed: ParsedMail): { senderName: string, senderEmail: string } {
+  private parseSender(from: string): { senderName: string, senderEmail: string } {
     let senderName = "";
     let senderEmail = "";
     
-    if (parsed.from && parsed.from.value.length > 0) {
-      const from = parsed.from.value[0];
-      senderName = from.name || from.address || "";
-      senderEmail = from.address || "";
+    // Try to match "Name <email@example.com>" format
+    const match = from.match(/^([^<]+)<([^>]+)>/);
+    if (match) {
+      senderName = match[1].trim();
+      senderEmail = match[2].trim();
+    } else {
+      // If no match, use the whole string as the email
+      senderEmail = from.trim();
+      senderName = senderEmail;
     }
     
     return { senderName, senderEmail };
   }
   
   /**
-   * Extract attachments from a parsed email
+   * Extract attachments from a raw email
+   * This is a simplified version that just detects if there are attachments
    */
-  private extractAttachments(parsed: ParsedMail): any[] {
-    if (!parsed.attachments || parsed.attachments.length === 0) {
-      return [];
+  private extractAttachments(rawEmail: string): any[] {
+    const attachments: EmailAttachment[] = [];
+    
+    // Check for Content-Type: multipart/mixed
+    if (rawEmail.includes('Content-Type: multipart/mixed')) {
+      // Find boundary
+      const boundaryMatch = rawEmail.match(/boundary="([^"]+)"/);
+      if (boundaryMatch) {
+        const boundary = boundaryMatch[1];
+        const parts = rawEmail.split('--' + boundary);
+        
+        // Skip the first part (headers) and the last part (boundary end)
+        for (let i = 1; i < parts.length - 1; i++) {
+          const part = parts[i];
+          
+          // Check if this part is an attachment
+          if (part.includes('Content-Disposition: attachment') || 
+              (part.includes('Content-Type:') && !part.includes('text/plain') && !part.includes('text/html'))) {
+            
+            // Extract filename
+            const filenameMatch = part.match(/filename="([^"]+)"/);
+            const filename = filenameMatch ? filenameMatch[1] : 'attachment';
+            
+            // Extract content type
+            const contentTypeMatch = part.match(/Content-Type:\s*([^;]+)/);
+            const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : 'application/octet-stream';
+            
+            attachments.push({
+              filename,
+              contentType,
+              size: part.length,
+              isInline: false
+            });
+          }
+        }
+      }
     }
     
-    return parsed.attachments.map(attachment => ({
-      id: `att-${attachment.contentId || Math.random().toString(36).substring(2, 10)}`,
-      filename: attachment.filename || "unnamed-attachment",
-      contentType: attachment.contentType,
-      size: attachment.size,
-      contentId: attachment.contentId,
-      isInline: attachment.contentDisposition === "inline"
-    }));
+    return attachments;
   }
   
   /**
    * Determine if the email has images
    */
-  private hasImages(parsed: ParsedMail): boolean {
-    // Check for inline images in attachments
-    if (parsed.attachments && parsed.attachments.some(att => 
-      att.contentType.startsWith("image/") && att.contentDisposition === "inline"
-    )) {
-      return true;
-    }
-    
-    // Check for images in HTML content
-    if (parsed.html && /<img[^>]+>/i.test(parsed.html)) {
-      return true;
-    }
-    
-    return false;
+  private hasImages(content: string): boolean {
+    // Check for HTML img tags
+    return content.includes('<img') || content.includes('Content-Type: image/');
   }
   
   /**
-   * Extract recipients from a parsed email
+   * Extract recipients from headers
    */
-  private extractRecipients(parsed: ParsedMail): any[] {
-    if (!parsed.to || !parsed.to.value) {
-      return [];
-    }
-    
-    return parsed.to.value.map(recipient => ({
-      name: recipient.name || recipient.address,
-      email: recipient.address
-    }));
+  private extractRecipients(headers: EmailHeader[]): any[] {
+    const to = this.getHeaderValue(headers, 'To') || '';
+    return to.split(',').map(recipient => {
+      const { senderName, senderEmail } = this.parseSender(recipient);
+      return {
+        name: senderName,
+        email: senderEmail
+      };
+    }).filter(r => r.email);
   }
   
   /**
-   * Extract CC recipients from a parsed email
+   * Extract relevant headers
    */
-  private extractCC(parsed: ParsedMail): any[] {
-    if (!parsed.cc || !parsed.cc.value) {
-      return [];
-    }
-    
-    return parsed.cc.value.map(recipient => ({
-      name: recipient.name || recipient.address,
-      email: recipient.address
-    }));
-  }
-  
-  /**
-   * Extract BCC recipients from a parsed email
-   */
-  private extractBCC(parsed: ParsedMail): any[] {
-    if (!parsed.bcc || !parsed.bcc.value) {
-      return [];
-    }
-    
-    return parsed.bcc.value.map(recipient => ({
-      name: recipient.name || recipient.address,
-      email: recipient.address
-    }));
-  }
-  
-  /**
-   * Extract relevant headers from a parsed email
-   */
-  private extractRelevantHeaders(parsed: ParsedMail): Record<string, string> {
+  private extractRelevantHeaders(headers: EmailHeader[]): Record<string, string> {
     const relevantHeaders: Record<string, string> = {};
     
     // Extract headers that might be useful for classification
@@ -205,11 +225,9 @@ export class EmailParser {
       "x-ms-exchange-organization-prioritization"
     ];
     
-    if (parsed.headerLines) {
-      for (const header of parsed.headerLines) {
-        if (headerKeys.includes(header.key.toLowerCase())) {
-          relevantHeaders[header.key] = header.line;
-        }
+    for (const header of headers) {
+      if (headerKeys.includes(header.key.toLowerCase())) {
+        relevantHeaders[header.key] = header.value;
       }
     }
     
@@ -219,55 +237,51 @@ export class EmailParser {
   /**
    * Determine the urgency of an email based on headers and content
    */
-  private determineUrgency(parsed: ParsedMail): "high" | "medium" | "low" {
+  private determineUrgency(headers: EmailHeader[], content: string): "high" | "medium" | "low" {
     // Check priority headers
-    if (parsed.headerLines) {
-      for (const header of parsed.headerLines) {
-        const key = header.key.toLowerCase();
-        const value = header.line.toLowerCase();
-        
-        if ((key === "importance" || key === "priority" || key === "x-priority") && 
-            (value.includes("high") || value.includes("1"))) {
-          return "high";
-        }
-        
-        if ((key === "importance" || key === "priority" || key === "x-priority") && 
-            (value.includes("low") || value.includes("5"))) {
-          return "low";
-        }
-      }
-    }
-    
-    // Check subject for urgency indicators
-    if (parsed.subject) {
-      const subject = parsed.subject.toLowerCase();
-      if (subject.includes("urgent") || 
-          subject.includes("important") || 
-          subject.includes("asap") ||
-          subject.includes("emergency")) {
+    for (const header of headers) {
+      const key = header.key.toLowerCase();
+      const value = header.value.toLowerCase();
+      
+      if ((key === "importance" || key === "priority" || key === "x-priority") && 
+          (value.includes("high") || value.includes("1"))) {
         return "high";
       }
       
-      if (subject.includes("fyi") || 
-          subject.includes("for your information") ||
-          subject.includes("low priority")) {
+      if ((key === "importance" || key === "priority" || key === "x-priority") && 
+          (value.includes("low") || value.includes("5"))) {
         return "low";
       }
     }
     
-    // Check content for urgency indicators
-    const content = (parsed.text || "").toLowerCase();
-    if (content.includes("urgent") || 
-        content.includes("as soon as possible") || 
-        content.includes("emergency") ||
-        content.includes("immediate attention")) {
+    // Check subject for urgency indicators
+    const subject = this.getHeaderValue(headers, 'Subject') || '';
+    if (subject.toLowerCase().includes("urgent") || 
+        subject.toLowerCase().includes("important") || 
+        subject.toLowerCase().includes("asap") ||
+        subject.toLowerCase().includes("emergency")) {
       return "high";
     }
     
-    if (content.includes("no rush") || 
-        content.includes("when you have time") ||
-        content.includes("fyi") ||
-        content.includes("for your information")) {
+    if (subject.toLowerCase().includes("fyi") || 
+        subject.toLowerCase().includes("for your information") ||
+        subject.toLowerCase().includes("low priority")) {
+      return "low";
+    }
+    
+    // Check content for urgency indicators
+    const contentLower = content.toLowerCase();
+    if (contentLower.includes("urgent") || 
+        contentLower.includes("as soon as possible") || 
+        contentLower.includes("emergency") ||
+        contentLower.includes("immediate attention")) {
+      return "high";
+    }
+    
+    if (contentLower.includes("no rush") || 
+        contentLower.includes("when you have time") ||
+        contentLower.includes("fyi") ||
+        contentLower.includes("for your information")) {
       return "low";
     }
     
@@ -278,10 +292,8 @@ export class EmailParser {
   /**
    * Determine the category of an email based on content
    */
-  private determineCategory(parsed: ParsedMail): string {
-    const subject = (parsed.subject || "").toLowerCase();
-    const content = (parsed.text || "").toLowerCase();
-    const combinedText = `${subject} ${content}`;
+  private determineCategory(subject: string, content: string): string {
+    const combinedText = `${subject} ${content}`.toLowerCase();
     
     // Define category keywords
     const categoryKeywords: Record<string, string[]> = {

@@ -29,12 +29,12 @@ async function testEmailParser() {
     
     const simpleResult = await parser.parseEmail(simpleEmail);
     console.log('Simple Email Result:');
-    console.log(`- Subject: ${simpleResult.subject}`);
-    console.log(`- Sender: ${simpleResult.senderName} <${simpleResult.sender}>`);
-    console.log(`- Urgency: ${simpleResult.metadata.urgency}`);
-    console.log(`- Category: ${simpleResult.metadata.category}`);
-    console.log(`- Has Attachments: ${simpleResult.metadata.hasAttachments}`);
-    console.log(`- Content Preview: ${simpleResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${simpleResult.subject || 'N/A'}`);
+    console.log(`- Sender: ${simpleResult.senderName || 'N/A'} <${simpleResult.sender || 'N/A'}>`);
+    console.log(`- Urgency: ${simpleResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${simpleResult.metadata?.category || 'N/A'}`);
+    console.log(`- Has Attachments: ${simpleResult.metadata?.hasAttachments || false}`);
+    console.log(`- Content Preview: ${simpleResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nTesting HTML email...');
     const htmlEmail: RawEmail = {
@@ -45,12 +45,12 @@ async function testEmailParser() {
     
     const htmlResult = await parser.parseEmail(htmlEmail);
     console.log('HTML Email Result:');
-    console.log(`- Subject: ${htmlResult.subject}`);
-    console.log(`- Sender: ${htmlResult.senderName} <${htmlResult.sender}>`);
-    console.log(`- Urgency: ${htmlResult.metadata.urgency}`);
-    console.log(`- Category: ${htmlResult.metadata.category}`);
-    console.log(`- Has Images: ${htmlResult.metadata.hasImages}`);
-    console.log(`- Content Preview: ${htmlResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${htmlResult.subject || 'N/A'}`);
+    console.log(`- Sender: ${htmlResult.senderName || 'N/A'} <${htmlResult.sender || 'N/A'}>`);
+    console.log(`- Urgency: ${htmlResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${htmlResult.metadata?.category || 'N/A'}`);
+    console.log(`- Has Images: ${htmlResult.metadata?.hasImages || false}`);
+    console.log(`- Content Preview: ${htmlResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nTesting multipart email...');
     const multipartEmail: RawEmail = {
@@ -61,13 +61,13 @@ async function testEmailParser() {
     
     const multipartResult = await parser.parseEmail(multipartEmail);
     console.log('Multipart Email Result:');
-    console.log(`- Subject: ${multipartResult.subject}`);
-    console.log(`- Sender: ${multipartResult.senderName} <${multipartResult.sender}>`);
-    console.log(`- Urgency: ${multipartResult.metadata.urgency}`);
-    console.log(`- Category: ${multipartResult.metadata.category}`);
-    console.log(`- Has Attachments: ${multipartResult.metadata.hasAttachments}`);
-    console.log(`- Attachment Count: ${multipartResult.metadata.attachmentCount}`);
-    console.log(`- Content Preview: ${multipartResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${multipartResult.subject || 'N/A'}`);
+    console.log(`- Sender: ${multipartResult.senderName || 'N/A'} <${multipartResult.sender || 'N/A'}>`);
+    console.log(`- Urgency: ${multipartResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${multipartResult.metadata?.category || 'N/A'}`);
+    console.log(`- Has Attachments: ${multipartResult.metadata?.hasAttachments || false}`);
+    console.log(`- Attachment Count: ${multipartResult.metadata?.attachmentCount || 0}`);
+    console.log(`- Content Preview: ${multipartResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nEmail Parser Tests Completed Successfully!');
   } catch (error) {
@@ -104,14 +104,14 @@ async function testDocumentParser() {
     
     const inspectionResult = await parser.parseDocument(inspectionDoc);
     console.log('Inspection Report Result:');
-    console.log(`- Subject: ${inspectionResult.subject}`);
-    console.log(`- Author: ${inspectionResult.senderName} <${inspectionResult.sender}>`);
-    console.log(`- File Type: ${inspectionResult.metadata.fileType}`);
-    console.log(`- Urgency: ${inspectionResult.metadata.urgency}`);
-    console.log(`- Category: ${inspectionResult.metadata.category}`);
-    console.log(`- Page Count: ${inspectionResult.metadata.pageCount}`);
-    console.log(`- Has Images: ${inspectionResult.metadata.hasImages}`);
-    console.log(`- Content Preview: ${inspectionResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${inspectionResult.subject || 'N/A'}`);
+    console.log(`- Author: ${inspectionResult.senderName || 'N/A'} <${inspectionResult.sender || 'N/A'}>`);
+    console.log(`- File Type: ${inspectionResult.metadata?.fileType || 'N/A'}`);
+    console.log(`- Urgency: ${inspectionResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${inspectionResult.metadata?.category || 'N/A'}`);
+    console.log(`- Page Count: ${inspectionResult.metadata?.pageCount || 'N/A'}`);
+    console.log(`- Has Images: ${inspectionResult.metadata?.hasImages || false}`);
+    console.log(`- Content Preview: ${inspectionResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nTesting resume document...');
     const resumeDoc: RawDocument = {
@@ -136,13 +136,13 @@ async function testDocumentParser() {
     
     const resumeResult = await parser.parseDocument(resumeDoc);
     console.log('Resume Document Result:');
-    console.log(`- Subject: ${resumeResult.subject}`);
-    console.log(`- Author: ${resumeResult.senderName} <${resumeResult.sender}>`);
-    console.log(`- File Type: ${resumeResult.metadata.fileType}`);
-    console.log(`- Urgency: ${resumeResult.metadata.urgency}`);
-    console.log(`- Category: ${resumeResult.metadata.category}`);
-    console.log(`- Word Count: ${resumeResult.metadata.wordCount}`);
-    console.log(`- Content Preview: ${resumeResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${resumeResult.subject || 'N/A'}`);
+    console.log(`- Author: ${resumeResult.senderName || 'N/A'} <${resumeResult.sender || 'N/A'}>`);
+    console.log(`- File Type: ${resumeResult.metadata?.fileType || 'N/A'}`);
+    console.log(`- Urgency: ${resumeResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${resumeResult.metadata?.category || 'N/A'}`);
+    console.log(`- Word Count: ${resumeResult.metadata?.wordCount || 'N/A'}`);
+    console.log(`- Content Preview: ${resumeResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nDocument Parser Tests Completed Successfully!');
   } catch (error) {
@@ -160,41 +160,41 @@ async function testSocialParser() {
     
     const twitterResult = await parser.parseSocialPost(twitterPost);
     console.log('Twitter Post Result:');
-    console.log(`- Subject: ${twitterResult.subject}`);
-    console.log(`- Author: ${twitterResult.senderName} (${twitterResult.sender})`);
-    console.log(`- Platform: ${twitterResult.metadata.platform}`);
-    console.log(`- Urgency: ${twitterResult.metadata.urgency}`);
-    console.log(`- Category: ${twitterResult.metadata.category}`);
-    console.log(`- Likes: ${twitterResult.metadata.likes}`);
-    console.log(`- Hashtags: ${twitterResult.metadata.hashtags?.join(', ')}`);
-    console.log(`- Has Images: ${twitterResult.metadata.hasImages}`);
-    console.log(`- Content: ${twitterResult.content}`);
+    console.log(`- Subject: ${twitterResult.subject || 'N/A'}`);
+    console.log(`- Author: ${twitterResult.senderName || 'N/A'} (${twitterResult.sender || 'N/A'})`);
+    console.log(`- Platform: ${twitterResult.metadata?.platform || 'N/A'}`);
+    console.log(`- Urgency: ${twitterResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${twitterResult.metadata?.category || 'N/A'}`);
+    console.log(`- Likes: ${twitterResult.metadata?.likes || 0}`);
+    console.log(`- Hashtags: ${twitterResult.metadata?.hashtags?.join(', ') || 'None'}`);
+    console.log(`- Has Images: ${twitterResult.metadata?.hasImages || false}`);
+    console.log(`- Content: ${twitterResult.content || 'N/A'}`);
     
     console.log('\nTesting LinkedIn post...');
     const linkedinPost: RawSocialPost = readJsonTestFile('social-linkedin.json');
     
     const linkedinResult = await parser.parseSocialPost(linkedinPost);
     console.log('LinkedIn Post Result:');
-    console.log(`- Subject: ${linkedinResult.subject}`);
-    console.log(`- Author: ${linkedinResult.senderName} (${linkedinResult.sender})`);
-    console.log(`- Platform: ${linkedinResult.metadata.platform}`);
-    console.log(`- Urgency: ${linkedinResult.metadata.urgency}`);
-    console.log(`- Category: ${linkedinResult.metadata.category}`);
-    console.log(`- Likes: ${linkedinResult.metadata.likes}`);
-    console.log(`- Hashtags: ${linkedinResult.metadata.hashtags?.join(', ')}`);
-    console.log(`- Content Preview: ${linkedinResult.content.substring(0, 100)}...`);
+    console.log(`- Subject: ${linkedinResult.subject || 'N/A'}`);
+    console.log(`- Author: ${linkedinResult.senderName || 'N/A'} (${linkedinResult.sender || 'N/A'})`);
+    console.log(`- Platform: ${linkedinResult.metadata?.platform || 'N/A'}`);
+    console.log(`- Urgency: ${linkedinResult.metadata?.urgency || 'N/A'}`);
+    console.log(`- Category: ${linkedinResult.metadata?.category || 'N/A'}`);
+    console.log(`- Likes: ${linkedinResult.metadata?.likes || 0}`);
+    console.log(`- Hashtags: ${linkedinResult.metadata?.hashtags?.join(', ') || 'None'}`);
+    console.log(`- Content Preview: ${linkedinResult.content?.substring(0, 100) || 'N/A'}...`);
     
     console.log('\nTesting Twitter reply...');
     const twitterReply: RawSocialPost = readJsonTestFile('social-twitter-reply.json');
     
     const replyResult = await parser.parseSocialPost(twitterReply);
     console.log('Twitter Reply Result:');
-    console.log(`- Subject: ${replyResult.subject}`);
-    console.log(`- Author: ${replyResult.senderName} (${replyResult.sender})`);
-    console.log(`- Is Reply: ${replyResult.metadata.isReply}`);
-    console.log(`- Reply To: ${replyResult.metadata.replyToUser}`);
-    console.log(`- Mentions: ${replyResult.metadata.mentions?.join(', ')}`);
-    console.log(`- Content: ${replyResult.content}`);
+    console.log(`- Subject: ${replyResult.subject || 'N/A'}`);
+    console.log(`- Author: ${replyResult.senderName || 'N/A'} (${replyResult.sender || 'N/A'})`);
+    console.log(`- Is Reply: ${replyResult.metadata?.isReply || false}`);
+    console.log(`- Reply To: ${replyResult.metadata?.replyToUser || 'N/A'}`);
+    console.log(`- Mentions: ${replyResult.metadata?.mentions?.join(', ') || 'None'}`);
+    console.log(`- Content: ${replyResult.content || 'N/A'}`);
     
     console.log('\nSocial Parser Tests Completed Successfully!');
   } catch (error) {
