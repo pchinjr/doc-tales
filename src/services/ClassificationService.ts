@@ -254,6 +254,11 @@ export class ClassificationService {
     communication: Communication, 
     dimensions: Dimensions
   ): string {
+    // Use dimensions to enhance category detection if available
+    if (dimensions.analytical?.categories?.length > 0) {
+      return dimensions.analytical.categories[0];
+    }
+    
     const content = communication.content.toLowerCase();
     const subject = communication.subject.toLowerCase();
     const combinedText = `${subject} ${content}`;

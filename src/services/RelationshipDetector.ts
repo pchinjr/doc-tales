@@ -397,7 +397,7 @@ export class RelationshipDetector {
    */
   private detectCrossProjectRelationships(
     communication: Communication,
-    dimensions: Dimensions,
+    _dimensions: Dimensions, // Use underscore prefix to indicate intentionally unused parameter
     relationships: Relationship[]
   ): void {
     // Add relationship for the project
