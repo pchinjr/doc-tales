@@ -16,7 +16,7 @@
     "build:frontend": "npm run build -w @doc-tales/frontend",
     "build:backend": "npm run build -w @doc-tales/backend",
     "build:common": "npm run build -w @doc-tales/common",
-    "deploy:frontend": "node ./scripts/deploy-frontend.js",
+    "deploy:frontend": "./infrastructure/scripts/deploy-frontend.sh",
     "deploy:backend": "npm run deploy -w @doc-tales/backend",
     "deploy:backend:dev": "npm run deploy:dev -w @doc-tales/backend",
     "deploy:backend:staging": "npm run deploy:staging -w @doc-tales/backend",
