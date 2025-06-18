@@ -168,3 +168,5 @@ Wrap up by emphasizing the key differentiators:
 4. **Dimension-based data model** for personalized views
 
 This demo showcases a working end-to-end solution with both frontend and backend components, demonstrating technical excellence and innovation in addressing the real problem of information overload across multiple channels.
+
+http://doc-tales-frontend-dev-837132623653.s3-website-us-east-1.amazonaws.com
