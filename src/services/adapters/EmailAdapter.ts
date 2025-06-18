@@ -1,15 +1,18 @@
-// Task 3: Implement Source Adapters - Email Adapter
+// Enhanced Email Adapter with Email Parser
 import { BaseSourceAdapter } from "../SourceAdapter";
 import { Communication, SourceType } from "../../types/communication";
 import { DimensionExtractor } from "../DimensionExtractor";
+import { EmailParser, RawEmail } from "../parsers/EmailParser";
 
 export class EmailAdapter extends BaseSourceAdapter {
-  private mockData: any[] = [];
+  private mockData: RawEmail[] = [];
   private dimensionExtractor: DimensionExtractor;
+  private emailParser: EmailParser;
   
   constructor(sourceType: SourceType = "Gmail") {
     super(sourceType, "email");
     this.dimensionExtractor = new DimensionExtractor();
+    this.emailParser = new EmailParser();
     this.loadMockData();
   }
   
@@ -19,91 +22,52 @@ export class EmailAdapter extends BaseSourceAdapter {
     this.mockData = [
       {
         id: "email-001",
-        subject: "Mortgage Pre-Approval Update",
-        from: {
-          name: "Sarah Johnson",
-          email: "sarah.johnson@bankofamerica.com",
-          id: "contact-001"
-        },
-        to: [
-          {
-            name: "User",
-            email: "user@example.com",
-            id: "user-001"
-          }
-        ],
-        date: "2025-06-05T10:30:00Z",
-        body: "Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?",
-        project: "Home Purchase",
-        urgency: "high",
-        category: "finance",
-        hasAttachments: true,
-        attachments: [
-          {
-            id: "att-001",
-            name: "Pre-Approval-Letter.pdf",
-            type: "application/pdf",
-            size: 245000
-          }
-        ]
+        source: this.sourceType,
+        raw: `From: Sarah Johnson <sarah.johnson@bankofamerica.com>
+To: User <user@example.com>
+Subject: Mortgage Pre-Approval Update
+Date: Sat, 5 Jun 2025 10:30:00 +0000
+Content-Type: text/plain
+
+Good news! Your mortgage pre-approval has been processed. We need to schedule a follow-up call to discuss the details. Are you available tomorrow at 2pm?
+
+Best regards,
+Sarah Johnson
+Mortgage Specialist
+Bank of America`
       },
       {
         id: "email-002",
-        subject: "Interview Confirmation",
-        from: {
-          name: "Michael Chen",
-          email: "mchen@techcorp.com",
-          id: "contact-002"
-        },
-        to: [
-          {
-            name: "User",
-            email: "user@example.com",
-            id: "user-001"
-          }
-        ],
-        date: "2025-06-07T14:15:00Z",
-        body: "This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!",
-        project: "Career Change",
-        urgency: "high",
-        category: "interviews",
-        hasAttachments: false,
-        attachments: []
+        source: this.sourceType,
+        raw: `From: Michael Chen <mchen@techcorp.com>
+To: User <user@example.com>
+Subject: Interview Confirmation
+Date: Mon, 7 Jun 2025 14:15:00 +0000
+Content-Type: text/plain
+Importance: High
+
+This email confirms your interview for the Senior Developer position on Monday at 10:00 AM. Please prepare a 15-minute presentation on your past projects. Looking forward to meeting you!
+
+Best regards,
+Michael Chen
+Hiring Manager
+TechCorp`
       },
       {
         id: "email-003",
-        subject: "Family Reunion Planning",
-        from: {
-          name: "Aunt Lisa",
-          email: "lisa.family@gmail.com",
-          id: "contact-003"
-        },
-        to: [
-          {
-            name: "User",
-            email: "user@example.com",
-            id: "user-001"
-          },
-          {
-            name: "Uncle Bob",
-            email: "bob.family@gmail.com",
-            id: "contact-004"
-          }
-        ],
-        date: "2025-06-01T09:45:00Z",
-        body: "Hi everyone! I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.",
-        project: "Family Event",
-        urgency: "medium",
-        category: "planning",
-        hasAttachments: true,
-        attachments: [
-          {
-            id: "att-002",
-            name: "last-reunion-photos.zip",
-            type: "application/zip",
-            size: 15400000
-          }
-        ]
+        source: this.sourceType,
+        raw: `From: Aunt Lisa <lisa.family@gmail.com>
+To: User <user@example.com>, Uncle Bob <bob.family@gmail.com>
+Subject: Family Reunion Planning
+Date: Tue, 1 Jun 2025 09:45:00 +0000
+Content-Type: text/plain
+
+Hi everyone!
+
+I'm thinking about hosting the family reunion at my place this year. Would July 15th work for everyone? Please let me know your thoughts on food and activities we should plan.
+
+Love,
+Aunt Lisa`
       }
     ];
     
@@ -115,36 +79,43 @@ export class EmailAdapter extends BaseSourceAdapter {
       throw new Error("Not connected to email source");
     }
     
-    // Transform mock data into standardized Communication objects
-    return this.mockData.map(email => {
-      // Create a basic communication object
-      const communication: Partial<Communication> = {
-        id: email.id,
-        commType: "email",
-        source: this.sourceType,
-        timestamp: email.date,
-        subject: email.subject,
-        content: email.body,
-        project: email.project,
-        sender: email.from.email,
-        senderName: email.from.name,
-        metadata: {
-          urgency: email.urgency,
-          category: email.category,
-          isStarred: email.id === "email-001", // Example of source-specific data
-          folder: email.project === "Home Purchase" ? "Important" : "Inbox"
+    const communications: Communication[] = [];
+    
+    // Process each raw email
+    for (const rawEmail of this.mockData) {
+      try {
+        // Parse the raw email
+        const parsedEmail = await this.emailParser.parseEmail(rawEmail);
+        
+        // Add project information (in a real implementation, this would be determined by classification)
+        let project: "Home Purchase" | "Career Change" | "Family Event";
+        
+        if (parsedEmail.subject?.includes("Mortgage")) {
+          project = "Home Purchase";
+        } else if (parsedEmail.subject?.includes("Interview")) {
+          project = "Career Change";
+        } else {
+          project = "Family Event";
         }
-      };
-      
-      // Extract dimensions using the dimension extractor
-      const dimensions = this.dimensionExtractor.extractDimensions(communication as Communication);
-      
-      // Return the complete communication with dimensions
-      return {
-        ...communication,
-        dimensions
-      } as Communication;
-    });
+        
+        parsedEmail.project = project;
+        
+        // Extract dimensions
+        const dimensions = this.dimensionExtractor.extractDimensions(parsedEmail as Communication);
+        
+        // Create the final communication object
+        const communication: Communication = {
+          ...parsedEmail as Communication,
+          dimensions
+        };
+        
+        communications.push(communication);
+      } catch (error) {
+        console.error(`Failed to process email ${rawEmail.id}:`, error);
+      }
+    }
+    
+    return communications;
   }
   
   public async connect(): Promise<boolean> {

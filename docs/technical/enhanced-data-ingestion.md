@@ -8,12 +8,75 @@ The enhanced data ingestion system is a key differentiator for Doc-Tales, enabli
 
 The enhanced data ingestion system consists of the following components:
 
-1. **Ingestion Pipeline**: Orchestrates the data ingestion process from source adapters to dimension extraction and classification.
+1. **Source Parsers**: Transform raw data from various sources into structured Communication objects.
 2. **Source Adapters**: Connect to various data sources (email, documents, social media) and normalize the data.
-3. **Dimension Extractor**: Extracts temporal, relationship, visual, and analytical dimensions from communications.
-4. **Classification Service**: Categorizes communications into projects, categories, and urgency levels.
-5. **Relationship Detector**: Identifies connections between communications across projects.
-6. **Unified Data Service**: Provides a unified interface for accessing and filtering communications.
+3. **Ingestion Pipeline**: Orchestrates the data ingestion process from source adapters to dimension extraction and classification.
+4. **Dimension Extractor**: Extracts temporal, relationship, visual, and analytical dimensions from communications.
+5. **Classification Service**: Categorizes communications into projects, categories, and urgency levels.
+6. **Relationship Detector**: Identifies connections between communications across projects.
+7. **Unified Data Service**: Provides a unified interface for accessing and filtering communications.
+
+## Source Parsers
+
+The source parsers transform raw data from various sources into structured Communication objects:
+
+### EmailParser
+
+The `EmailParser` class parses raw email data using the `mailparser` library:
+
+- Extracts email headers, body, and attachments
+- Determines urgency based on headers and content
+- Categorizes emails based on content analysis
+- Extracts metadata like recipients, CC, BCC, etc.
+
+### DocumentParser
+
+The `DocumentParser` class parses document files:
+
+- Extracts document content, title, and metadata
+- Determines document type based on file extension
+- Analyzes content for images, charts, tables, etc.
+- Calculates metrics like page count, word count, etc.
+
+### SocialParser
+
+The `SocialParser` class parses social media posts:
+
+- Extracts post content, author, and metadata
+- Generates a subject from the post content
+- Analyzes hashtags, mentions, and media
+- Determines urgency and category based on content and engagement
+
+## Source Adapters
+
+The source adapters connect to various data sources and use the parsers to transform the data:
+
+### EmailAdapter
+
+The `EmailAdapter` class connects to email providers:
+
+- Fetches emails from the provider's API
+- Uses the `EmailParser` to transform raw emails into Communications
+- Adds project information based on content analysis
+- Extracts dimensions using the `DimensionExtractor`
+
+### DocumentAdapter
+
+The `DocumentAdapter` class connects to document storage providers:
+
+- Fetches documents from the provider's API
+- Uses the `DocumentParser` to transform raw documents into Communications
+- Adds project information based on content analysis
+- Extracts dimensions using the `DimensionExtractor`
+
+### SocialAdapter
+
+The `SocialAdapter` class connects to social media platforms:
+
+- Fetches posts from the platform's API
+- Uses the `SocialParser` to transform raw posts into Communications
+- Adds project information based on content analysis
+- Extracts dimensions using the `DimensionExtractor`
 
 ## Ingestion Pipeline
 
@@ -72,7 +135,69 @@ The enhanced `UnifiedDataService` class provides a unified interface for accessi
 - **Related Communications**: Find communications related to a specific communication.
 - **Dimension-Based Grouping**: Group communications by dimension type and confidence threshold.
 
+## Data Flow
+
+1. **Raw Data Ingestion**:
+   - Raw emails, documents, and social media posts are fetched from their respective sources.
+   - Source parsers transform the raw data into structured Communication objects.
+
+2. **Dimension Extraction**:
+   - The `DimensionExtractor` analyzes each communication to extract temporal, relationship, visual, and analytical dimensions.
+   - Confidence scores are calculated for each dimension.
+
+3. **Classification**:
+   - The `ClassificationService` categorizes communications into projects, categories, and urgency levels.
+   - Tags are extracted based on content and dimensions.
+
+4. **Relationship Detection**:
+   - The `RelationshipDetector` identifies connections between communications.
+   - Cross-project relationships are detected.
+
+5. **Data Access**:
+   - The `UnifiedDataService` provides a unified interface for accessing and filtering communications.
+   - Communications can be viewed through different archetype lenses.
+
 ## Usage Examples
+
+### Parsing Raw Data
+
+```typescript
+// Parse a raw email
+const emailParser = new EmailParser();
+const rawEmail = {
+  id: "email-001",
+  source: "Gmail",
+  raw: "From: sender@example.com\nTo: recipient@example.com\nSubject: Hello\n\nThis is the email content."
+};
+const parsedEmail = await emailParser.parseEmail(rawEmail);
+
+// Parse a raw document
+const documentParser = new DocumentParser();
+const rawDocument = {
+  id: "doc-001",
+  filename: "report.pdf",
+  contentType: "application/pdf",
+  size: 1024,
+  content: "This is the document content.",
+  source: "Google Drive"
+};
+const parsedDocument = await documentParser.parseDocument(rawDocument);
+
+// Parse a raw social post
+const socialParser = new SocialParser();
+const rawPost = {
+  id: "post-001",
+  platform: "Twitter",
+  timestamp: "2025-06-01T12:00:00Z",
+  author: {
+    id: "user-001",
+    name: "User",
+    username: "@user"
+  },
+  content: "This is a tweet #hashtag"
+};
+const parsedPost = await socialParser.parseSocialPost(rawPost);
+```
 
 ### Basic Ingestion
 

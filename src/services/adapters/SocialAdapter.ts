@@ -1,15 +1,18 @@
-// Task 3: Implement Source Adapters - Social Media Adapter
+// Enhanced Social Adapter with Social Parser
 import { BaseSourceAdapter } from "../SourceAdapter";
 import { Communication, SourceType } from "../../types/communication";
 import { DimensionExtractor } from "../DimensionExtractor";
+import { SocialParser, RawSocialPost } from "../parsers/SocialParser";
 
 export class SocialAdapter extends BaseSourceAdapter {
-  private mockData: any[] = [];
+  private mockData: RawSocialPost[] = [];
   private dimensionExtractor: DimensionExtractor;
+  private socialParser: SocialParser;
   
   constructor(sourceType: SourceType = "Twitter") {
     super(sourceType, "social");
     this.dimensionExtractor = new DimensionExtractor();
+    this.socialParser = new SocialParser();
     this.loadMockData();
   }
   
@@ -19,112 +22,66 @@ export class SocialAdapter extends BaseSourceAdapter {
     this.mockData = [
       {
         id: "social-001",
-        platform: "Twitter",
-        content: "Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome",
-        author: {
-          name: "User",
-          handle: "@user",
-          id: "user-001"
-        },
-        mentions: [],
+        platform: this.sourceType,
         timestamp: "2025-06-02T13:25:00Z",
+        author: {
+          id: "user-001",
+          name: "User",
+          username: "@user",
+          profileUrl: "https://twitter.com/user"
+        },
+        content: "Just toured the house on Maple Street. The neighborhood is perfect! #HouseHunting #DreamHome",
+        mediaUrls: [
+          "https://example.com/images/house1.jpg",
+          "https://example.com/images/house2.jpg"
+        ],
         likes: 5,
         shares: 2,
         comments: 3,
-        commenters: [
-          {
-            name: "Real Estate Agent",
-            handle: "@realestateagent",
-            id: "contact-007"
-          },
-          {
-            name: "Friend",
-            handle: "@friend",
-            id: "contact-008"
-          }
-        ],
-        project: "Home Purchase",
-        urgency: "low",
-        category: "updates",
-        hasMedia: true,
-        mediaType: "image",
-        mediaCount: 2,
+        hashtags: ["HouseHunting", "DreamHome"],
+        mentions: [],
+        urls: [],
+        isReply: false,
         location: "Maple Street, Springfield"
       },
       {
         id: "social-002",
-        platform: "LinkedIn",
-        content: "Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs",
-        author: {
-          name: "User",
-          handle: "user-linkedin",
-          id: "user-001"
-        },
-        mentions: [],
+        platform: "LinkedIn" as SourceType,
         timestamp: "2025-06-06T10:15:00Z",
+        author: {
+          id: "user-001",
+          name: "User",
+          username: "user-linkedin",
+          profileUrl: "https://linkedin.com/in/user"
+        },
+        content: "Excited to share that I'm interviewing for a Senior Developer position at TechCorp next week! Any advice from my network on their interview process? #CareerMove #TechJobs",
         likes: 24,
         shares: 0,
         comments: 8,
-        commenters: [
-          {
-            name: "Former Colleague",
-            handle: "former-colleague",
-            id: "contact-009"
-          },
-          {
-            name: "Industry Contact",
-            handle: "industry-contact",
-            id: "contact-010"
-          },
-          {
-            name: "Michael Chen",
-            handle: "michael-chen",
-            id: "contact-002"
-          }
-        ],
-        project: "Career Change",
-        urgency: "medium",
-        category: "networking",
-        hasMedia: false,
-        mediaCount: 0
+        hashtags: ["CareerMove", "TechJobs"],
+        mentions: [],
+        urls: []
       },
       {
         id: "social-003",
-        platform: "Twitter",
-        content: "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
-        author: {
-          name: "User",
-          handle: "@user",
-          id: "user-001"
-        },
-        mentions: [
-          {
-            name: "Aunt Lisa",
-            handle: "@aunt_lisa",
-            id: "contact-003"
-          }
-        ],
+        platform: this.sourceType,
         timestamp: "2025-06-01T18:40:00Z",
+        author: {
+          id: "user-001",
+          name: "User",
+          username: "@user",
+          profileUrl: "https://twitter.com/user"
+        },
+        content: "@aunt_lisa Count me in for the family reunion! I can help with the games and activities. #FamilyTime",
         likes: 3,
         shares: 0,
         comments: 2,
-        commenters: [
-          {
-            name: "Aunt Lisa",
-            handle: "@aunt_lisa",
-            id: "contact-003"
-          },
-          {
-            name: "Uncle Bob",
-            handle: "@uncle_bob",
-            id: "contact-004"
-          }
-        ],
-        project: "Family Event",
-        urgency: "low",
-        category: "planning",
-        hasMedia: false,
-        mediaCount: 0
+        hashtags: ["FamilyTime"],
+        mentions: ["aunt_lisa"],
+        urls: [],
+        isReply: true,
+        replyToId: "some-tweet-id",
+        replyToUser: "@aunt_lisa"
       }
     ];
     
@@ -136,42 +93,43 @@ export class SocialAdapter extends BaseSourceAdapter {
       throw new Error("Not connected to social media source");
     }
     
-    // Transform mock data into standardized Communication objects
-    return this.mockData.map(post => {
-      // Create a basic communication object
-      const communication: Partial<Communication> = {
-        id: post.id,
-        commType: "social",
-        source: this.sourceType,
-        timestamp: post.timestamp,
-        subject: post.content.substring(0, 50) + (post.content.length > 50 ? "..." : ""),
-        content: post.content,
-        project: post.project,
-        sender: post.author.handle,
-        senderName: post.author.name,
-        metadata: {
-          urgency: post.urgency,
-          category: post.category,
-          platform: post.platform,
-          likes: post.likes,
-          shares: post.shares,
-          comments: post.comments,
-          hasMedia: post.hasMedia,
-          mediaType: post.mediaType,
-          mediaCount: post.mediaCount,
-          location: post.location
+    const communications: Communication[] = [];
+    
+    // Process each raw social post
+    for (const rawPost of this.mockData) {
+      try {
+        // Parse the raw social post
+        const parsedPost = await this.socialParser.parseSocialPost(rawPost);
+        
+        // Add project information (in a real implementation, this would be determined by classification)
+        let project: "Home Purchase" | "Career Change" | "Family Event";
+        
+        if (rawPost.content.includes("house") || rawPost.hashtags?.includes("HouseHunting")) {
+          project = "Home Purchase";
+        } else if (rawPost.content.includes("interview") || rawPost.content.includes("job")) {
+          project = "Career Change";
+        } else {
+          project = "Family Event";
         }
-      };
-      
-      // Extract dimensions using the dimension extractor
-      const dimensions = this.dimensionExtractor.extractDimensions(communication as Communication);
-      
-      // Return the complete communication with dimensions
-      return {
-        ...communication,
-        dimensions
-      } as Communication;
-    });
+        
+        parsedPost.project = project;
+        
+        // Extract dimensions
+        const dimensions = this.dimensionExtractor.extractDimensions(parsedPost as Communication);
+        
+        // Create the final communication object
+        const communication: Communication = {
+          ...parsedPost as Communication,
+          dimensions
+        };
+        
+        communications.push(communication);
+      } catch (error) {
+        console.error(`Failed to process social post ${rawPost.id}:`, error);
+      }
+    }
+    
+    return communications;
   }
   
   public async connect(): Promise<boolean> {
