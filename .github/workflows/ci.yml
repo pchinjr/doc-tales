@@ -15,8 +15,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
-          # Disable cache until we have a proper package-lock.json
-          # cache: 'npm'
       - name: Install dependencies
         run: npm install
       - name: Run linting
@@ -30,8 +28,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
-          # Disable cache until we have a proper package-lock.json
-          # cache: 'npm'
       - name: Install dependencies
         run: npm install
       - name: Run tests
@@ -46,8 +42,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '22'
-          # Disable cache until we have a proper package-lock.json
-          # cache: 'npm'
       - name: Install dependencies
         run: npm install
       - name: Build packages
