@@ -13,3 +13,4 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 package-lock.json
+# Don't ignore yarn.lock as it's needed for GitHub Actions
