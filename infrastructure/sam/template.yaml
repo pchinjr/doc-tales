@@ -52,7 +52,7 @@ Resources:
   IngestionFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../src/lambda/ingestion/
+      CodeUri: ../../packages/backend/src/lambda/ingestion/
       Handler: index.handler
       Description: Receives and normalizes communications from various sources
       Policies:
@@ -71,7 +71,7 @@ Resources:
   DimensionExtractionFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../src/lambda/dimension-extraction/
+      CodeUri: ../../packages/backend/src/lambda/dimension-extraction/
       Handler: index.handler
       Description: Extracts dimensions from communications
       Policies:
@@ -90,7 +90,7 @@ Resources:
   NotificationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../src/lambda/notification/
+      CodeUri: ../../packages/backend/src/lambda/notification/
       Handler: index.handler
       Description: Sends alerts for high-priority communications
       Policies:
@@ -111,7 +111,7 @@ Resources:
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../src/lambda/api/
+      CodeUri: ../../packages/backend/src/lambda/api/
       Handler: index.handler
       Description: Serves data to frontend
       Policies:
@@ -312,7 +312,7 @@ Resources:
   SetupS3EventsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../src/lambda/setup-s3-events/
+      CodeUri: ../../packages/backend/src/lambda/setup-s3-events/
       Handler: index.handler
       Runtime: nodejs22.x
       Timeout: 60

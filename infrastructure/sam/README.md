@@ -1,140 +1,157 @@
-# Doc-Tales AWS SAM Infrastructure
+# Doc-Tales SAM Infrastructure
 
-This directory contains the AWS Serverless Application Model (SAM) templates and resources for deploying the Doc-Tales application to AWS.
+This directory contains the AWS SAM (Serverless Application Model) templates and configuration for the Doc-Tales application infrastructure.
 
-## Overview
+## 🏗️ **Architecture Overview**
 
-The Doc-Tales AWS infrastructure consists of:
+The SAM template defines a complete serverless infrastructure:
 
-- Lambda functions for processing communications
-- API Gateway for frontend communication
-- DynamoDB tables for storing metadata and user profiles
-- S3 buckets for storing raw communications and processed documents
-- S3 bucket for hosting the frontend application
-- SNS topics for notifications
+### **Lambda Functions**
+- **IngestionFunction**: Receives and normalizes communications from various sources
+- **DimensionExtractionFunction**: Extracts dimensions and metadata from communications
+- **NotificationFunction**: Sends alerts for high-priority communications  
+- **ApiFunction**: Serves data to the frontend application
+- **SetupS3EventsFunction**: Custom resource for S3 event configuration
 
-## Directory Structure
+### **Storage & Data**
+- **DynamoDB Tables**: Single-table design for communications and user profiles
+- **S3 Buckets**: Raw communications, processed documents, and frontend hosting
+- **SNS Topics**: Notification delivery
 
-```
-infrastructure/
-├── sam/
-│   ├── template.yaml       # Main SAM template
-│   ├── samconfig.toml      # SAM CLI configuration
-│   └── README.md           # This file
-└── scripts/
-    └── deploy-frontend.sh  # Script to deploy the frontend
-```
+### **API & Integration**
+- **API Gateway**: REST endpoints for frontend communication
+- **Event-driven Architecture**: S3 triggers, DynamoDB streams
 
-## Lambda Functions
+## 🚀 **Quick Start**
 
-The Lambda functions are located in the `src/lambda` directory:
+### **Prerequisites**
+- AWS CLI configured with appropriate permissions
+- SAM CLI installed (v1.140.0+)
+- Node.js 22.x
 
-```
-src/lambda/
-├── ingestion/          # Receives and normalizes communications
-├── dimension-extraction/ # Extracts dimensions from communications
-├── notification/       # Sends alerts for high-priority communications
-└── api/                # Serves data to frontend
-```
-
-## Deployment
-
-### Prerequisites
-
-1. Install the AWS SAM CLI:
-   ```bash
-   pip install aws-sam-cli
-   ```
-
-2. Configure AWS credentials:
-   ```bash
-   aws configure
-   ```
-
-### Deploy the Backend
-
-1. Build the SAM application:
-   ```bash
-   sam build -t infrastructure/sam/template.yaml
-   ```
-
-2. Deploy the application:
-   ```bash
-   sam deploy --guided
-   ```
-
-   Follow the prompts to configure the deployment.
-
-### Deploy the Frontend
-
-After deploying the backend, deploy the frontend:
-
-1. Navigate to the project root directory:
-   ```bash
-   cd /path/to/doc-tales
-   ```
-
-2. Run the frontend deployment script:
-   ```bash
-   ./infrastructure/scripts/deploy-frontend.sh [environment] [region]
-   ```
-
-   Where:
-   - `environment` is the environment name (default: dev)
-   - `region` is the AWS region (default: us-east-1)
-
-   This script will:
-   - Get the API endpoint from the CloudFormation outputs
-   - Create a `.env` file with the API endpoint
-   - Build the React app
-   - Upload the build to the S3 bucket
-   - Output the website URL
-
-### Update the Application
-
-To update the application after making changes:
-
-1. Build the updated application:
-   ```bash
-   sam build -t infrastructure/sam/template.yaml
-   ```
-
-2. Deploy the updates:
-   ```bash
-   sam deploy
-   ```
-
-3. Redeploy the frontend if needed:
-   ```bash
-   ./infrastructure/scripts/deploy-frontend.sh [environment] [region]
-   ```
-
-## Testing Locally
-
-You can test the Lambda functions locally using the SAM CLI:
-
-1. Start the API locally:
-   ```bash
-   sam local start-api
-   ```
-
-2. Invoke a specific function:
-   ```bash
-   sam local invoke IngestionFunction --event events/ingestion-event.json
-   ```
-
-## Cleanup
-
-To remove all resources created by SAM:
-
+### **Deploy to Development**
 ```bash
-sam delete
+# From project root
+npm run deploy:backend:dev
+
+# Or directly
+./infrastructure/scripts/deploy-backend.sh dev
 ```
 
-## Resources
+### **Deploy to Production**
+```bash
+npm run deploy:backend:prod
+```
 
-- [AWS SAM Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html)
-- [AWS Lambda Documentation](https://docs.aws.amazon.com/lambda/latest/dg/welcome.html)
-- [Amazon API Gateway Documentation](https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html)
-- [Amazon DynamoDB Documentation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html)
-- [Amazon S3 Documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
+## 🛠️ **Development Workflow**
+
+### **Local Development**
+```bash
+# Start local API Gateway
+npm run start:backend
+
+# Or directly
+./infrastructure/scripts/start-local.sh
+```
+
+### **Build & Validate**
+```bash
+cd infrastructure/sam
+sam build
+sam validate
+sam validate --lint  # Additional validation
+```
+
+### **Test Functions Locally**
+```bash
+# Invoke specific function
+sam local invoke ApiFunction --event events/api-event.json
+
+# Start local API
+sam local start-api --port 3001
+```
+
+## 📋 **Environment Configuration**
+
+### **Parameters**
+- `Environment`: dev, staging, prod
+- `AppName`: Application name for resource naming
+- `Region`: AWS region for deployment
+
+### **Environment Variables**
+Local development uses `env.json`:
+```json
+{
+  "Parameters": {
+    "ENVIRONMENT": "local",
+    "APP_NAME": "doc-tales",
+    "COMMUNICATIONS_TABLE": "doc-tales-communications-local",
+    "USER_PROFILES_TABLE": "doc-tales-user-profiles-local",
+    "RAW_BUCKET": "doc-tales-raw-communications-local"
+  }
+}
+```
+
+## 🔧 **Available Scripts**
+
+From project root:
+```bash
+npm run deploy:backend:dev      # Deploy to development
+npm run deploy:backend:staging  # Deploy to staging  
+npm run deploy:backend:prod     # Deploy to production
+npm run start:backend          # Start local development
+```
+
+## 📊 **Stack Outputs**
+
+After deployment, the stack provides:
+- **ApiEndpoint**: API Gateway URL
+- **FrontendWebsiteURL**: S3 website URL
+- **Bucket Names**: S3 bucket identifiers
+- **Table Names**: DynamoDB table identifiers
+
+## 🔍 **Monitoring & Debugging**
+
+### **CloudWatch Logs**
+```bash
+sam logs -n ApiFunction --stack-name doc-tales-dev --tail
+```
+
+### **Stack Status**
+```bash
+aws cloudformation describe-stacks --stack-name doc-tales-dev
+```
+
+## 🏷️ **Resource Naming Convention**
+
+Resources follow the pattern: `{AppName}-{ResourceType}-{Environment}-{AccountId}`
+
+Examples:
+- `doc-tales-communications-dev`
+- `doc-tales-raw-communications-dev-123456789012`
+
+## 🔐 **Security & Permissions**
+
+- Lambda functions have minimal required permissions
+- S3 buckets configured with appropriate CORS
+- API Gateway with configurable authorization
+- DynamoDB tables with on-demand billing
+
+## 🚨 **Troubleshooting**
+
+### **Common Issues**
+1. **Build Failures**: Ensure all Lambda functions have valid `package.json`
+2. **Permission Errors**: Check AWS CLI configuration and IAM permissions
+3. **Resource Conflicts**: Use unique stack names for different environments
+
+### **Debug Commands**
+```bash
+# Validate template
+sam validate --lint
+
+# Check build artifacts
+ls -la .aws-sam/build/
+
+# Test function locally
+sam local invoke ApiFunction
+```

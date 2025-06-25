@@ -4,7 +4,7 @@ set -e
 # Get parameters
 ENVIRONMENT=${1:-dev}
 REGION=${2:-us-east-1}
-STACK_NAME="doc-tales"
+STACK_NAME="doc-tales-${ENVIRONMENT}"
 
 # Navigate to project root directory
 cd "$(dirname "$0")/../.."
@@ -38,7 +38,7 @@ echo "Frontend bucket: $FRONTEND_BUCKET"
 echo "API endpoint: $API_ENDPOINT"
 
 # Create or update .env file with API endpoint
-echo "REACT_APP_API_ENDPOINT=$API_ENDPOINT" > $PROJECT_ROOT/.env
+echo "REACT_APP_API_ENDPOINT=$API_ENDPOINT" > $PROJECT_ROOT/packages/frontend/.env
 echo "Created .env file with API endpoint"
 
 # Build the React app
@@ -47,7 +47,7 @@ npm run build
 
 # Upload the build to S3
 echo "Uploading build to S3 bucket: $FRONTEND_BUCKET"
-aws s3 sync $PROJECT_ROOT/build/ s3://$FRONTEND_BUCKET --delete --region $REGION
+aws s3 sync $PROJECT_ROOT/packages/frontend/build/ s3://$FRONTEND_BUCKET --delete --region $REGION
 
 # Get the website URL
 WEBSITE_URL=$(aws cloudformation describe-stacks \
