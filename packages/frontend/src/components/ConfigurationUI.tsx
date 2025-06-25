@@ -91,7 +91,7 @@ const ConfigurationUI: React.FC<ConfigurationUIProps> = ({ onSourcesChanged }) =
           <p>Connected to AWS API</p>
         </div>
         <p className="api-endpoint">
-          Endpoint: https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/
+          Endpoint: {process.env.REACT_APP_API_ENDPOINT || "https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/"}
         </p>
       </div>
     </div>
