@@ -1,5 +1,5 @@
-import { ArchetypeType } from "../types/communication";
-import { ApiService, UserProfile } from "./ApiService";
+import { ArchetypeType, UserProfile } from "../types/communication";
+import { ApiService } from "./ApiService";
 
 export interface InteractionEvent {
   type: string;

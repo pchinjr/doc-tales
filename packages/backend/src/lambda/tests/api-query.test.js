@@ -279,7 +279,7 @@ test("API getCommunicationData - not found", async (t) => {
   const mockDynamoService = createMockDynamoDBService({
     tableName: "doc-tales-communications-dev",
     responses: {
-      query: () => {
+      query: (params) => {
         return { Items: [] };
       }
     }

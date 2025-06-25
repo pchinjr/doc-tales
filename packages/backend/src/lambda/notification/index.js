@@ -9,6 +9,7 @@ const AWS = require("aws-sdk");
 const sns = new AWS.SNS();
 
 // Environment variables
+const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
 const NOTIFICATION_TOPIC_ARN = process.env.NOTIFICATION_TOPIC_ARN || "";
 
 /**

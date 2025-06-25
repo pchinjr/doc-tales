@@ -1,17 +1,8 @@
-import { Communication, ArchetypeType } from "../types/communication";
+import { Communication, ArchetypeType, UserProfile } from "../types/communication";
 import { CacheService } from "./CacheService";
 
 // API endpoint URL
 const API_BASE_URL = "https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev";
-
-export interface UserProfile {
-  id: string;
-  primaryArchetype: ArchetypeType;
-  archetypeConfidence: Record<ArchetypeType, number>;
-  preferences?: Record<string, any>;
-  name?: string;
-  email?: string;
-}
 
 export class ApiService {
   private static instance: ApiService;

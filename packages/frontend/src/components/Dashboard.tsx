@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { ArchetypeType, Communication, ProjectType } from "../types/communication";
-import {
+import { 
+  ArchetypeType, 
+  Communication, 
+  ProjectType,
   ArchetypeService,
   InteractionEvent,
   ArchetypeChangeListener,
-} from "../services/ArchetypeService";
+} from "@doc-tales/common";
 import PrioritizerView from "./views/PrioritizerView";
 import ConnectorView from "./views/ConnectorView";
 import VisualizerView from "./views/VisualizerView";
@@ -13,7 +15,7 @@ import ConfigurationUI from "./ConfigurationUI";
 import DemoFlow from "./DemoFlow";
 import ViewDescription from "./ViewDescription";
 import ProjectSelector from "./ProjectSelector";
-import { ApiService, UserProfile } from "../services/ApiService";
+import { ApiService, UserProfile } from "@doc-tales/common";
 
 const Dashboard: React.FC = () => {
   const [communications, setCommunications] = useState<Communication[]>([]);

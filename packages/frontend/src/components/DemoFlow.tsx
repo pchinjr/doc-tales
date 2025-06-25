@@ -1,6 +1,6 @@
 // Task 8: Build Demo Flow
 import React, { useState } from "react";
-import { ArchetypeType } from "../types/communication";
+import { ArchetypeType } from "@doc-tales/common";
 
 interface DemoFlowProps {
   onComplete: () => void;

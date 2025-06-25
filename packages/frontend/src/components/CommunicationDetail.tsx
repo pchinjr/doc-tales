@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Communication } from "../types/communication";
-import { ApiService } from "../services/ApiService";
+import { Communication, ApiService } from "@doc-tales/common";
 
 interface CommunicationDetailProps {
   communicationId: string;

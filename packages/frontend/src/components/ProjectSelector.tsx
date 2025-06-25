@@ -1,5 +1,5 @@
 import React from "react";
-import { ProjectType } from "../types/communication";
+import { ProjectType } from "@doc-tales/common";
 
 interface ProjectSelectorProps {
   currentProject: string | null;

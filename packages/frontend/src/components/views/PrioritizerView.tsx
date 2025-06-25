@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Communication } from "../../types/communication";
-import { InteractionEvent } from "../../services/ArchetypeService";
+import { Communication, InteractionEvent } from "@doc-tales/common";
 import CommunicationDetail from "../CommunicationDetail";
 
 interface PrioritizerViewProps {

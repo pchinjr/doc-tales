@@ -523,7 +523,7 @@ async function getUserProfileData(userId) {
     }
     
     // Clean up the response to remove the PK
-    const { ...userProfile } = result.Item;
+    const { PK, ...userProfile } = result.Item;
     return {
       ...userProfile,
       id: userId

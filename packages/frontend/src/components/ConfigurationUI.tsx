@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ApiService } from "../services/ApiService";
+import { ApiService } from "@doc-tales/common";
 
 interface ConfigurationUIProps {
   onSourcesChanged: () => void;

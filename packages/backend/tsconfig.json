@@ -22,6 +22,8 @@
     "moduleResolution": "node",
     "baseUrl": "./",
     "paths": {
+      "@doc-tales/common": ["../common/dist"],
+      "@doc-tales/common/*": ["../common/dist/*"],
       "*": ["node_modules/*"]
     },
     "esModuleInterop": true,

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { Communication, ProjectType } from "../../types/communication";
-import { InteractionEvent } from "../../services/ArchetypeService";
+import { Communication, ProjectType, InteractionEvent } from "@doc-tales/common";
 import CommunicationDetail from "../CommunicationDetail";
 
 interface VisualizerViewProps {
