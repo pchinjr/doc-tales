@@ -1,172 +1,240 @@
 # Doc-Tales Demo Guide
 
 ## Introduction
-This guide will help you showcase the Doc-Tales application during your hackathon presentation. The application is now fully deployed and functional, demonstrating a personalized communications sorter with archetype-based personalization.
+This guide will help you showcase the Doc-Tales application during your hackathon presentation. The application is now fully deployed and functional, demonstrating a personalized communications sorter with archetype-based personalization that adapts to user cognitive styles.
+
+## Live Application URLs
+- **Frontend Application**: http://doc-tales-frontend-dev-837132623653.s3-website-us-east-1.amazonaws.com
+- **API Endpoint**: https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/
+- **GitHub Repository**: https://github.com/pchinjr/doc-tales
 
 ## Demo Setup
 
 ### Prerequisites
 - AWS CLI configured with appropriate credentials
-- Access to the deployed API endpoint: `https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/`
+- Access to the deployed API endpoint
 - Sample data already seeded in DynamoDB tables
+- Modern web browser for frontend demonstration
 
-## Demo Flow
+## Demo Flow (25 minutes total)
 
-### 1. Introduction to Doc-Tales (2 minutes)
+### 1. Introduction to Doc-Tales (3 minutes)
 Start by explaining the core concept:
 ```
-"Doc-Tales is a personalized communications sorter that unifies content from diverse sources into a single dashboard. What makes it unique is the archetype-based personalization that adapts to the user's cognitive style."
+"Doc-Tales is a personalized communications sorter for the intelligent document processing industry. It unifies content from diverse sources (emails, documents, social media) into a single dashboard with archetype-based personalization that adapts to the user's cognitive style."
 ```
 
-### 2. Demonstrate the Backend Infrastructure (3 minutes)
+**Key Value Propositions:**
+- Archetype-based personalization that adapts the interface to user cognitive styles
+- Unified inbox for all communications regardless of source
+- Frictionless onboarding for diverse data sources
+- Cross-project organization to provide a complete picture
+
+### 2. Live Frontend Demonstration (8 minutes)
+
+Open the live application: http://doc-tales-frontend-dev-837132623653.s3-website-us-east-1.amazonaws.com
+
+#### Dashboard Overview (2 minutes)
+- Show the unified communications dashboard
+- Highlight the archetype selector in the top-right
+- Demonstrate the project filter functionality
+- Point out the real-time archetype confidence indicators
+
+#### Archetype-Based Views (6 minutes)
+Demonstrate each archetype view with live data:
+
+**Prioritizer View:**
+- Switch to Prioritizer archetype
+- Show temporal organization with urgency indicators
+- Highlight deadline tracking and chronological sorting
+- Explain how this view emphasizes time-sensitive information
+
+**Connector View:**
+- Switch to Connector archetype
+- Show relationship-focused organization
+- Highlight people and connection strength indicators
+- Demonstrate network visualization elements
+
+**Visualizer View:**
+- Switch to Visualizer archetype
+- Show spatial organization and visual elements
+- Highlight document type indicators and visual cues
+- Demonstrate the card-based layout
+
+**Analyst View:**
+- Switch to Analyst archetype
+- Show detailed metadata and logical hierarchies
+- Highlight categories, tags, and analytical information
+- Demonstrate the structured data presentation
+
+### 3. Backend Infrastructure Showcase (5 minutes)
 
 Show the AWS resources that power the application:
 
 ```bash
-# List the CloudFormation stack resources
-aws cloudformation describe-stack-resources --stack-name doc-tales
+# Show the CloudFormation stack
+aws cloudformation describe-stacks --stack-name doc-tales-dev --region us-east-1
 
-# Show the DynamoDB tables
-aws dynamodb list-tables | grep doc-tales
+# List DynamoDB tables
+aws dynamodb list-tables --region us-east-1 | grep doc-tales
 
-# Show the S3 buckets
+# Show S3 buckets
 aws s3 ls | grep doc-tales
 ```
 
-Explain how the serverless architecture works:
-- Lambda functions for processing communications
-- DynamoDB for storing communications and user profiles
-- S3 buckets for document storage
-- API Gateway for frontend communication
+**Explain the Serverless Architecture:**
+- **5 Lambda Functions**: Ingestion, Dimension Extraction, Notification, API, Setup
+- **DynamoDB Tables**: Single-table design for communications and user profiles
+- **S3 Buckets**: Raw communications, processed documents, frontend hosting
+- **API Gateway**: REST endpoints with CORS configuration
+- **Event-driven Architecture**: S3 triggers and DynamoDB streams
 
-### 3. API Endpoint Demonstration (5 minutes)
+### 4. API Endpoint Demonstration (4 minutes)
 
-Show the working API endpoints:
+Show the working API endpoints with live data:
 
 ```bash
 # Get all communications
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
+curl https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/communications | jq
 
 # Get user profile with archetype information
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile | jq
+curl https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/user-profile | jq
 
 # Get available archetypes
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/archetypes | jq
+curl https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/archetypes | jq
+
+# Get specific communication with dimensions
+curl https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/communications/comm-001 | jq
 ```
 
-Highlight the different types of communications across projects:
-- Home Purchase project communications
-- Career Change project communications
-- Family Event project communications
-
-### 4. Archetype-Based Personalization (5 minutes)
-
-This is your key differentiator! Demonstrate how the interface adapts based on user archetype:
-
-#### Prioritizer View
-```bash
-# Update user profile to prioritizer archetype
-curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
-  -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"prioritizer","archetypeConfidence":{"prioritizer":0.7,"connector":0.1,"visualizer":0.1,"analyst":0.1}}'
-
-# Get communications with temporal focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
-```
-
-Explain how the Prioritizer view organizes information chronologically with urgency indicators.
-
-#### Connector View
-```bash
-# Update user profile to connector archetype
-curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
-  -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"connector","archetypeConfidence":{"prioritizer":0.1,"connector":0.7,"visualizer":0.1,"analyst":0.1}}' | jq 
-
-# Get communications with relationship focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
-```
-
-Explain how the Connector view emphasizes people and relationships.
-
-#### Visualizer View
-```bash
-# Update user profile to visualizer archetype
-curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
-  -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"visualizer","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.7,"analyst":0.1}}' | jq
-
-# Get communications with visual focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
-```
-
-Explain how the Visualizer view organizes information spatially.
-
-#### Analyst View
-```bash
-# Update user profile to analyst archetype
-curl -X PUT https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/user-profile \
-  -H "Content-Type: application/json" \
-  -d '{"id":"default-user","primaryArchetype":"analyst","archetypeConfidence":{"prioritizer":0.1,"connector":0.1,"visualizer":0.1,"analyst":0.7}}' | jq
-
-# Get communications with analytical focus
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications | jq
-```
-
-Explain how the Analyst view provides detailed metadata and logical hierarchies.
+**Highlight the Data Structure:**
+- Communications across different projects (Home Purchase, Career Change, Family Event)
+- Rich metadata with extracted dimensions
+- User profile with archetype confidence scores
+- Real-time archetype adaptation
 
 ### 5. Dimension-Based Data Model (3 minutes)
 
 Explain how Doc-Tales extracts four key dimensions from communications:
 
 ```bash
-# Get a specific communication to show dimensions
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications/comm-001 | jq
+# Show a communication with all dimensions
+curl https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/communications/comm-002 | jq '.dimensions'
 ```
 
-Highlight the dimensions:
-- **Temporal**: Deadlines, urgency, chronology
-- **Relationship**: Connection strength, frequency, network position
-- **Visual**: Document types, visual elements, spatial organization
-- **Analytical**: Categories, tags, sentiment, structure
+**The Four Dimensions:**
+- **Temporal**: Deadlines, urgency, chronology, time-sensitivity
+- **Relationship**: Connection strength, frequency, network position, people involved
+- **Visual**: Document types, visual elements, spatial organization, media content
+- **Analytical**: Categories, tags, sentiment, logical structure, metadata
 
-### 6. Cross-Project Organization (2 minutes)
+### 6. Adaptive Personalization Demo (2 minutes)
 
-Demonstrate how Doc-Tales provides a unified view across different life projects:
+Demonstrate how the system adapts to user behavior:
 
 ```bash
-# Get communications from different projects
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Home%20Purchase | jq
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Career%20Change | jq
-curl https://1kf8ojp77e.execute-api.us-east-1.amazonaws.com/dev/communications?project=Family%20Event | jq
+# Update user archetype in real-time
+curl -X PUT https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev/user-profile \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "default-user",
+    "primaryArchetype": "connector",
+    "archetypeConfidence": {
+      "prioritizer": 0.1,
+      "connector": 0.7,
+      "visualizer": 0.1,
+      "analyst": 0.1
+    }
+  }'
 ```
 
-Explain how this unified view helps users see connections between different aspects of their life.
-
-### 7. Adaptive Dashboard (2 minutes)
-
-Explain how the system tracks user interactions to determine their archetype:
+**Explain the Adaptation Logic:**
 - Clicking on dates increases Prioritizer confidence
 - Clicking on people increases Connector confidence
 - Viewing visual elements increases Visualizer confidence
 - Viewing detailed information increases Analyst confidence
 
-### 8. Future Enhancements (3 minutes)
+## Technical Excellence Highlights
 
-Briefly mention planned enhancements:
-- Machine learning for better archetype detection
-- More data source integrations
-- Enhanced visualization capabilities
-- Mobile application
+### 1. Modern Architecture
+- **Monorepo Structure**: Organized with packages for frontend, backend, and common code
+- **TypeScript**: Full type safety across the entire application
+- **AWS SAM**: Infrastructure as Code with proper environment management
+- **Event-Driven**: Serverless architecture with automatic scaling
+
+### 2. Development Workflow
+- **Automated CI/CD**: GitHub Actions for continuous deployment
+- **Local Development**: SAM local for backend testing
+- **Environment Management**: Separate dev/staging/prod environments
+- **Comprehensive Testing**: Unit tests and integration tests
+
+### 3. Deployment Automation
+```bash
+# Single command deployment
+npm run deploy:all
+
+# Environment-specific deployment
+npm run deploy:backend:prod
+npm run deploy:frontend
+```
+
+## Innovation Highlights
+
+### 1. Archetype-Based Personalization
+- **Novel Approach**: First application to use cognitive archetypes for UI adaptation
+- **Real-time Adaptation**: Interface changes based on user interaction patterns
+- **Scientific Foundation**: Based on cognitive psychology research
+
+### 2. Unified Data Model
+- **Cross-Source Integration**: Emails, documents, social media in one view
+- **Dimension Extraction**: Automatic categorization across four key dimensions
+- **Project Organization**: Life-based project categorization
+
+### 3. Intelligent Processing
+- **AWS Comprehend Integration**: Natural language processing for sentiment and entities
+- **Automatic Classification**: Smart categorization of communications
+- **Relationship Detection**: Automatic identification of people and connections
+
+## Future Roadmap
+
+### Phase 2 Enhancements
+- **Machine Learning**: Enhanced archetype detection with ML models
+- **More Integrations**: Slack, Teams, WhatsApp, LinkedIn
+- **Mobile Application**: Native iOS and Android apps
+- **Advanced Analytics**: Deeper insights and reporting
+
+### Phase 3 Vision
+- **AI Assistant**: Intelligent communication summarization
+- **Predictive Analytics**: Anticipate important communications
+- **Team Collaboration**: Multi-user workspaces
+- **Enterprise Features**: SSO, compliance, audit trails
 
 ## Conclusion
 
-Wrap up by emphasizing the key differentiators:
-1. **Archetype-based personalization** that adapts to cognitive styles
-2. **Unified inbox** for all communications regardless of source
-3. **Cross-project organization** to provide a complete picture
-4. **Dimension-based data model** for personalized views
+**Key Differentiators:**
+1. **Archetype-based personalization** - Unique approach to UI adaptation
+2. **Unified inbox** - All communications in one intelligent dashboard
+3. **Cross-project organization** - Complete life picture across projects
+4. **Dimension-based processing** - Smart extraction of meaningful metadata
+5. **Fully deployed solution** - Working end-to-end application on AWS
 
-This demo showcases a working end-to-end solution with both frontend and backend components, demonstrating technical excellence and innovation in addressing the real problem of information overload across multiple channels.
+**Technical Achievement:**
+- Complete serverless architecture on AWS
+- Modern monorepo with TypeScript
+- Automated CI/CD pipeline
+- Production-ready deployment
+- Comprehensive documentation
 
-http://doc-tales-frontend-dev-837132623653.s3-website-us-east-1.amazonaws.com
+This demo showcases a working, innovative solution that addresses real-world information overload while demonstrating technical excellence and scalable architecture.
+
+## Demo Script Quick Reference
+
+1. **Open Frontend** → Show unified dashboard
+2. **Switch Archetypes** → Demonstrate personalization
+3. **Show API** → Live backend integration
+4. **Explain Architecture** → AWS serverless infrastructure
+5. **Highlight Innovation** → Archetype-based adaptation
+6. **Future Vision** → Roadmap and potential
+
+**Total Demo Time: 25 minutes**
+**Q&A Buffer: 5 minutes**
