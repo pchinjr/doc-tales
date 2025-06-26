@@ -7,8 +7,8 @@
  */
 
 const AWS = require("aws-sdk");
-const DynamoDBService = require("../services/dynamodb-service");
-const S3Service = require("../services/s3-service");
+const DynamoDBService = require("./services/dynamodb-service");
+const S3Service = require("./services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService();

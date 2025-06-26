@@ -68,13 +68,32 @@ doc-tales/
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run unit tests (with mocked services)
 npm test
+
+# Run integration tests (against real AWS infrastructure)
+npm run test:integration
 
 # Run tests for a specific package
 npm test -w @doc-tales/frontend
 npm test -w @doc-tales/backend
 npm test -w @doc-tales/common
+```
+
+### Demo Environment Management
+
+```bash
+# Validate demo environment is ready
+npm run demo:validate
+
+# Prepare complete demo environment (clean + seed + test)
+npm run demo:prepare
+
+# Seed demo data
+npm run demo:seed
+
+# Clean demo data
+npm run demo:cleanup
 ```
 
 ### Linting
@@ -146,6 +165,7 @@ This repository uses GitHub Actions for CI/CD:
 ## Documentation
 
 - [Demo Guide](docs/demo-guide.md)
+- [Integration Testing Guide](docs/integration-testing.md)
 - [Technical Implementation Summary](docs/technical/implementation-summary.md)
 - [Technical Architecture](docs/technical/technical-architecture.md)
 - [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)
