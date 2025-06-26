@@ -159,21 +159,28 @@ async function getCommunicationFromS3(communicationId, providedKey) {
 }
 
 /**
- * Extract dimensions from a communication
+ * Extract dimensions from a communication with enhanced ML
  */
 async function extractDimensions(communication) {
-  // Extract each dimension
-  const temporal = await extractTemporalDimension(communication);
-  const relationship = await extractRelationshipDimension(communication);
-  const visual = await extractVisualDimension(communication);
-  const analytical = await extractAnalyticalDimension(communication);
+  console.log("Starting enhanced dimension extraction with ML");
+  
+  // Enhanced ML analysis
+  const mlInsights = await extractKeyInsights(communication.content);
+  const sentimentAnalysis = await analyzeSentimentAndPriority(communication.content, communication.metadata);
+  
+  // Extract traditional dimensions with ML enhancement
+  const temporal = await extractTemporalDimension(communication, mlInsights);
+  const relationship = await extractRelationshipDimension(communication, mlInsights);
+  const visual = await extractVisualDimension(communication, sentimentAnalysis);
+  const analytical = await extractAnalyticalDimension(communication, mlInsights, sentimentAnalysis);
   
   // Calculate confidence scores
   const confidenceScores = {
     temporal: calculateTemporalConfidence(temporal),
     relationship: calculateRelationshipConfidence(relationship),
     visual: calculateVisualConfidence(visual),
-    analytical: calculateAnalyticalConfidence(analytical)
+    analytical: calculateAnalyticalConfidence(analytical),
+    mlConfidence: sentimentAnalysis.mlConfidence || 0.5
   };
   
   return {
@@ -181,48 +188,276 @@ async function extractDimensions(communication) {
     relationship,
     visual,
     analytical,
-    confidenceScores
+    mlInsights,
+    sentimentAnalysis,
+    confidenceScores,
+    enhancedMetadata: {
+      priorityScore: sentimentAnalysis.priorityScore,
+      priorityLevel: sentimentAnalysis.priorityLevel,
+      keyTopics: mlInsights.topics.slice(0, 3),
+      actionItems: mlInsights.actionItems,
+      extractedEntities: {
+        people: mlInsights.people,
+        organizations: mlInsights.organizations,
+        locations: mlInsights.locations
+      }
+    }
   };
 }
 
 /**
- * Extract temporal dimension
+ * Enhanced ML insight extraction using AWS Comprehend
  */
-async function extractTemporalDimension(communication) {
-  // Extract deadline from content using pattern matching
-  const deadlineMatch = communication.content.match(/deadline[:\s]*([\w\s,]+)/i);
-  const deadline = deadlineMatch ? deadlineMatch[1].trim() : undefined;
+async function extractKeyInsights(content) {
+  try {
+    console.log("Extracting key insights with AWS Comprehend");
+    
+    // Extract key phrases
+    const keyPhrasesResult = await comprehend.detectKeyPhrases({
+      Text: content.substring(0, 5000),
+      LanguageCode: 'en'
+    }).promise();
+
+    // Extract entities
+    const entitiesResult = await comprehend.detectEntities({
+      Text: content.substring(0, 5000),
+      LanguageCode: 'en'
+    }).promise();
+
+    // Process and categorize results
+    const insights = {
+      keyPhrases: keyPhrasesResult.KeyPhrases
+        .filter(phrase => phrase.Score > 0.8)
+        .map(phrase => phrase.Text)
+        .slice(0, 10),
+      
+      people: entitiesResult.Entities
+        .filter(entity => entity.Type === 'PERSON' && entity.Score > 0.8)
+        .map(entity => entity.Text),
+      
+      organizations: entitiesResult.Entities
+        .filter(entity => entity.Type === 'ORGANIZATION' && entity.Score > 0.8)
+        .map(entity => entity.Text),
+      
+      locations: entitiesResult.Entities
+        .filter(entity => entity.Type === 'LOCATION' && entity.Score > 0.8)
+        .map(entity => entity.Text),
+      
+      dates: entitiesResult.Entities
+        .filter(entity => entity.Type === 'DATE' && entity.Score > 0.8)
+        .map(entity => entity.Text),
+      
+      topics: inferTopics(keyPhrasesResult.KeyPhrases),
+      actionItems: extractActionItems(content)
+    };
+
+    console.log("Successfully extracted insights:", JSON.stringify(insights, null, 2));
+    return insights;
+  } catch (error) {
+    console.error('Error extracting insights:', error);
+    return {
+      keyPhrases: [],
+      people: [],
+      organizations: [],
+      locations: [],
+      dates: [],
+      topics: [],
+      actionItems: [],
+      error: error.message
+    };
+  }
+}
+
+/**
+ * Enhanced sentiment analysis with priority scoring
+ */
+async function analyzeSentimentAndPriority(content, metadata) {
+  try {
+    console.log("Analyzing sentiment and priority");
+    
+    const sentimentResult = await comprehend.detectSentiment({
+      Text: content.substring(0, 5000),
+      LanguageCode: 'en'
+    }).promise();
+
+    // Calculate priority score (0-100)
+    let priorityScore = 50;
+
+    // Sentiment impact
+    if (sentimentResult.Sentiment === 'NEGATIVE') {
+      priorityScore += 20;
+    } else if (sentimentResult.Sentiment === 'POSITIVE') {
+      priorityScore += 5;
+    }
+
+    // Urgency impact
+    if (metadata.urgency === 'high') {
+      priorityScore += 25;
+    } else if (metadata.urgency === 'low') {
+      priorityScore -= 15;
+    }
+
+    // Content-based priority indicators
+    const urgentKeywords = ['urgent', 'asap', 'immediately', 'deadline', 'critical'];
+    const actionKeywords = ['please', 'need', 'required', 'must', 'should'];
+    
+    urgentKeywords.forEach(keyword => {
+      if (content.toLowerCase().includes(keyword)) {
+        priorityScore += 10;
+      }
+    });
+
+    actionKeywords.forEach(keyword => {
+      if (content.toLowerCase().includes(keyword)) {
+        priorityScore += 5;
+      }
+    });
+
+    priorityScore = Math.min(100, Math.max(0, priorityScore));
+
+    const result = {
+      sentiment: sentimentResult.Sentiment,
+      sentimentScores: sentimentResult.SentimentScore,
+      priorityScore,
+      priorityLevel: priorityScore > 75 ? 'HIGH' : priorityScore > 50 ? 'MEDIUM' : 'LOW',
+      mlConfidence: sentimentResult.SentimentScore[sentimentResult.Sentiment]
+    };
+
+    console.log("Sentiment analysis complete:", JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('Error in sentiment analysis:', error);
+    return {
+      sentiment: 'NEUTRAL',
+      priorityScore: 50,
+      priorityLevel: 'MEDIUM',
+      error: error.message
+    };
+  }
+}
+
+/**
+ * Infer topics from key phrases
+ */
+function inferTopics(keyPhrases) {
+  const topicCategories = {
+    'finance': ['budget', 'money', 'cost', 'payment', 'invoice', 'financial', 'bank'],
+    'project': ['project', 'task', 'deadline', 'milestone', 'deliverable', 'timeline'],
+    'meeting': ['meeting', 'call', 'conference', 'discussion', 'agenda', 'schedule'],
+    'travel': ['travel', 'flight', 'hotel', 'trip', 'vacation', 'booking'],
+    'legal': ['contract', 'agreement', 'legal', 'terms', 'conditions', 'compliance'],
+    'hr': ['employee', 'hiring', 'interview', 'performance', 'review', 'benefits']
+  };
+
+  const detectedTopics = [];
+  const content = keyPhrases.map(phrase => phrase.Text.toLowerCase()).join(' ');
+
+  Object.entries(topicCategories).forEach(([topic, keywords]) => {
+    const matches = keywords.filter(keyword => content.includes(keyword));
+    if (matches.length > 0) {
+      detectedTopics.push({
+        topic,
+        confidence: matches.length / keywords.length,
+        matchedKeywords: matches
+      });
+    }
+  });
+
+  return detectedTopics.sort((a, b) => b.confidence - a.confidence);
+}
+
+/**
+ * Extract action items from content
+ */
+function extractActionItems(content) {
+  const actionPatterns = [
+    /please\s+([^.!?]+)/gi,
+    /need\s+to\s+([^.!?]+)/gi,
+    /should\s+([^.!?]+)/gi,
+    /must\s+([^.!?]+)/gi,
+    /action\s+required:?\s*([^.!?]+)/gi,
+    /todo:?\s*([^.!?]+)/gi
+  ];
+
+  const actionItems = [];
   
-  // Calculate days until deadline if it exists
+  actionPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(content)) !== null) {
+      actionItems.push({
+        text: match[1].trim(),
+        type: 'extracted',
+        confidence: 0.8
+      });
+    }
+  });
+
+  return actionItems.slice(0, 5);
+}
+
+/**
+ * Extract temporal dimension with ML insights
+ */
+async function extractTemporalDimension(communication, mlInsights) {
+  console.log("Extracting temporal dimension with ML enhancement");
+  
+  // Use ML-detected dates first, then fallback to pattern matching
+  let deadline;
   let daysUntilDeadline;
-  if (deadline) {
+  
+  if (mlInsights.dates && mlInsights.dates.length > 0) {
+    deadline = mlInsights.dates[0]; // Use first detected date as potential deadline
     try {
       const deadlineDate = new Date(deadline);
       const today = new Date();
       const diffTime = deadlineDate.getTime() - today.getTime();
       daysUntilDeadline = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     } catch (e) {
-      // If we can't parse the date, leave it undefined
+      console.log("Could not parse ML-detected date:", deadline);
     }
   }
   
-  // Use AWS Comprehend to detect dates in the content
-  const entities = await detectEntities(communication.content);
-  const dates = entities
-    .filter(entity => entity.Type === "DATE")
-    .map(entity => entity.Text);
+  // Fallback to pattern matching if ML didn't find dates
+  if (!deadline) {
+    const deadlineMatch = communication.content.match(/deadline[:\s]*([\w\s,]+)/i);
+    deadline = deadlineMatch ? deadlineMatch[1].trim() : undefined;
+    
+    if (deadline) {
+      try {
+        const deadlineDate = new Date(deadline);
+        const today = new Date();
+        const diffTime = deadlineDate.getTime() - today.getTime();
+        daysUntilDeadline = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      } catch (e) {
+        console.log("Could not parse pattern-matched date:", deadline);
+      }
+    }
+  }
   
-  // Determine if this requires action based on content and urgency
+  // Enhanced action detection using ML insights
   const requiresAction = 
     communication.metadata.urgency === "high" || 
+    mlInsights.actionItems.length > 0 ||
     communication.content.toLowerCase().includes("please") ||
     communication.content.toLowerCase().includes("need") ||
     communication.content.toLowerCase().includes("required") ||
     communication.content.toLowerCase().includes("action");
   
+  // Determine urgency level based on multiple factors
+  let urgencyLevel = communication.metadata.urgency || 'normal';
+  if (daysUntilDeadline !== undefined) {
+    if (daysUntilDeadline <= 1) {
+      urgencyLevel = 'critical';
+    } else if (daysUntilDeadline <= 3) {
+      urgencyLevel = 'high';
+    } else if (daysUntilDeadline <= 7) {
+      urgencyLevel = 'medium';
+    }
+  }
+  
   return {
     deadline,
-    urgency: communication.metadata.urgency,
+    urgency: urgencyLevel,
     chronology: {
       created: communication.timestamp,
       lastUpdated: communication.timestamp,
@@ -232,10 +467,42 @@ async function extractTemporalDimension(communication) {
       isRecent: isRecent(communication.timestamp),
       isPast: isPast(communication.timestamp),
       requiresAction,
-      daysUntilDeadline
+      daysUntilDeadline,
+      urgencyScore: calculateUrgencyScore(urgencyLevel, daysUntilDeadline)
     },
-    detectedDates: dates
+    detectedDates: mlInsights.dates,
+    mlEnhanced: true
   };
+}
+
+/**
+ * Calculate urgency score (0-100)
+ */
+function calculateUrgencyScore(urgencyLevel, daysUntilDeadline) {
+  let score = 50; // Base score
+  
+  // Urgency level impact
+  switch (urgencyLevel) {
+    case 'critical': score += 40; break;
+    case 'high': score += 25; break;
+    case 'medium': score += 10; break;
+    case 'low': score -= 15; break;
+  }
+  
+  // Days until deadline impact
+  if (daysUntilDeadline !== undefined) {
+    if (daysUntilDeadline <= 0) {
+      score += 30; // Overdue
+    } else if (daysUntilDeadline <= 1) {
+      score += 25; // Due today/tomorrow
+    } else if (daysUntilDeadline <= 3) {
+      score += 15; // Due this week
+    } else if (daysUntilDeadline <= 7) {
+      score += 5; // Due next week
+    }
+  }
+  
+  return Math.min(100, Math.max(0, score));
 }
 
 /**
