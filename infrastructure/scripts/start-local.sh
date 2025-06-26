@@ -13,6 +13,9 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}🚀 Starting SAM Local Development Environment${NC}"
 
+# Ensure SAM cache directory exists with correct permissions
+mkdir -p ~/.aws-sam/layers-pkg
+
 # Navigate to SAM directory
 cd "$(dirname "$0")/../sam"
 

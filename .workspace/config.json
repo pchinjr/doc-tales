@@ -1,8 +1,0 @@
-{
-  "setup": {
-    "script": ".setup/setup.sh"
-  },
-  "tasks": {
-    "test": "npm test"
-  }
-}
