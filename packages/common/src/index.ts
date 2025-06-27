@@ -15,6 +15,7 @@ export * from "./services/DimensionMapper";
 export * from "./services/EntityExtractor";
 export * from "./services/IngestionPipeline";
 export * from "./services/RelationshipDetector";
+export * from "./services/SchemaMigrator";
 export * from "./services/SentimentAnalyzer";
 export * from "./services/SourceAdapter";
 export * from "./services/TopicCategorizer";
