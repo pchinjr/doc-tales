@@ -17,6 +17,7 @@ export * from "./services/RelationshipDetector";
 export * from "./services/SentimentAnalyzer";
 export * from "./services/SourceAdapter";
 export * from "./services/UnifiedDataService";
+export * from "./services/UrgencyDetector";
 
 // Export parsers
 export * from "./services/parsers/EmailParser";
