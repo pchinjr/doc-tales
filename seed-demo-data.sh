@@ -93,8 +93,8 @@ create_demo_communication() {
 }
 EOF
     
-    # Upload to S3
-    aws s3 cp "$filename" "s3://$RAW_BUCKET/raw/$type/$id.json" \
+    # Upload to S3 with incoming/ prefix to trigger processing
+    aws s3 cp "$filename" "s3://$RAW_BUCKET/incoming/$type/$id.json" \
         --content-type "application/json" \
         --region "$REGION"
     

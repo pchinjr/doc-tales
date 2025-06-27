@@ -82,7 +82,7 @@ async function testCommunicationPipeline() {
             }
         };
         
-        const s3Key = `raw/email/${testId}.json`;
+        const s3Key = `incoming/email/${testId}.json`;
         const putCommand = new PutObjectCommand({
             Bucket: bucketName,
             Key: s3Key,
@@ -181,7 +181,7 @@ async function testCommunicationPipeline() {
             // Remove from S3
             const deleteS3Command = new DeleteObjectCommand({
                 Bucket: bucketName,
-                Key: `raw/email/${testId}.json`
+                Key: `incoming/email/${testId}.json`
             });
             await s3.send(deleteS3Command);
             

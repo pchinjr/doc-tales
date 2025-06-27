@@ -60,8 +60,12 @@ echo -e "${GREEN}✅ Found infrastructure${NC}"
 # Clean up S3 demo files
 echo -e "${YELLOW}🗑️  Cleaning up S3 demo files...${NC}"
 
-# List and delete demo files
-DEMO_FILES=$(aws s3 ls "s3://$RAW_BUCKET/raw/" --recursive --region "$REGION" | grep -E "(urgent-client-meeting|budget-overrun-alert|q3-performance-review|security-update-required|team-pizza-party|office-coffee-upgrade)" | awk '{print $4}' || true)
+# List and delete demo files from both incoming/ and processed/ prefixes
+DEMO_FILES_INCOMING=$(aws s3 ls "s3://$RAW_BUCKET/incoming/" --recursive --region "$REGION" | grep -E "(urgent-client-meeting|budget-overrun-alert|q3-performance-review|security-update-required|team-pizza-party|office-coffee-upgrade)" | awk '{print $4}' || true)
+DEMO_FILES_PROCESSED=$(aws s3 ls "s3://$RAW_BUCKET/processed/" --recursive --region "$REGION" | grep -E "(urgent-client-meeting|budget-overrun-alert|q3-performance-review|security-update-required|team-pizza-party|office-coffee-upgrade)" | awk '{print $4}' || true)
+DEMO_FILES_RAW=$(aws s3 ls "s3://$RAW_BUCKET/raw/" --recursive --region "$REGION" | grep -E "(urgent-client-meeting|budget-overrun-alert|q3-performance-review|security-update-required|team-pizza-party|office-coffee-upgrade)" | awk '{print $4}' || true)
+
+DEMO_FILES="$DEMO_FILES_INCOMING $DEMO_FILES_PROCESSED $DEMO_FILES_RAW"
 
 if [ -n "$DEMO_FILES" ]; then
     echo "$DEMO_FILES" | while read -r file; do

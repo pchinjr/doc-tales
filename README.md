@@ -166,6 +166,7 @@ This repository uses GitHub Actions for CI/CD:
 
 - [Demo Guide](docs/demo-guide.md)
 - [Integration Testing Guide](docs/integration-testing.md)
+- [AWS SDK v3 Migration Guide](docs/technical/aws-sdk-v3-migration.md) ⭐ **New**
 - [Technical Implementation Summary](docs/technical/implementation-summary.md)
 - [Technical Architecture](docs/technical/technical-architecture.md)
 - [DynamoDB Schema Guide](docs/technical/dynamodb-schema-guide.md)

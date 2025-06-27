@@ -26,17 +26,30 @@ exports.handler = async (event, context) => {
     
     // Only process if this is a Create or Update event
     if (event.RequestType === "Create" || event.RequestType === "Update") {
-      const s3 = new AWS.S3();
-      const { BucketName, LambdaArn, Events } = event.ResourceProperties;
+      const { BucketName, LambdaArn, Events, KeyPrefix } = event.ResourceProperties;
       
-      // Configure bucket notification
-      const notificationConfiguration = {
-        LambdaFunctionConfigurations: [
-          {
-            LambdaFunctionArn: LambdaArn,
-            Events: Events
+      // Configure bucket notification with optional key prefix filtering
+      const lambdaConfig = {
+        LambdaFunctionArn: LambdaArn,
+        Events: Events
+      };
+      
+      // Add key prefix filter if specified
+      if (KeyPrefix) {
+        lambdaConfig.Filter = {
+          Key: {
+            FilterRules: [
+              {
+                Name: "prefix",
+                Value: KeyPrefix
+              }
+            ]
           }
-        ]
+        };
+      }
+      
+      const notificationConfiguration = {
+        LambdaFunctionConfigurations: [lambdaConfig]
       };
       
       const command = new PutBucketNotificationConfigurationCommand({

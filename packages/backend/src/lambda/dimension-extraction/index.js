@@ -7,7 +7,12 @@
  * Updated to use AWS SDK v3 for better performance.
  */
 
-const { ComprehendClient } = require("@aws-sdk/client-comprehend");
+const { 
+  ComprehendClient, 
+  DetectEntitiesCommand, 
+  DetectSentimentCommand, 
+  DetectKeyPhrasesCommand 
+} = require("@aws-sdk/client-comprehend");
 const DynamoDBService = require("./services/dynamodb-service");
 const S3Service = require("./services/s3-service");
 
@@ -216,16 +221,18 @@ async function extractKeyInsights(content) {
     console.log("Extracting key insights with AWS Comprehend");
     
     // Extract key phrases
-    const keyPhrasesResult = await comprehend.detectKeyPhrases({
+    const keyPhrasesCommand = new DetectKeyPhrasesCommand({
       Text: content.substring(0, 5000),
       LanguageCode: 'en'
-    }).promise();
+    });
+    const keyPhrasesResult = await comprehend.send(keyPhrasesCommand);
 
     // Extract entities
-    const entitiesResult = await comprehend.detectEntities({
+    const entitiesCommand = new DetectEntitiesCommand({
       Text: content.substring(0, 5000),
       LanguageCode: 'en'
-    }).promise();
+    });
+    const entitiesResult = await comprehend.send(entitiesCommand);
 
     // Process and categorize results
     const insights = {
@@ -278,10 +285,11 @@ async function analyzeSentimentAndPriority(content, metadata) {
   try {
     console.log("Analyzing sentiment and priority");
     
-    const sentimentResult = await comprehend.detectSentiment({
+    const sentimentCommand = new DetectSentimentCommand({
       Text: content.substring(0, 5000),
       LanguageCode: 'en'
-    }).promise();
+    });
+    const sentimentResult = await comprehend.send(sentimentCommand);
 
     // Calculate priority score (0-100)
     let priorityScore = 50;
@@ -801,7 +809,8 @@ async function detectEntities(text) {
     LanguageCode: "en"
   };
   
-  const result = await exports.services.comprehend.detectEntities(params).promise();
+  const command = new DetectEntitiesCommand(params);
+  const result = await exports.services.comprehend.send(command);
   return result.Entities;
 }
 
@@ -817,7 +826,8 @@ async function detectSentiment(text) {
     LanguageCode: "en"
   };
   
-  return await exports.services.comprehend.detectSentiment(params).promise();
+  const command = new DetectSentimentCommand(params);
+  return await exports.services.comprehend.send(command);
 }
 
 /**
@@ -832,7 +842,8 @@ async function detectKeyPhrases(text) {
     LanguageCode: "en"
   };
   
-  const result = await exports.services.comprehend.detectKeyPhrases(params).promise();
+  const command = new DetectKeyPhrasesCommand(params);
+  const result = await exports.services.comprehend.send(command);
   return result.KeyPhrases.map(phrase => phrase.Text);
 }
 

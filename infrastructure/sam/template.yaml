@@ -292,7 +292,7 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref DimensionExtractionFunction
+      FunctionName: !Ref IngestionFunction
       Principal: s3.amazonaws.com
       SourceAccount: !Ref AWS::AccountId
       SourceArn: !GetAtt RawCommunicationsBucket.Arn
@@ -303,8 +303,9 @@ Resources:
     Properties:
       ServiceToken: !GetAtt SetupS3EventsFunction.Arn
       BucketName: !Ref RawCommunicationsBucket
-      LambdaArn: !GetAtt DimensionExtractionFunction.Arn
+      LambdaArn: !GetAtt IngestionFunction.Arn
       Events: ["s3:ObjectCreated:*"]
+      KeyPrefix: "incoming/"
     DependsOn:
       - RawBucketPermission
 

@@ -36,6 +36,33 @@ exports.handler = async (event) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
   
   try {
+    // S3 event
+    if (event.Records && event.Records[0] && event.Records[0].eventSource === 'aws:s3') {
+      const results = [];
+      
+      for (const record of event.Records) {
+        const bucket = record.s3.bucket.name;
+        const key = record.s3.object.key;
+        
+        console.log(`Processing S3 object: ${bucket}/${key}`);
+        
+        // Get the object from S3
+        const s3Object = await s3Service.getObject({ Key: key });
+        const content = await s3Object.Body.transformToString();
+        const data = JSON.parse(content);
+        
+        // Process the communication
+        const result = await exports.processCommunication(data);
+        results.push(result);
+      }
+      
+      return {
+        statusCode: 200,
+        processedCount: results.length,
+        results: results
+      };
+    }
+    
     // API Gateway event
     if (event.body) {
       const body = JSON.parse(event.body);
@@ -150,7 +177,8 @@ exports.normalizeData = function normalizeData(data, id) {
  * Store the full communication in S3
  */
 exports.storeInS3 = async function storeInS3(data, id) {
-  const key = `raw/${data.type}/${id}.json`;
+  // Use 'processed/' prefix to avoid triggering S3 events that listen to 'incoming/'
+  const key = `processed/${data.type}/${id}.json`;
   
   await s3Service.putObject({
     Key: key,
