@@ -1,6 +1,7 @@
 // Export types
 export * from "./types/communication";
 export * from "./types/dimensions";
+export * from "./types/ml-extraction";
 
 // Export services
 export * from "./services/ApiService";
