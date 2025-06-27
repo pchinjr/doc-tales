@@ -8,7 +8,7 @@
  */
 
 const DynamoDBService = require("./services/dynamodb-service");
-const AWS = require("aws-sdk");
+const S3Service = require("./services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService({
@@ -16,11 +16,8 @@ const dynamoService = new DynamoDBService({
   userProfilesTableName: process.env.USER_PROFILES_TABLE || "doc-tales-user-profiles-dev"
 });
 
-// Create S3 service directly
-const s3 = new AWS.S3();
-const s3Service = {
-  getObject: (params) => s3.getObject(params).promise()
-};
+// Create S3 service using SDK v3
+const s3Service = new S3Service();
 
 // Export services for testing
 exports.services = {
