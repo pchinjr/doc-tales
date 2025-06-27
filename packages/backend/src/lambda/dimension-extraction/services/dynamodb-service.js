@@ -2,115 +2,138 @@
  * DynamoDB Service
  * 
  * A service layer for interacting with DynamoDB that can be easily mocked for testing.
+ * Updated to use AWS SDK v3 for better performance and tree-shaking.
  */
 
-const AWS = require("aws-sdk");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { 
+  DynamoDBDocumentClient, 
+  QueryCommand, 
+  GetCommand, 
+  PutCommand, 
+  UpdateCommand, 
+  DeleteCommand, 
+  BatchWriteCommand, 
+  BatchGetCommand, 
+  ScanCommand 
+} = require("@aws-sdk/lib-dynamodb");
 
 class DynamoDBService {
   constructor(options = {}) {
     this.tableName = options.tableName || process.env.COMMUNICATIONS_TABLE;
     this.userProfilesTableName = options.userProfilesTableName || process.env.USER_PROFILES_TABLE;
     
-    // Configure AWS SDK with region for production
-    AWS.config.update({
+    // Create DynamoDB client with region configuration
+    const client = new DynamoDBClient({
       region: options.region || process.env.AWS_REGION || "us-east-1"
     });
     
-    this.documentClient = options.documentClient || new AWS.DynamoDB.DocumentClient();
+    // Create document client from the base client
+    this.documentClient = options.documentClient || DynamoDBDocumentClient.from(client);
   }
 
   /**
    * Execute a query operation
    */
   async query(params) {
-    return this.documentClient.query({
+    const command = new QueryCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a get operation
    */
   async get(params) {
-    return this.documentClient.get({
+    const command = new GetCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a put operation
    */
   async put(params) {
-    return this.documentClient.put({
+    const command = new PutCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute an update operation
    */
   async update(params) {
-    return this.documentClient.update({
+    const command = new UpdateCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a delete operation
    */
   async delete(params) {
-    return this.documentClient.delete({
+    const command = new DeleteCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a batch write operation
    */
   async batchWrite(params) {
-    return this.documentClient.batchWrite(params).promise();
+    const command = new BatchWriteCommand(params);
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a batch get operation
    */
   async batchGet(params) {
-    return this.documentClient.batchGet(params).promise();
+    const command = new BatchGetCommand(params);
+    return this.documentClient.send(command);
   }
 
   /**
    * Execute a scan operation (use sparingly)
    */
   async scan(params) {
-    return this.documentClient.scan({
+    const command = new ScanCommand({
       TableName: this.tableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Get a user profile
    */
   async getUserProfile(params) {
-    return this.documentClient.get({
+    const command = new GetCommand({
       TableName: this.userProfilesTableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 
   /**
    * Update a user profile
    */
   async updateUserProfile(params) {
-    return this.documentClient.update({
+    const command = new UpdateCommand({
       TableName: this.userProfilesTableName,
       ...params
-    }).promise();
+    });
+    return this.documentClient.send(command);
   }
 }
 

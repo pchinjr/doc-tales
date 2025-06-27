@@ -1,16 +1,19 @@
 /**
  * End-to-End Demo Scenario Integration Test
  * Tests the complete demo scenario with multiple communications and archetype processing
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require('aws-sdk');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, QueryCommand, DeleteCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
 const https = require('https');
 const http = require('http');
 
-// Configure AWS SDK
-AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
-const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// Configure AWS SDK v3
+const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function makeRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
@@ -104,10 +107,11 @@ async function testDemoScenario() {
                 updatedAt: new Date().toISOString()
             };
             
-            await dynamodb.put({
+            const putUserCommand = new PutCommand({
                 TableName: userTableName,
                 Item: userProfile
-            }).promise();
+            });
+            await dynamodb.send(putUserCommand);
             
             testUsers.push(user.id);
             console.log(`    ✅ Created ${user.archetype} user: ${user.name}`);
@@ -153,12 +157,13 @@ async function testDemoScenario() {
             };
             
             const s3Key = `raw/${comm.type}/${comm.id}.json`;
-            await s3.putObject({
+            const putS3Command = new PutObjectCommand({
                 Bucket: bucketName,
                 Key: s3Key,
                 Body: JSON.stringify(communication),
                 ContentType: 'application/json'
-            }).promise();
+            });
+            await s3.send(putS3Command);
             
             testCommunications.push(comm.id);
             console.log(`    ✅ Uploaded ${comm.metadata.urgency} priority: ${comm.subject}`);
@@ -179,14 +184,15 @@ async function testDemoScenario() {
             
             for (const commId of testCommunications) {
                 try {
-                    const result = await dynamodb.query({
+                    const queryCommand = new QueryCommand({
                         TableName: commTableName,
                         KeyConditionExpression: 'PK = :pk AND SK = :sk',
                         ExpressionAttributeValues: {
                             ':pk': 'COMM',
                             ':sk': `COMM#${commId}`
                         }
-                    }).promise();
+                    });
+                    const result = await dynamodb.send(queryCommand);
                     
                     if (result.Items && result.Items.length > 0) {
                         processedCount++;
@@ -266,10 +272,11 @@ async function testDemoScenario() {
                 try {
                     const type = commId.includes('high') ? 'email' : 
                                 commId.includes('medium') ? 'document' : 'social';
-                    await s3.deleteObject({
+                    const deleteS3Command = new DeleteObjectCommand({
                         Bucket: bucketName,
                         Key: `raw/${type}/${commId}.json`
-                    }).promise();
+                    });
+                    await s3.send(deleteS3Command);
                 } catch (e) {
                     // Continue cleanup
                 }
@@ -278,13 +285,14 @@ async function testDemoScenario() {
             // Remove communications from DynamoDB
             for (const commId of testCommunications) {
                 try {
-                    await dynamodb.delete({
+                    const deleteCommCommand = new DeleteCommand({
                         TableName: commTableName,
                         Key: {
                             PK: 'COMM',
                             SK: `COMM#${commId}`
                         }
-                    }).promise();
+                    });
+                    await dynamodb.send(deleteCommCommand);
                 } catch (e) {
                     // Continue cleanup
                 }
@@ -293,12 +301,13 @@ async function testDemoScenario() {
             // Remove user profiles
             for (const userId of testUsers) {
                 try {
-                    await dynamodb.delete({
+                    const deleteUserCommand = new DeleteCommand({
                         TableName: userTableName,
                         Key: {
                             PK: `USER#${userId}`
                         }
-                    }).promise();
+                    });
+                    await dynamodb.send(deleteUserCommand);
                 } catch (e) {
                     // Continue cleanup
                 }

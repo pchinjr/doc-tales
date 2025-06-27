@@ -4,16 +4,19 @@
  * This function extracts dimensions from communications stored in S3
  * and updates the DynamoDB record with the extracted dimensions.
  * Refactored to use service layer for better testability.
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require("aws-sdk");
+const { ComprehendClient } = require("@aws-sdk/client-comprehend");
 const DynamoDBService = require("./services/dynamodb-service");
 const S3Service = require("./services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService();
 const s3Service = new S3Service();
-const comprehend = new AWS.Comprehend();
+const comprehend = new ComprehendClient({ 
+  region: process.env.AWS_REGION || "us-east-1" 
+});
 
 // Export services for testing
 exports.services = {

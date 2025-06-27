@@ -1,11 +1,20 @@
 /**
  * Custom resource Lambda function to set up S3 event notifications
  * This function is used to break the circular dependency between S3 bucket and Lambda function
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require("aws-sdk");
+const { 
+  S3Client, 
+  PutBucketNotificationConfigurationCommand, 
+  GetBucketNotificationConfigurationCommand 
+} = require("@aws-sdk/client-s3");
 const https = require("https");
 const url = require("url");
+
+const s3 = new S3Client({ 
+  region: process.env.AWS_REGION || "us-east-1" 
+});
 
 exports.handler = async (event, context) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
@@ -30,10 +39,11 @@ exports.handler = async (event, context) => {
         ]
       };
       
-      await s3.putBucketNotificationConfiguration({
+      const command = new PutBucketNotificationConfigurationCommand({
         Bucket: BucketName,
         NotificationConfiguration: notificationConfiguration
-      }).promise();
+      });
+      await s3.send(command);
       
       console.log(`Successfully configured S3 event notification for bucket ${BucketName}`);
     }

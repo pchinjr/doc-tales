@@ -4,6 +4,6 @@
   "description": "Custom resource to set up S3 event notifications",
   "main": "index.js",
   "dependencies": {
-    "aws-sdk": "^2.1500.0"
+    "@aws-sdk/client-s3": "^3.700.0"
   }
 }

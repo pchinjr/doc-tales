@@ -1,15 +1,17 @@
 /**
  * User Profile Management Integration Test
  * Tests user profile creation, retrieval, and archetype functionality
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require('aws-sdk');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const https = require('https');
 const http = require('http');
 
-// Configure AWS SDK
-AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// Configure AWS SDK v3
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function makeRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
@@ -74,22 +76,24 @@ async function testUserProfile() {
             updatedAt: new Date().toISOString()
         };
         
-        await dynamodb.put({
+        const putCommand = new PutCommand({
             TableName: tableName,
             Item: testProfile
-        }).promise();
+        });
+        await dynamodb.send(putCommand);
         
         console.log('  ✅ User profile created');
         
         // Test 2: Retrieve user profile via DynamoDB
         console.log('  🔍 Retrieving user profile from DynamoDB...');
         
-        const getResult = await dynamodb.get({
+        const getCommand = new GetCommand({
             TableName: tableName,
             Key: {
                 PK: `USER#${testUserId}`
             }
-        }).promise();
+        });
+        const getResult = await dynamodb.send(getCommand);
         
         if (!getResult.Item) {
             throw new Error('User profile not found in DynamoDB');
@@ -128,18 +132,20 @@ async function testUserProfile() {
             updatedAt: new Date().toISOString()
         };
         
-        await dynamodb.put({
+        const putUpdateCommand = new PutCommand({
             TableName: tableName,
             Item: updatedProfile
-        }).promise();
+        });
+        await dynamodb.send(putUpdateCommand);
         
         // Verify update
-        const updatedResult = await dynamodb.get({
+        const getUpdateCommand = new GetCommand({
             TableName: tableName,
             Key: {
                 PK: `USER#${testUserId}`
             }
-        }).promise();
+        });
+        const updatedResult = await dynamodb.send(getUpdateCommand);
         
         if (updatedResult.Item.archetype !== 'creative') {
             throw new Error('Profile update failed');
@@ -177,12 +183,13 @@ async function testUserProfile() {
         try {
             console.log('  🧹 Cleaning up test user profile...');
             
-            await dynamodb.delete({
+            const deleteCommand = new DeleteCommand({
                 TableName: tableName,
                 Key: {
                     PK: `USER#${testUserId}`
                 }
-            }).promise();
+            });
+            await dynamodb.send(deleteCommand);
             
             console.log('  ✅ Cleanup completed');
         } catch (cleanupError) {

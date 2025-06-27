@@ -1,14 +1,17 @@
 /**
  * ML Enhancement Pipeline Integration Test
  * Tests the ML processing and enhancement of communications
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require('aws-sdk');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 
-// Configure AWS SDK
-AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
-const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// Configure AWS SDK v3
+const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -43,12 +46,13 @@ async function testMLEnhancement() {
         };
         
         const s3Key = `raw/email/${testId}.json`;
-        await s3.putObject({
+        const putCommand = new PutObjectCommand({
             Bucket: bucketName,
             Key: s3Key,
             Body: JSON.stringify(urgentCommunication),
             ContentType: 'application/json'
-        }).promise();
+        });
+        await s3.send(putCommand);
         
         console.log('  ✅ Urgent communication uploaded');
         
@@ -65,17 +69,17 @@ async function testMLEnhancement() {
         
         while (attempts < maxAttempts && !enhanced) {
             try {
-                const result = await dynamodb.query({
+                const getCommand = new GetCommand({
                     TableName: tableName,
-                    KeyConditionExpression: 'PK = :pk AND SK = :sk',
-                    ExpressionAttributeValues: {
-                        ':pk': 'COMM',
-                        ':sk': `COMM#${testId}`
+                    Key: {
+                        PK: 'COMM',
+                        SK: `COMM#${testId}`
                     }
-                }).promise();
+                });
+                const result = await dynamodb.send(getCommand);
                 
-                if (result.Items && result.Items.length > 0) {
-                    const item = result.Items[0];
+                if (result.Item) {
+                    const item = result.Item;
                     
                     // Check for ML enhancements
                     const hasMLData = item.mlEnhancements || 
@@ -157,19 +161,21 @@ async function testMLEnhancement() {
             console.log('  🧹 Cleaning up test data...');
             
             // Remove from S3
-            await s3.deleteObject({
+            const deleteS3Command = new DeleteObjectCommand({
                 Bucket: bucketName,
                 Key: `raw/email/${testId}.json`
-            }).promise();
+            });
+            await s3.send(deleteS3Command);
             
             // Remove from DynamoDB
-            await dynamodb.delete({
+            const deleteCommand = new DeleteCommand({
                 TableName: tableName,
                 Key: {
                     PK: 'COMM',
                     SK: `COMM#${testId}`
                 }
-            }).promise();
+            });
+            await dynamodb.send(deleteCommand);
             
             console.log('  ✅ Cleanup completed');
         } catch (cleanupError) {

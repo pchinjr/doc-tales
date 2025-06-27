@@ -3,10 +3,14 @@
  * 
  * This function sends notifications for high-priority communications
  * based on DynamoDB stream events.
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require("aws-sdk");
-const sns = new AWS.SNS();
+const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+
+const sns = new SNSClient({ 
+  region: process.env.AWS_REGION || "us-east-1" 
+});
 
 // Environment variables
 const COMMUNICATIONS_TABLE = process.env.COMMUNICATIONS_TABLE;
@@ -178,7 +182,8 @@ async function sendNotification(communicationId, messageData) {
     }
   };
   
-  await sns.publish(params).promise();
+  const command = new PublishCommand(params);
+  await sns.send(command);
   
   return {
     success: true,

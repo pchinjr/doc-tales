@@ -2,10 +2,19 @@
  * Enhanced ML Transformations for Doc-Tales Demo
  * 
  * This module adds impressive ML capabilities to showcase AWS Lambda + AI services
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require("aws-sdk");
-const comprehend = new AWS.Comprehend();
+const { 
+  ComprehendClient, 
+  DetectSentimentCommand, 
+  DetectKeyPhrasesCommand, 
+  DetectEntitiesCommand 
+} = require("@aws-sdk/client-comprehend");
+
+const comprehend = new ComprehendClient({ 
+  region: process.env.AWS_REGION || "us-east-1" 
+});
 
 /**
  * Enhanced sentiment analysis with priority scoring
@@ -13,10 +22,11 @@ const comprehend = new AWS.Comprehend();
 async function analyzeSentimentAndPriority(content, metadata) {
   try {
     // Get sentiment analysis from AWS Comprehend
-    const sentimentResult = await comprehend.detectSentiment({
+    const sentimentCommand = new DetectSentimentCommand({
       Text: content.substring(0, 5000), // Comprehend has text limits
       LanguageCode: 'en'
-    }).promise();
+    });
+    const sentimentResult = await comprehend.send(sentimentCommand);
 
     // Calculate priority score (0-100)
     let priorityScore = 50; // Base score
@@ -78,16 +88,18 @@ async function analyzeSentimentAndPriority(content, metadata) {
 async function extractKeyInsights(content) {
   try {
     // Extract key phrases
-    const keyPhrasesResult = await comprehend.detectKeyPhrases({
+    const keyPhrasesCommand = new DetectKeyPhrasesCommand({
       Text: content.substring(0, 5000),
       LanguageCode: 'en'
-    }).promise();
+    });
+    const keyPhrasesResult = await comprehend.send(keyPhrasesCommand);
 
     // Extract entities (people, places, organizations, etc.)
-    const entitiesResult = await comprehend.detectEntities({
+    const entitiesCommand = new DetectEntitiesCommand({
       Text: content.substring(0, 5000),
       LanguageCode: 'en'
-    }).promise();
+    });
+    const entitiesResult = await comprehend.send(entitiesCommand);
 
     // Categorize entities
     const insights = {

@@ -4,11 +4,12 @@
  * This function receives and normalizes communications from various sources,
  * storing them in DynamoDB and S3 using the single-table design pattern.
  * Refactored to use service layer for better testability.
+ * Updated to use AWS SDK v3 for better performance.
  */
 
 const { v4: uuidv4 } = require("uuid");
-const DynamoDBService = require("../services/dynamodb-service");
-const S3Service = require("../services/s3-service");
+const DynamoDBService = require("./services/dynamodb-service");
+const S3Service = require("./services/s3-service");
 
 // Create service instances
 const dynamoService = new DynamoDBService();

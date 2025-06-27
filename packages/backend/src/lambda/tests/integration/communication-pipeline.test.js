@@ -1,16 +1,19 @@
 /**
  * Communication Processing Pipeline Integration Test
  * Tests the complete flow from S3 upload to DynamoDB storage
+ * Updated to use AWS SDK v3 for better performance.
  */
 
-const AWS = require('aws-sdk');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { DynamoDBDocumentClient, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
 const https = require('https');
 const http = require('http');
 
-// Configure AWS SDK
-AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
-const s3 = new AWS.S3();
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+// Configure AWS SDK v3
+const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function makeRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
@@ -80,12 +83,13 @@ async function testCommunicationPipeline() {
         };
         
         const s3Key = `raw/email/${testId}.json`;
-        await s3.putObject({
+        const putCommand = new PutObjectCommand({
             Bucket: bucketName,
             Key: s3Key,
             Body: JSON.stringify(testCommunication),
             ContentType: 'application/json'
-        }).promise();
+        });
+        await s3.send(putCommand);
         
         console.log('  ✅ Test communication uploaded to S3');
         
@@ -102,20 +106,20 @@ async function testCommunicationPipeline() {
         
         while (attempts < maxAttempts && !found) {
             try {
-                const result = await dynamodb.query({
+                const queryCommand = new GetCommand({
                     TableName: tableName,
-                    KeyConditionExpression: 'PK = :pk AND SK = :sk',
-                    ExpressionAttributeValues: {
-                        ':pk': 'COMM',
-                        ':sk': `COMM#${testId}`
+                    Key: {
+                        PK: 'COMM',
+                        SK: `COMM#${testId}`
                     }
-                }).promise();
+                });
+                const result = await dynamodb.send(queryCommand);
                 
-                if (result.Items && result.Items.length > 0) {
+                if (result.Item) {
                     found = true;
                     console.log('  ✅ Communication found in DynamoDB');
                     
-                    const item = result.Items[0];
+                    const item = result.Item;
                     if (item.subject === testCommunication.subject) {
                         console.log('  ✅ Communication data matches');
                     } else {
@@ -175,19 +179,21 @@ async function testCommunicationPipeline() {
             console.log('  🧹 Cleaning up test data...');
             
             // Remove from S3
-            await s3.deleteObject({
+            const deleteS3Command = new DeleteObjectCommand({
                 Bucket: bucketName,
                 Key: `raw/email/${testId}.json`
-            }).promise();
+            });
+            await s3.send(deleteS3Command);
             
             // Remove from DynamoDB
-            await dynamodb.delete({
+            const deleteCommand = new DeleteCommand({
                 TableName: tableName,
                 Key: {
                     PK: 'COMM',
                     SK: `COMM#${testId}`
                 }
-            }).promise();
+            });
+            await dynamodb.send(deleteCommand);
             
             console.log('  ✅ Cleanup completed');
         } catch (cleanupError) {
