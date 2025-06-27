@@ -10,6 +10,7 @@ export * from "./services/CacheService";
 export * from "./services/ClassificationService";
 export * from "./services/ComprehendService";
 export * from "./services/DimensionExtractor";
+export * from "./services/DimensionMapper";
 export * from "./services/EntityExtractor";
 export * from "./services/IngestionPipeline";
 export * from "./services/RelationshipDetector";
