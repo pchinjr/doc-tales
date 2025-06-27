@@ -1,0 +1,396 @@
+{
+  "summary": {
+    "passed": 55,
+    "failed": 0,
+    "warnings": 0,
+    "successRate": 100,
+    "timestamp": "2025-06-27T20:06:38.755Z"
+  },
+  "details": [
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/ComprehendService.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.406Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/EntityExtractor.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/SentimentAnalyzer.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/UrgencyDetector.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/TopicCategorizer.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/DimensionMapper.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/DimensionExtractionIntegrator.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/services/SchemaMigrator.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/common/src/types/ml-extraction.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: packages/backend/src/lambda/dimension-extraction/index.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Structure",
+      "message": "Required file exists: docs/technical/ml-dimension-schema.md",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.407Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: ComprehendService",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.461Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: ComprehendService",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: EntityExtractor",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: EntityExtractor",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: SentimentAnalyzer",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: SentimentAnalyzer",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: UrgencyDetector",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: UrgencyDetector",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: TopicCategorizer",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: TopicCategorizer",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: DimensionMapper",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.463Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: DimensionMapper",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.464Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: DimensionExtractionIntegrator",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.464Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: DimensionExtractionIntegrator",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.465Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service exported: SchemaMigrator",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.465Z"
+    },
+    {
+      "type": "passed",
+      "category": "Exports",
+      "message": "Service instantiable: SchemaMigrator",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:36.465Z"
+    },
+    {
+      "type": "passed",
+      "category": "TypeScript",
+      "message": "Common package compiles successfully",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:37.738Z"
+    },
+    {
+      "type": "passed",
+      "category": "TypeScript",
+      "message": "Lambda function compiles successfully",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.731Z"
+    },
+    {
+      "type": "passed",
+      "category": "AWS SDK",
+      "message": "Comprehend SDK available",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.753Z"
+    },
+    {
+      "type": "passed",
+      "category": "AWS SDK",
+      "message": "DynamoDB SDK available",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.753Z"
+    },
+    {
+      "type": "passed",
+      "category": "AWS SDK",
+      "message": "S3 SDK available",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.753Z"
+    },
+    {
+      "type": "passed",
+      "category": "AWS SDK",
+      "message": "Lambda SDK available",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.753Z"
+    },
+    {
+      "type": "passed",
+      "category": "AWS SDK",
+      "message": "All AWS clients instantiate successfully",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.754Z"
+    },
+    {
+      "type": "passed",
+      "category": "SAM Template",
+      "message": "Comprehend permissions configured",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.754Z"
+    },
+    {
+      "type": "passed",
+      "category": "SAM Template",
+      "message": "Dimension extraction function defined",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.754Z"
+    },
+    {
+      "type": "passed",
+      "category": "SAM Template",
+      "message": "Communications table defined",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.754Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file exists: packages/common/src/tests/DimensionMapper.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.754Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file has 6 test cases: packages/common/src/tests/DimensionMapper.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file exists: packages/common/src/tests/UrgencyDetector.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file has 9 test cases: packages/common/src/tests/UrgencyDetector.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file exists: packages/common/src/tests/TopicCategorizer.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file has 12 test cases: packages/common/src/tests/TopicCategorizer.test.ts",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file exists: packages/backend/src/lambda/tests/ml-integration.test.js",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file has 5 test cases: packages/backend/src/lambda/tests/ml-integration.test.js",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file exists: packages/backend/src/lambda/tests/end-to-end.test.js",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Tests",
+      "message": "Test file has 6 test cases: packages/backend/src/lambda/tests/end-to-end.test.js",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Documentation",
+      "message": "Documentation exists: docs/technical/ml-dimension-schema.md",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Documentation",
+      "message": "Documentation mentions ML features: docs/technical/ml-dimension-schema.md",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Documentation",
+      "message": "Documentation exists: README.md",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Implementation",
+      "message": "Phase 1: Foundation Setup - Complete",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Implementation",
+      "message": "Phase 2: Core ML Service - Complete",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Implementation",
+      "message": "Phase 3: Dimension Mapping - Complete",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Implementation",
+      "message": "Phase 4: Integration - Complete",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    },
+    {
+      "type": "passed",
+      "category": "Implementation",
+      "message": "Phase 5: Testing & Validation - Complete",
+      "details": null,
+      "timestamp": "2025-06-27T20:06:38.755Z"
+    }
+  ]
+}
