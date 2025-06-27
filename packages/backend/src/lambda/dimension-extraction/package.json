@@ -1,12 +1,23 @@
 {
   "name": "doc-tales-dimension-extraction",
   "version": "1.0.0",
-  "description": "Doc-Tales Dimension Extraction Lambda Function",
+  "description": "Doc-Tales ML-Powered Dimension Extraction Lambda Function",
   "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist"
+  },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.700.0",
     "@aws-sdk/lib-dynamodb": "^3.700.0",
     "@aws-sdk/client-s3": "^3.700.0",
-    "@aws-sdk/client-comprehend": "^3.700.0"
+    "@aws-sdk/client-comprehend": "^3.700.0",
+    "@doc-tales/common": "file:../../../../common"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.92",
+    "@types/node": "^17.0.21",
+    "typescript": "^4.5.5",
+    "rimraf": "^5.0.0"
   }
 }
