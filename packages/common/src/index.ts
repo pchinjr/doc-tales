@@ -16,6 +16,7 @@ export * from "./services/IngestionPipeline";
 export * from "./services/RelationshipDetector";
 export * from "./services/SentimentAnalyzer";
 export * from "./services/SourceAdapter";
+export * from "./services/TopicCategorizer";
 export * from "./services/UnifiedDataService";
 export * from "./services/UrgencyDetector";
 
