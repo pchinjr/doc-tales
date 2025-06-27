@@ -9,7 +9,8 @@
     "clean": "rimraf dist",
     "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
-    "test": "tape \"src/**/*.test.ts\" | tap-spec"
+    "test": "tape \"src/**/*.test.ts\" | tap-spec",
+    "test:ml": "ts-node src/tests/test-runner.ts"
   },
   "dependencies": {
     "@aws-sdk/client-comprehend": "^3.32.0",
@@ -19,14 +20,17 @@
     "@aws-sdk/client-textract": "^3.32.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/node": "^17.0.21",
     "@types/tape": "^5.6.0",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.0",
+    "jest": "^29.5.0",
     "rimraf": "^5.0.0",
     "tap-spec": "^5.0.0",
     "tape": "^5.9.0",
+    "ts-jest": "^29.1.0",
     "ts-node": "^10.5.0",
     "typescript": "^4.5.5"
   }
