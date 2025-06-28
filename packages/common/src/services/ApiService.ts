@@ -2,7 +2,7 @@ import { Communication, ArchetypeType, UserProfile } from "../types/communicatio
 import { CacheService } from "./CacheService";
 
 // API endpoint URL - use environment variable or fallback to current deployment
-const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || "https://yvydemum3a.execute-api.us-east-1.amazonaws.com/dev";
+const API_BASE_URL = process.env.REACT_APP_API_ENDPOINT || "https://j9akl2l9jc.execute-api.us-east-1.amazonaws.com/dev";
 
 export class ApiService {
   private static instance: ApiService;
