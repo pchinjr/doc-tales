@@ -192,7 +192,7 @@ function customizeByArchetype(result, archetype) {
         _sortKey: comm.project,
         _highlight: "visual",
         _displayFormat: "board"
-      })).sort((a, b) => a.project.localeCompare(b.project));
+      })).sort((a, b) => (a.project || "unknown").localeCompare(b.project || "unknown"));
       customized.viewDescription = "Communications organized visually by project";
       break;
       
@@ -205,8 +205,8 @@ function customizeByArchetype(result, archetype) {
         _highlight: "metadata",
         _displayFormat: "detailed"
       })).sort((a, b) => {
-        const catA = a.metadata ? a.metadata.category : "uncategorized";
-        const catB = b.metadata ? b.metadata.category : "uncategorized";
+        const catA = (a.metadata && a.metadata.category) ? a.metadata.category : "uncategorized";
+        const catB = (b.metadata && b.metadata.category) ? b.metadata.category : "uncategorized";
         return catA.localeCompare(catB);
       });
       customized.viewDescription = "Communications organized by category with detailed metadata";

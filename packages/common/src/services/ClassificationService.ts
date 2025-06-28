@@ -119,10 +119,10 @@ export class ClassificationService {
     const urgency = communication.metadata?.urgency || this.determineUrgency(communication, dimensions);
     
     // Calculate confidence
-    const confidence = this.calculateConfidence(communication, dimensions, project);
+    const confidence = this.calculateConfidence(communication, dimensions, project as any);
     
     return {
-      project,
+      project: project as any,
       category,
       tags: [...new Set(tags)], // Remove duplicates
       urgency: urgency as "high" | "medium" | "low",

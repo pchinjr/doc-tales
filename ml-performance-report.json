@@ -1,137 +1,137 @@
 {
   "summary": {
     "totalTests": 18,
-    "passed": 18,
-    "failed": 0,
-    "averageTime": 2.5
+    "passed": 17,
+    "failed": 1,
+    "averageTime": 351.44444444444446
   },
   "tests": [
     {
       "testName": "ComprehendService instantiation",
       "passed": true,
-      "duration": 1,
+      "duration": 2,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.096Z"
+      "timestamp": "2025-06-28T19:33:14.103Z"
     },
     {
       "testName": "EntityExtractor instantiation",
       "passed": true,
-      "duration": 0,
+      "duration": 1,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.097Z"
+      "timestamp": "2025-06-28T19:33:14.104Z"
     },
     {
       "testName": "SentimentAnalyzer instantiation",
       "passed": true,
       "duration": 0,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.097Z"
+      "timestamp": "2025-06-28T19:33:14.104Z"
     },
     {
       "testName": "UrgencyDetector instantiation",
       "passed": true,
       "duration": 0,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.098Z"
+      "timestamp": "2025-06-28T19:33:14.104Z"
     },
     {
       "testName": "TopicCategorizer instantiation",
       "passed": true,
       "duration": 0,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.098Z"
+      "timestamp": "2025-06-28T19:33:14.105Z"
     },
     {
       "testName": "DimensionMapper instantiation",
       "passed": true,
       "duration": 1,
       "details": "Fast instantiation",
-      "timestamp": "2025-06-27T20:06:51.099Z"
+      "timestamp": "2025-06-28T19:33:14.106Z"
     },
     {
       "testName": "Multiple instance creation",
       "passed": true,
-      "duration": 3,
-      "details": "Memory per instance: 0.15MB",
-      "timestamp": "2025-06-27T20:06:51.103Z"
+      "duration": 5,
+      "details": "Memory per instance: 0.17MB",
+      "timestamp": "2025-06-28T19:33:14.112Z"
     },
     {
       "testName": "Memory cleanup",
       "passed": true,
       "duration": 0,
       "details": "GC not available for testing",
-      "timestamp": "2025-06-27T20:06:51.103Z"
+      "timestamp": "2025-06-28T19:33:14.112Z"
     },
     {
       "testName": "Concurrent processing",
-      "passed": true,
-      "duration": 12,
-      "details": "Speedup: 421.67x (Sequential: 5060ms, Concurrent: 12ms)",
-      "timestamp": "2025-06-27T20:06:56.175Z"
+      "passed": false,
+      "duration": 1943,
+      "details": "Speedup: 0.75x (Sequential: 1449ms, Concurrent: 1943ms)",
+      "timestamp": "2025-06-28T19:33:17.504Z"
     },
     {
       "testName": "Error handling: Empty text",
       "passed": true,
-      "duration": 2,
+      "duration": 1025,
       "details": "Handled gracefully",
-      "timestamp": "2025-06-27T20:06:56.177Z"
+      "timestamp": "2025-06-28T19:33:18.529Z"
     },
     {
       "testName": "Error handling: Very long text",
       "passed": true,
-      "duration": 3,
+      "duration": 983,
       "details": "Handled gracefully",
-      "timestamp": "2025-06-27T20:06:56.180Z"
+      "timestamp": "2025-06-28T19:33:19.512Z"
     },
     {
       "testName": "Error handling: Special characters",
       "passed": true,
-      "duration": 2,
+      "duration": 982,
       "details": "Handled gracefully",
-      "timestamp": "2025-06-27T20:06:56.182Z"
+      "timestamp": "2025-06-28T19:33:20.495Z"
     },
     {
       "testName": "Error handling: Unicode text",
       "passed": true,
-      "duration": 1,
+      "duration": 1359,
       "details": "Handled gracefully",
-      "timestamp": "2025-06-27T20:06:56.183Z"
+      "timestamp": "2025-06-28T19:33:21.854Z"
     },
     {
       "testName": "Scalability: 1 instances",
       "passed": true,
-      "duration": 0,
-      "details": "Avg time per instance: 0.00ms",
-      "timestamp": "2025-06-27T20:06:56.184Z"
+      "duration": 1,
+      "details": "Avg time per instance: 1.00ms",
+      "timestamp": "2025-06-28T19:33:21.855Z"
     },
     {
       "testName": "Scalability: 5 instances",
       "passed": true,
       "duration": 1,
       "details": "Avg time per instance: 0.20ms",
-      "timestamp": "2025-06-27T20:06:56.185Z"
+      "timestamp": "2025-06-28T19:33:21.856Z"
     },
     {
       "testName": "Scalability: 10 instances",
       "passed": true,
       "duration": 1,
       "details": "Avg time per instance: 0.10ms",
-      "timestamp": "2025-06-27T20:06:56.186Z"
+      "timestamp": "2025-06-28T19:33:21.857Z"
     },
     {
       "testName": "Scalability: 20 instances",
       "passed": true,
       "duration": 3,
       "details": "Avg time per instance: 0.15ms",
-      "timestamp": "2025-06-27T20:06:56.189Z"
+      "timestamp": "2025-06-28T19:33:21.860Z"
     },
     {
       "testName": "Rapid instance creation/cleanup",
       "passed": true,
-      "duration": 15,
+      "duration": 19,
       "details": "No memory leaks detected",
-      "timestamp": "2025-06-27T20:06:56.205Z"
+      "timestamp": "2025-06-28T19:33:21.880Z"
     }
   ],
-  "timestamp": "2025-06-27T20:06:56.208Z"
+  "timestamp": "2025-06-28T19:33:21.883Z"
 }

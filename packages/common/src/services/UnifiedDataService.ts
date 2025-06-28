@@ -215,7 +215,7 @@ export class UnifiedDataService {
       
       // Filter by projects
       if (filter.projects && filter.projects.length > 0) {
-        if (!filter.projects.includes(comm.project)) {
+        if (!filter.projects.includes(comm.project as any)) {
           return false;
         }
       }

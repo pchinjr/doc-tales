@@ -17,15 +17,13 @@ export class DataService {
 
   public async loadSampleData(): Promise<void> {
     try {
+      // For production demo, initialize with empty array
       // In a real implementation, this would load from API/AWS
-      // For hackathon, we'll load from local JSON
-      const { sampleData } = await import("@doc-tales/common");
-      
-      // Type assertion to match our interfaces
-      this.communications = sampleData.communications as unknown as Communication[];
+      this.communications = [];
+      console.log("Sample data service initialized");
     } catch (error) {
-      console.error("Failed to load sample data:", error);
-      throw error;
+      console.error("Failed to initialize data service:", error);
+      this.communications = [];
     }
   }
 

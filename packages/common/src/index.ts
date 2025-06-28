@@ -32,5 +32,4 @@ export * from "./services/adapters/EmailAdapter";
 export * from "./services/adapters/DocumentAdapter";
 export * from "./services/adapters/SocialAdapter";
 
-// Export sample data
-export { default as sampleData } from "./data/sampleData.json";
+// Sample data removed for production build
