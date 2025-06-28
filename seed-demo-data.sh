@@ -72,6 +72,7 @@ create_demo_communication() {
     local content="$4"
     local sender="$5"
     local urgency="$6"
+    local project="$7"  # Add project parameter
     
     local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
     local filename="${TEMP_DIR}/${id}.json"
@@ -84,6 +85,7 @@ create_demo_communication() {
   "subject": "$subject",
   "content": "$content",
   "sender": "$sender",
+  "project": "$project",
   "recipients": ["team@company.com"],
   "metadata": {
     "urgency": "$urgency",
@@ -157,7 +159,8 @@ create_demo_communication \
     "URGENT: Client presentation moved to tomorrow 9am" \
     "Hi team, the Johnson & Associates presentation has been moved to tomorrow at 9am. We need the final slides, budget projections, and Sarah needs to prepare the demo. This is a \$2M deal - we cannot miss this. Please confirm you can attend and bring all necessary materials." \
     "project.manager@company.com" \
-    "high"
+    "high" \
+    "Home Purchase"
 
 create_demo_communication \
     "budget-overrun-alert" \
@@ -165,7 +168,8 @@ create_demo_communication \
     "ALERT: Project Alpha Budget Overrun" \
     "Project Alpha is 2 weeks behind schedule with a budget overrun of \$15K. We need an immediate action plan to get back on track. The client is expecting delivery by month-end." \
     "finance@company.com" \
-    "high"
+    "high" \
+    "Career Change"
 
 # Medium priority communications
 create_demo_communication \
@@ -174,7 +178,8 @@ create_demo_communication \
     "Q3 Performance Review Summary" \
     "Overall performance metrics show 15% growth in user engagement. Revenue targets met at 102%. Areas for improvement include customer support response times (avg 4.2 hours) and mobile app stability (3 crashes per session). Recommend investing in infrastructure upgrades and additional support staff." \
     "analytics@company.com" \
-    "medium"
+    "medium" \
+    "Career Change"
 
 create_demo_communication \
     "security-update-required" \
@@ -182,7 +187,8 @@ create_demo_communication \
     "Security Update Required - Action Needed" \
     "Our security audit has identified several vulnerabilities that need to be addressed within the next 2 weeks. Please review the attached report and implement the recommended patches. This affects our compliance certification." \
     "security@company.com" \
-    "medium"
+    "medium" \
+    "Home Purchase"
 
 # Low priority communications
 create_demo_communication \
@@ -191,7 +197,8 @@ create_demo_communication \
     "Team Pizza Party Friday! 🍕" \
     "Great job everyone on the product launch! Pizza party Friday at 5pm in the main conference room to celebrate. We've ordered from Tony's - pepperoni, veggie, and Hawaiian. See you there!" \
     "hr@company.com" \
-    "low"
+    "low" \
+    "Family Event"
 
 create_demo_communication \
     "office-coffee-upgrade" \
@@ -199,7 +206,8 @@ create_demo_communication \
     "New Coffee Machine in Break Room" \
     "We've upgraded the coffee machine in the break room! Now featuring espresso, cappuccino, and latte options. Thanks to everyone who voted in the coffee survey. Enjoy your upgraded caffeine experience! ☕" \
     "facilities@company.com" \
-    "low"
+    "low" \
+    "Family Event"
 
 # Wait for processing
 echo -e "${YELLOW}⏳ Waiting for Lambda processing...${NC}"

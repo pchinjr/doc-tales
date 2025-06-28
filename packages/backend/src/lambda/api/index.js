@@ -334,7 +334,7 @@ exports.queryCommunications = async function queryCommunications(filters) {
         IndexName: "GSI1",
         KeyConditionExpression: "GSI1PK = :projectPK",
         ExpressionAttributeValues: {
-          ":projectPK": `PROJECT#${filters.project}`
+          ":projectPK": `PROJ#${filters.project}`
         },
         Limit: 100
       };

@@ -10,9 +10,11 @@ NC='\033[0m' # No Color
 
 echo -e "${YELLOW}📦 Preparing Lambda functions for build...${NC}"
 
-# Base directories
-BACKEND_DIR="$(dirname "$0")/../../packages/backend"
-COMMON_DIR="$(dirname "$0")/../../packages/common"
+# Get script directory and resolve paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+BACKEND_DIR="${PROJECT_ROOT}/packages/backend"
+COMMON_DIR="${PROJECT_ROOT}/packages/common"
 LAMBDA_DIR="${BACKEND_DIR}/src/lambda"
 
 # Lambda function directories
@@ -47,7 +49,7 @@ for func in "${LAMBDA_FUNCTIONS[@]}"; do
         
         echo -e "${GREEN}✅ Prepared ${func} function${NC}"
     else
-        echo -e "${YELLOW}⚠️  Function directory ${func} not found, skipping...${NC}"
+        echo -e "${YELLOW}⚠️  Function directory ${func} not found at ${FUNC_DIR}, skipping...${NC}"
     fi
 done
 
