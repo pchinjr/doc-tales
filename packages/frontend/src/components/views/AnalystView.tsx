@@ -85,8 +85,8 @@ const AnalystView: React.FC<AnalystViewProps> = ({
             : b.subject.localeCompare(a.subject);
         case "sender":
           return sortDirection === "asc" 
-            ? a.senderName.localeCompare(b.senderName) 
-            : b.senderName.localeCompare(a.senderName);
+            ? (a.senderName || a.sender || "").localeCompare(b.senderName || b.sender || "") 
+            : (b.senderName || b.sender || "").localeCompare(a.senderName || a.sender || "");
         case "date":
           return sortDirection === "asc" 
             ? new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime() 

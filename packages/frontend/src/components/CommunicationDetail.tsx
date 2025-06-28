@@ -218,9 +218,12 @@ const CommunicationDetail: React.FC<CommunicationDetailProps> = ({
           <div className="detail-content">
             <h3>Content</h3>
             <div className="content-text">
-              {communication.content.split("\\n").map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
-              ))}
+              {communication.content ? 
+                communication.content.split("\\n").map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                )) :
+                <p>Content not available</p>
+              }
             </div>
           </div>
           

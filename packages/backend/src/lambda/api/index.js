@@ -173,10 +173,14 @@ function customizeByArchetype(result, archetype) {
       customized.communications = communications.map(comm => ({
         ...comm,
         _archetypeView: "connector",
-        _sortKey: comm.senderName || comm.sender,
+        _sortKey: comm.senderName || comm.sender || "unknown",
         _highlight: "relationship",
         _displayFormat: "people-centric"
-      })).sort((a, b) => (a.senderName || a.sender).localeCompare(b.senderName || b.sender));
+      })).sort((a, b) => {
+        const aName = a.senderName || a.sender || "unknown";
+        const bName = b.senderName || b.sender || "unknown";
+        return aName.localeCompare(bName);
+      });
       customized.viewDescription = "Communications organized by people and relationships";
       break;
       
@@ -405,16 +409,23 @@ exports.queryCommunications = async function queryCommunications(filters) {
           });
         } catch (error) {
           console.error(`Error getting full communication for ${commId}:`, error);
+          // Return the item without S3 content but with safe defaults
           communications.push({
             ...item,
-            id: commId
+            id: commId,
+            content: item.content || "Content not available",
+            senderName: item.senderName || item.sender || "Unknown Sender",
+            sender: item.sender || "unknown@example.com"
           });
         }
       } else {
-        // Return the item with a clean ID
+        // Return the item with a clean ID and safe defaults
         communications.push({
           ...item,
-          id: commId
+          id: commId,
+          content: item.content || "Content not available",
+          senderName: item.senderName || item.sender || "Unknown Sender",
+          sender: item.sender || "unknown@example.com"
         });
       }
     }

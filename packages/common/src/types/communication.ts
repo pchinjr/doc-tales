@@ -17,19 +17,19 @@ export interface Communication {
   GSI2PK?: string;
   GSI2SK?: string;
   commType: string;
-  source: SourceType;
+  source?: SourceType;
   timestamp: string;
   sender: string;
-  senderName: string;
+  senderName?: string; // Made optional since it might not always be present
   subject: string;
-  content: string;
+  content?: string; // Made optional since it might not be loaded from S3
   metadata: {
     urgency: UrgencyLevel;
-    category: string;
+    category?: string;
     tags?: string[];
     [key: string]: any;
   };
-  project: ProjectType;
+  project: string; // Changed from ProjectType to string for flexibility
   
   // Added by the API for archetype-based personalization
   _archetypeView?: string;

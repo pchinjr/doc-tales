@@ -91,9 +91,9 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
               role="button"
             >
               <div className={`person-avatar ${hasHighlight ? "highlighted" : ""}`}>
-                {comms[0].senderName.charAt(0).toUpperCase()}
+                {(comms[0].senderName || comms[0].sender || "U").charAt(0).toUpperCase()}
               </div>
-              <h3>{comms[0].senderName}</h3>
+              <h3>{comms[0].senderName || comms[0].sender || "Unknown Sender"}</h3>
               <div className="person-details">
                 <p>{comms[0].sender}</p>
                 <p>Messages: {comms.length}</p>
@@ -116,7 +116,7 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
 
       {selectedSender && (
         <div className="selected-person-communications">
-          <h3>Communications from {senderGroups[selectedSender][0].senderName}</h3>
+          <h3>Communications from {senderGroups[selectedSender][0].senderName || senderGroups[selectedSender][0].sender || "Unknown Sender"}</h3>
           <div className="communications-list">
             {senderGroups[selectedSender]
               .sort((a, b) => {
