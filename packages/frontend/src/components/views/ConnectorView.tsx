@@ -154,7 +154,7 @@ const ConnectorView: React.FC<ConnectorViewProps> = ({
                   <div className="communication-project">
                     Project: {comm.project}
                   </div>
-                  <p>{comm.content.substring(0, 150)}...</p>
+                  <p>{comm.content ? `${comm.content.substring(0, 150)}...` : "Content not available"}</p>
                   {comm._highlight && (
                     <div className={`highlight-badge ${comm._highlight}`}>
                       {comm._highlight === "relationship" ? "Key Contact" : 

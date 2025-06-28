@@ -63,17 +63,20 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
   const deadlines = communications
     .filter(comm => 
       comm.dimensions?.temporal?.deadline || 
-      comm.content.toLowerCase().includes("deadline") ||
+      (comm.content && comm.content.toLowerCase().includes("deadline")) ||
       comm.metadata.urgency === "high"
     )
     .map(comm => {
       let deadlineDate = comm.dimensions?.temporal?.deadline;
       if (!deadlineDate) {
-        // Try to extract from content
-        const match = comm.content.match(/deadline[:\s]*([\w\s,]+)/i);
-        if (match) {
-          deadlineDate = match[1].trim();
-        } else {
+        // Try to extract from content if available
+        if (comm.content) {
+          const match = comm.content.match(/deadline[:\s]*([\w\s,]+)/i);
+          if (match) {
+            deadlineDate = match[1].trim();
+          }
+        }
+        if (!deadlineDate) {
           // Use timestamp for high urgency items
           deadlineDate = new Date(comm.timestamp).toLocaleDateString();
         }
@@ -150,7 +153,7 @@ const PrioritizerView: React.FC<PrioritizerViewProps> = ({
                 Urgency: {comm.metadata.urgency}
               </div>
               <p className="timeline-excerpt">
-                {comm.content.substring(0, 100)}...
+                {comm.content ? `${comm.content.substring(0, 100)}...` : "Content not available"}
               </p>
               {comm._highlight && (
                 <div className={`highlight-badge ${comm._highlight}`}>

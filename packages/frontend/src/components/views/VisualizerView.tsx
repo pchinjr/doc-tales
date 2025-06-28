@@ -225,7 +225,7 @@ const VisualizerView: React.FC<VisualizerViewProps> = ({
                 <p className="card-date">
                   {new Date(comm.timestamp).toLocaleDateString()}
                 </p>
-                <p className="card-excerpt">{comm.content.substring(0, 100)}...</p>
+                <p className="card-excerpt">{comm.content ? `${comm.content.substring(0, 100)}...` : "Content not available"}</p>
                 {comm._highlight && (
                   <div className={`highlight-badge ${comm._highlight}`}>
                     {comm._highlight === "visual" ? "Visual Content" : 

@@ -395,8 +395,8 @@ exports.queryCommunications = async function queryCommunications(filters) {
       // Extract the actual communication ID from the sort key
       const commId = item.SK.split("#")[1];
       
-      // If we need the full content, get it from S3
-      if (filters.includeContent && item.s3Key) {
+      // Always get the full content from S3 for better UX
+      if (item.s3Key) {
         try {
           const fullCommunication = await exports.getFullCommunicationFromS3(item);
           communications.push({
@@ -490,7 +490,9 @@ exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(i
       Key: item.s3Key
     });
     
-    const fullCommunication = JSON.parse(s3Result.Body.toString());
+    // In AWS SDK v3, Body is a stream that needs to be converted to string
+    const bodyContents = await s3Result.Body.transformToString();
+    const fullCommunication = JSON.parse(bodyContents);
     
     // Merge with any dimensions from DynamoDB
     if (item.dimensions) {
