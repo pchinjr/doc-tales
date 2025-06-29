@@ -61,6 +61,77 @@ Doc-Tales is a personalized communications sorter that unifies content from dive
 └─────────────┴───────────────┴───────────────┴───────────────────┘
 ```
 
+``` mermaid
+flowchart TD
+
+%% Frontend Views
+Frontend["Frontend Application"]
+Prioritizer["Prioritizer View"]
+Connector["Connector View"]
+Visualizer["Visualizer View"]
+Analyst["Analyst View"]
+ConfigUI["Configuration UI"]
+
+Frontend --> Prioritizer
+Frontend --> Connector
+Frontend --> Visualizer
+Frontend --> Analyst
+Frontend --> ConfigUI
+
+%% Data Service Layer
+DataService["Data Service Layer"]
+Unified["Unified Data Service"]
+Archetype["Archetype Detection Service"]
+Dimension["Dimension Extraction Service"]
+
+DataService --> Unified
+DataService --> Archetype
+DataService --> Dimension
+
+%% Source Adapters
+Adapters["Source Adapters"]
+EmailAdapter["Email Adapter"]
+DocAdapter["Document Adapter"]
+SocialAdapter["Social Adapter"]
+
+Unified --> Adapters
+Adapters --> EmailAdapter
+Adapters --> DocAdapter
+Adapters --> SocialAdapter
+
+%% AWS Backend
+Backend["AWS Serverless Backend"]
+APIGW["API Gateway"]
+Lambdas["Lambda Functions"]
+S3["S3 Buckets"]
+DDB["DynamoDB Tables"]
+
+Dimension --> Backend
+Backend --> APIGW
+Backend --> Lambdas
+Backend --> S3
+Backend --> DDB
+
+%% External Sources
+External["External Data Sources"]
+Email["Email Providers"]
+Docs["Document Storage"]
+Social["Social Media Platforms"]
+Other["Other Sources"]
+
+External --> Email
+External --> Docs
+External --> Social
+External --> Other
+Email --> Adapters
+Docs --> Adapters
+Social --> Adapters
+Other --> Adapters
+
+%% Frontend connects to API
+APIGW --> Frontend
+```
+
 ## Core Components
 
 ### 1. Frontend Application
