@@ -62,74 +62,111 @@ Doc-Tales is a personalized communications sorter that unifies content from dive
 ```
 
 ``` mermaid
-flowchart TD
+graph TB
+    %% External Sources
+    subgraph "External Sources"
+        EMAIL[📧 Email Sources]
+        DOCS[📄 Document Sources]
+        SOCIAL[📱 Social Media]
+    end
 
-%% Frontend Views
-Frontend["Frontend Application"]
-Prioritizer["Prioritizer View"]
-Connector["Connector View"]
-Visualizer["Visualizer View"]
-Analyst["Analyst View"]
-ConfigUI["Configuration UI"]
+    %% Frontend Layer
+    subgraph "Frontend Layer"
+        REACT[🎨 React Frontend<br/>TypeScript + Material-UI<br/>Archetype-based UI]
+        S3_FRONTEND[🪣 S3 Frontend Bucket<br/>Static Website Hosting]
+    end
 
-Frontend --> Prioritizer
-Frontend --> Connector
-Frontend --> Visualizer
-Frontend --> Analyst
-Frontend --> ConfigUI
+    %% API Gateway
+    APIGW[🚪 API Gateway<br/>REST API Endpoints<br/>/dev/]
 
-%% Data Service Layer
-DataService["Data Service Layer"]
-Unified["Unified Data Service"]
-Archetype["Archetype Detection Service"]
-Dimension["Dimension Extraction Service"]
+    %% Lambda Functions
+    subgraph "Serverless Backend"
+        INGESTION[⚡ Ingestion Function<br/>Process Communications<br/>POST /communications]
+        API_FUNC[⚡ API Function<br/>Query & Retrieve<br/>GET /communications]
+        DIMENSION[⚡ Dimension Extraction<br/>ML Processing<br/>AWS Comprehend]
+        NOTIFICATION[⚡ Notification Function<br/>High Priority Alerts<br/>DynamoDB Streams]
+        S3_EVENTS[⚡ S3 Events Setup<br/>Configure Triggers]
+    end
 
-DataService --> Unified
-DataService --> Archetype
-DataService --> Dimension
+    %% Storage Layer
+    subgraph "Data Storage"
+        DYNAMO_COMM[🗄️ Communications Table<br/>Single Table Design<br/>GSI1: Projects<br/>GSI2: Senders]
+        DYNAMO_USER[🗄️ User Profiles Table<br/>Archetype Preferences]
+        S3_RAW[🪣 Raw Communications<br/>Original Content Storage]
+        S3_PROCESSED[🪣 Processed Documents<br/>ML Analysis Results]
+    end
 
-%% Source Adapters
-Adapters["Source Adapters"]
-EmailAdapter["Email Adapter"]
-DocAdapter["Document Adapter"]
-SocialAdapter["Social Adapter"]
+    %% AI/ML Services
+    subgraph "AWS AI/ML Services"
+        COMPREHEND[🧠 AWS Comprehend<br/>Sentiment Analysis<br/>Entity Extraction<br/>Key Phrases]
+        TEXTRACT[📝 AWS Textract<br/>Document OCR<br/>Text Extraction]
+    end
 
-Unified --> Adapters
-Adapters --> EmailAdapter
-Adapters --> DocAdapter
-Adapters --> SocialAdapter
+    %% Common Services
+    subgraph "Shared Services (@doc-tales/common)"
+        ARCHETYPE[🎭 Archetype Service<br/>UI Personalization]
+        SENTIMENT[💭 Sentiment Analyzer]
+        ENTITY[🏷️ Entity Extractor]
+        DIMENSION_MAP[🗺️ Dimension Mapper]
+        URGENCY[⚠️ Urgency Detector]
+        TOPIC[📊 Topic Categorizer]
+    end
 
-%% AWS Backend
-Backend["AWS Serverless Backend"]
-APIGW["API Gateway"]
-Lambdas["Lambda Functions"]
-S3["S3 Buckets"]
-DDB["DynamoDB Tables"]
+    %% Notification System
+    SNS[📢 SNS Topic<br/>High Priority Notifications]
 
-Dimension --> Backend
-Backend --> APIGW
-Backend --> Lambdas
-Backend --> S3
-Backend --> DDB
+    %% Data Flow Connections
+    EMAIL --> INGESTION
+    DOCS --> INGESTION
+    SOCIAL --> INGESTION
 
-%% External Sources
-External["External Data Sources"]
-Email["Email Providers"]
-Docs["Document Storage"]
-Social["Social Media Platforms"]
-Other["Other Sources"]
+    REACT --> APIGW
+    REACT <--> S3_FRONTEND
 
-External --> Email
-External --> Docs
-External --> Social
-External --> Other
-Email --> Adapters
-Docs --> Adapters
-Social --> Adapters
-Other --> Adapters
+    APIGW --> INGESTION
+    APIGW --> API_FUNC
 
-%% Frontend connects to API
-APIGW --> Frontend
+    INGESTION --> DYNAMO_COMM
+    INGESTION --> S3_RAW
+    API_FUNC --> DYNAMO_COMM
+    API_FUNC --> S3_RAW
+
+    S3_RAW --> DIMENSION
+    DIMENSION --> S3_PROCESSED
+    DIMENSION --> COMPREHEND
+    DIMENSION --> TEXTRACT
+
+    DYNAMO_COMM --> NOTIFICATION
+    NOTIFICATION --> SNS
+
+    %% Common Services Integration
+    DIMENSION --> SENTIMENT
+    DIMENSION --> ENTITY
+    DIMENSION --> DIMENSION_MAP
+    DIMENSION --> URGENCY
+    DIMENSION --> TOPIC
+
+    API_FUNC --> ARCHETYPE
+    REACT --> ARCHETYPE
+
+    SENTIMENT --> COMPREHEND
+    ENTITY --> COMPREHEND
+    TOPIC --> COMPREHEND
+
+    %% Styling
+    classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef lambda fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef storage fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef ai fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef common fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+
+    class REACT,S3_FRONTEND frontend
+    class INGESTION,API_FUNC,DIMENSION,NOTIFICATION,S3_EVENTS lambda
+    class DYNAMO_COMM,DYNAMO_USER,S3_RAW,S3_PROCESSED storage
+    class COMPREHEND,TEXTRACT ai
+    class ARCHETYPE,SENTIMENT,ENTITY,DIMENSION_MAP,URGENCY,TOPIC common
+    class EMAIL,DOCS,SOCIAL external
 ```
 
 ## Core Components
