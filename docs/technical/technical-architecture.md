@@ -63,110 +63,43 @@ Doc-Tales is a personalized communications sorter that unifies content from dive
 
 ``` mermaid
 graph TB
-    %% External Sources
-    subgraph "External Sources"
-        EMAIL[📧 Email Sources]
-        DOCS[📄 Document Sources]
-        SOCIAL[📱 Social Media]
-    end
+    %% User and Sources
+    USER[👤 User]
+    SOURCES[📧 Communication Sources<br/>Email • Documents • Social]
 
-    %% Frontend Layer
-    subgraph "Frontend Layer"
-        REACT[🎨 React Frontend<br/>TypeScript + Material-UI<br/>Archetype-based UI]
-        S3_FRONTEND[🪣 S3 Frontend Bucket<br/>Static Website Hosting]
-    end
+    %% Main Components
+    FRONTEND[🎨 React Frontend<br/>Archetype-based UI]
+    API[🚪 API Gateway]
+    LAMBDAS[⚡ Lambda Functions<br/>Ingestion • Processing • API]
 
-    %% API Gateway
-    APIGW[🚪 API Gateway<br/>REST API Endpoints<br/>/dev/]
+    %% Storage and AI
+    DATABASE[🗄️ DynamoDB<br/>Communications & Profiles]
+    STORAGE[🪣 S3 Buckets<br/>Raw & Processed Content]
+    AI[🧠 AWS Comprehend<br/>ML Analysis]
 
-    %% Lambda Functions
-    subgraph "Serverless Backend"
-        INGESTION[⚡ Ingestion Function<br/>Process Communications<br/>POST /communications]
-        API_FUNC[⚡ API Function<br/>Query & Retrieve<br/>GET /communications]
-        DIMENSION[⚡ Dimension Extraction<br/>ML Processing<br/>AWS Comprehend]
-        NOTIFICATION[⚡ Notification Function<br/>High Priority Alerts<br/>DynamoDB Streams]
-        S3_EVENTS[⚡ S3 Events Setup<br/>Configure Triggers]
-    end
-
-    %% Storage Layer
-    subgraph "Data Storage"
-        DYNAMO_COMM[🗄️ Communications Table<br/>Single Table Design<br/>GSI1: Projects<br/>GSI2: Senders]
-        DYNAMO_USER[🗄️ User Profiles Table<br/>Archetype Preferences]
-        S3_RAW[🪣 Raw Communications<br/>Original Content Storage]
-        S3_PROCESSED[🪣 Processed Documents<br/>ML Analysis Results]
-    end
-
-    %% AI/ML Services
-    subgraph "AWS AI/ML Services"
-        COMPREHEND[🧠 AWS Comprehend<br/>Sentiment Analysis<br/>Entity Extraction<br/>Key Phrases]
-        TEXTRACT[📝 AWS Textract<br/>Document OCR<br/>Text Extraction]
-    end
-
-    %% Common Services
-    subgraph "Shared Services (@doc-tales/common)"
-        ARCHETYPE[🎭 Archetype Service<br/>UI Personalization]
-        SENTIMENT[💭 Sentiment Analyzer]
-        ENTITY[🏷️ Entity Extractor]
-        DIMENSION_MAP[🗺️ Dimension Mapper]
-        URGENCY[⚠️ Urgency Detector]
-        TOPIC[📊 Topic Categorizer]
-    end
-
-    %% Notification System
-    SNS[📢 SNS Topic<br/>High Priority Notifications]
-
-    %% Data Flow Connections
-    EMAIL --> INGESTION
-    DOCS --> INGESTION
-    SOCIAL --> INGESTION
-
-    REACT --> APIGW
-    REACT <--> S3_FRONTEND
-
-    APIGW --> INGESTION
-    APIGW --> API_FUNC
-
-    INGESTION --> DYNAMO_COMM
-    INGESTION --> S3_RAW
-    API_FUNC --> DYNAMO_COMM
-    API_FUNC --> S3_RAW
-
-    S3_RAW --> DIMENSION
-    DIMENSION --> S3_PROCESSED
-    DIMENSION --> COMPREHEND
-    DIMENSION --> TEXTRACT
-
-    DYNAMO_COMM --> NOTIFICATION
-    NOTIFICATION --> SNS
-
-    %% Common Services Integration
-    DIMENSION --> SENTIMENT
-    DIMENSION --> ENTITY
-    DIMENSION --> DIMENSION_MAP
-    DIMENSION --> URGENCY
-    DIMENSION --> TOPIC
-
-    API_FUNC --> ARCHETYPE
-    REACT --> ARCHETYPE
-
-    SENTIMENT --> COMPREHEND
-    ENTITY --> COMPREHEND
-    TOPIC --> COMPREHEND
+    %% Connections
+    USER <--> FRONTEND
+    SOURCES --> LAMBDAS
+    FRONTEND <--> API
+    API <--> LAMBDAS
+    LAMBDAS <--> DATABASE
+    LAMBDAS <--> STORAGE
+    LAMBDAS <--> AI
 
     %% Styling
+    classDef user fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
+    classDef source fill:#fce4ec,stroke:#880e4f,stroke-width:2px
     classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef lambda fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef backend fill:#fff3e0,stroke:#e65100,stroke-width:2px
     classDef storage fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
     classDef ai fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef common fill:#fff8e1,stroke:#f57f17,stroke-width:2px
-    classDef external fill:#fce4ec,stroke:#880e4f,stroke-width:2px
 
-    class REACT,S3_FRONTEND frontend
-    class INGESTION,API_FUNC,DIMENSION,NOTIFICATION,S3_EVENTS lambda
-    class DYNAMO_COMM,DYNAMO_USER,S3_RAW,S3_PROCESSED storage
-    class COMPREHEND,TEXTRACT ai
-    class ARCHETYPE,SENTIMENT,ENTITY,DIMENSION_MAP,URGENCY,TOPIC common
-    class EMAIL,DOCS,SOCIAL external
+    class USER user
+    class SOURCES source
+    class FRONTEND frontend
+    class API,LAMBDAS backend
+    class DATABASE,STORAGE storage
+    class AI ai
 ```
 
 ## Core Components
