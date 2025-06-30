@@ -4,6 +4,59 @@
 
 Doc-Tales is a personalized communications sorter for the intelligent document processing industry. The solution unifies and intelligently processes content from diverse sources (emails, documents, and social media) into a single dashboard with archetype-based personalization that adapts to the user's cognitive style.
 
+## Intro
+
+Between client work and traveling to speak at conferences, I had way more ideas than time to join the AWS Lambda Hackathon. Then Brooke Jamieson convinced me at AWS Community Day Midwest that Q would help solve the time constraint. The next day, Q and I started building doc-tales (oo woo oo)
+
+### Why
+
+A growing pile of mail haunts me, slowly lurching towards me from the side of my desk. My first instinct as a builder is always the same: make a machine to do it for me.
+
+So that’s what I did.
+
+**Doc-Tales** is an event-driven communications pipeline for multi-dimensional analysis. It’s built around the idea of a standardized communication object — once that shape is locked down, you can plug in all kinds of logic: enrichment, filtering, personalization, notifications.
+
+Doc-tales doesn’t wait for a user to tag or categorize their communications; instead, users navigate by dimensions classified within four user archetypes.
+
+- **Prioritizer**: Focus on urgency and importance
+- **Connector**: Focus on relationships and networks
+- **Visualizer**: Focus on visual data representation
+- **Analyst**: Focus on detailed analysis and metrics
+
+## How
+
+I’ve designed the system around four user archetypes. Each archetype displays information in unique ways to match the user's favored cognitive model. To improve discoverability, user interactions are monitored and their archetype is updated, leading to a better default experience and the ability to change with the user. 
+
+Doc-tales starts with **S3 events to trigger Lambda functions when new communication objects are added to S3**. Some of those pipelines use AWS Comprehend and other ML services to extract metadata — things like urgency, relationships, or topics. Other parts route the results to the UI based on the user’s archetype — how they like to think and sort information.
+
+### What I Focused On
+
+Despite the superpowers that Q gives me, I can’t do it all. I focused on my expertise in **cloud architecture** and anticipating system needs. I avoided writing custom ML algorithms or overly engineered frontend logic — not because it’s not important, but because it would have slowed down the parts I wanted to get right first.
+
+- The frontend is scaffolded and deployable, with enough hooks to support dynamic views.
+- The backend is separated cleanly by concern. The Lambdas are heavier than I’d like, but I decided not to add complexity like a service router yet. I’ll wait until I actually need one.
+- Documentation and commit history are clean and deliberate, not just a hackathon throw away
+
+### Architecture Highlights
+
+- **Event-driven**: S3 → Lambda + Comprehend → DynamoDB pipeline
+- **Multi-workspace**: Separate packages for frontend (React/TypeScript), backend (Node.js/Lambda), and common utilities
+- **AWS Services**: Comprehend for NLP, DynamoDB for storage, S3 for document storage, API Gateway, and Q Developer CLI
+
+### What I Learned
+
+I started thinking less about what Q could do, and more about what it *should* do — and how I’d monitor, secure, and review the things it touches. Somewhere in that process, I remembered that Q is built on top of Fig — a tool I already trusted. I was honestly surprised at how well Q works.
+
+If you’re an AWS builder and you want something that’s fast, contextual, and close to your stack, I’d recommend it.
+
+The whole experience pushed me to think about what it means to work alongside agentic systems — not just using tools, but **building responsibly with them**. That includes planning for permissions, logging, debugging, and growing a system that might be making decisions you didn’t write directly.
+
+Doc-Tales is my first shot at building something for that kind of future.
+
+It's still early, but it works.
+
+And for now, it even sorts my mail.
+
 ### 🎯 Core Value Proposition
 
 - **Archetype-based personalization** that adapts the interface to user cognitive styles
