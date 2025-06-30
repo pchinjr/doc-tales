@@ -1,9 +1,9 @@
 // Topic Categorization Service
 // Categorizes communications into topics using ML and rule-based approaches
 
-import { EntityExtractor } from './EntityExtractor';
-import { SentimentAnalyzer } from './SentimentAnalyzer';
-import { ExtractionInput } from '../types/ml-extraction';
+import { EntityExtractor } from "./EntityExtractor";
+import { SentimentAnalyzer } from "./SentimentAnalyzer";
+import { ExtractionInput } from "../types/ml-extraction";
 
 export interface TopicResult {
   primary: string;
@@ -27,53 +27,53 @@ export class TopicCategorizer {
 
   private topicKeywords = {
     business: {
-      keywords: ['revenue', 'profit', 'sales', 'market', 'business', 'strategy', 'growth', 'investment'],
-      entities: ['organization', 'commercial'],
+      keywords: ["revenue", "profit", "sales", "market", "business", "strategy", "growth", "investment"],
+      entities: ["organization", "commercial"],
       weight: 1.0
     },
     technical: {
-      keywords: ['code', 'software', 'system', 'bug', 'feature', 'development', 'api', 'database', 'server'],
-      entities: ['technical', 'system'],
+      keywords: ["code", "software", "system", "bug", "feature", "development", "api", "database", "server"],
+      entities: ["technical", "system"],
       weight: 1.0
     },
     meeting: {
-      keywords: ['meeting', 'call', 'conference', 'agenda', 'schedule', 'calendar', 'zoom', 'teams'],
-      entities: ['event', 'date'],
+      keywords: ["meeting", "call", "conference", "agenda", "schedule", "calendar", "zoom", "teams"],
+      entities: ["event", "date"],
       weight: 1.2
     },
     project: {
-      keywords: ['project', 'task', 'milestone', 'deadline', 'deliverable', 'sprint', 'roadmap'],
-      entities: ['event', 'date'],
+      keywords: ["project", "task", "milestone", "deadline", "deliverable", "sprint", "roadmap"],
+      entities: ["event", "date"],
       weight: 1.1
     },
     support: {
-      keywords: ['help', 'support', 'issue', 'problem', 'question', 'assistance', 'troubleshoot'],
-      entities: ['person'],
+      keywords: ["help", "support", "issue", "problem", "question", "assistance", "troubleshoot"],
+      entities: ["person"],
       weight: 1.0
     },
     financial: {
-      keywords: ['budget', 'cost', 'expense', 'invoice', 'payment', 'financial', 'accounting', 'money'],
-      entities: ['quantity', 'commercial'],
+      keywords: ["budget", "cost", "expense", "invoice", "payment", "financial", "accounting", "money"],
+      entities: ["quantity", "commercial"],
       weight: 1.0
     },
     legal: {
-      keywords: ['contract', 'agreement', 'legal', 'compliance', 'regulation', 'policy', 'terms'],
-      entities: ['organization', 'person'],
+      keywords: ["contract", "agreement", "legal", "compliance", "regulation", "policy", "terms"],
+      entities: ["organization", "person"],
       weight: 1.0
     },
     marketing: {
-      keywords: ['campaign', 'marketing', 'promotion', 'brand', 'advertising', 'social media', 'content'],
-      entities: ['organization', 'commercial'],
+      keywords: ["campaign", "marketing", "promotion", "brand", "advertising", "social media", "content"],
+      entities: ["organization", "commercial"],
       weight: 1.0
     },
     personal: {
-      keywords: ['personal', 'family', 'vacation', 'sick', 'leave', 'birthday', 'congratulations'],
-      entities: ['person'],
+      keywords: ["personal", "family", "vacation", "sick", "leave", "birthday", "congratulations"],
+      entities: ["person"],
       weight: 0.8
     },
     administrative: {
-      keywords: ['admin', 'policy', 'procedure', 'form', 'documentation', 'compliance', 'hr'],
-      entities: ['organization'],
+      keywords: ["admin", "policy", "procedure", "form", "documentation", "compliance", "hr"],
+      entities: ["organization"],
       weight: 0.9
     }
   };
@@ -97,7 +97,7 @@ export class TopicCategorizer {
       ]);
 
       // Analyze each topic category
-      const categories: TopicResult['categories'] = {};
+      const categories: TopicResult["categories"] = {};
       
       for (const [topicName, topicConfig] of Object.entries(this.topicKeywords)) {
         categories[topicName] = this.analyzeTopicCategory(
@@ -130,7 +130,7 @@ export class TopicCategorizer {
       };
 
     } catch (error) {
-      console.error('Error categorizing topics:', error);
+      console.error("Error categorizing topics:", error);
       return this.getDefaultTopicResult();
     }
   }
@@ -159,7 +159,7 @@ export class TopicCategorizer {
       const keywordScore = Math.min(0.6, keywordMatches.length * 0.15);
       score += keywordScore;
       indicators.push(...keywordMatches);
-      reasoning.push(`Found ${keywordMatches.length} relevant keywords: ${keywordMatches.join(', ')}`);
+      reasoning.push(`Found ${keywordMatches.length} relevant keywords: ${keywordMatches.join(", ")}`);
     }
 
     // Analyze entities
@@ -199,24 +199,24 @@ export class TopicCategorizer {
     let score = 0;
 
     // Check organizations for business/legal/marketing topics
-    if (relevantEntityTypes.includes('organization') && entityMappings.organizations.length > 0) {
+    if (relevantEntityTypes.includes("organization") && entityMappings.organizations.length > 0) {
       score += Math.min(0.4, entityMappings.organizations.length * 0.1);
     }
 
     // Check people for personal/support topics
-    if (relevantEntityTypes.includes('person') && entityMappings.people.length > 0) {
+    if (relevantEntityTypes.includes("person") && entityMappings.people.length > 0) {
       score += Math.min(0.3, entityMappings.people.length * 0.1);
     }
 
     // Check dates for meeting/project topics
-    if (relevantEntityTypes.includes('date') && entityMappings.dates.length > 0) {
+    if (relevantEntityTypes.includes("date") && entityMappings.dates.length > 0) {
       score += Math.min(0.3, entityMappings.dates.length * 0.15);
     }
 
     // Check concepts for technical topics
-    if (relevantEntityTypes.includes('technical') && entityMappings.concepts.length > 0) {
+    if (relevantEntityTypes.includes("technical") && entityMappings.concepts.length > 0) {
       const technicalConcepts = entityMappings.concepts.filter((concept: string) =>
-        ['system', 'software', 'code', 'api', 'database'].some(tech => 
+        ["system", "software", "code", "api", "database"].some(tech => 
           concept.toLowerCase().includes(tech)
         )
       );
@@ -233,25 +233,25 @@ export class TopicCategorizer {
     let score = 0;
 
     // Support topics often have concerned or frustrated tones
-    if (topicConfig.keywords.includes('support') || topicConfig.keywords.includes('help')) {
-      if (sentimentAnalysis.emotionalTone.includes('concerned') || 
-          sentimentAnalysis.emotionalTone.includes('frustrated')) {
+    if (topicConfig.keywords.includes("support") || topicConfig.keywords.includes("help")) {
+      if (sentimentAnalysis.emotionalTone.includes("concerned") || 
+          sentimentAnalysis.emotionalTone.includes("frustrated")) {
         score += 0.3;
       }
     }
 
     // Personal topics often have positive or grateful tones
-    if (topicConfig.keywords.includes('personal')) {
-      if (sentimentAnalysis.emotionalTone.includes('grateful') || 
-          sentimentAnalysis.overall === 'positive') {
+    if (topicConfig.keywords.includes("personal")) {
+      if (sentimentAnalysis.emotionalTone.includes("grateful") || 
+          sentimentAnalysis.overall === "positive") {
         score += 0.2;
       }
     }
 
     // Meeting topics are often neutral/professional
-    if (topicConfig.keywords.includes('meeting')) {
-      if (sentimentAnalysis.emotionalTone.includes('professional') || 
-          sentimentAnalysis.overall === 'neutral') {
+    if (topicConfig.keywords.includes("meeting")) {
+      if (sentimentAnalysis.emotionalTone.includes("professional") || 
+          sentimentAnalysis.overall === "neutral") {
         score += 0.1;
       }
     }
@@ -277,16 +277,16 @@ export class TopicCategorizer {
     }
 
     // Check sender domain for business topics
-    if (metadata.sender && topicConfig.keywords.includes('business')) {
-      const domain = metadata.sender.split('@')[1];
-      if (domain && !['gmail.com', 'yahoo.com', 'hotmail.com'].includes(domain)) {
+    if (metadata.sender && topicConfig.keywords.includes("business")) {
+      const domain = metadata.sender.split("@")[1];
+      if (domain && !["gmail.com", "yahoo.com", "hotmail.com"].includes(domain)) {
         score += 0.2; // Business email domain
       }
     }
 
     // Check attachments for technical/project topics
     if (metadata.attachments && metadata.attachments.length > 0) {
-      if (topicConfig.keywords.includes('technical') || topicConfig.keywords.includes('project')) {
+      if (topicConfig.keywords.includes("technical") || topicConfig.keywords.includes("project")) {
         score += 0.1;
       }
     }
@@ -297,7 +297,7 @@ export class TopicCategorizer {
   /**
    * Calculate confidence in topic categorization
    */
-  private calculateTopicConfidence(categories: TopicResult['categories'], primary: string): number {
+  private calculateTopicConfidence(categories: TopicResult["categories"], primary: string): number {
     const primaryScore = categories[primary].score;
     const scores = Object.values(categories).map(cat => cat.score);
     const secondHighest = scores.sort((a, b) => b - a)[1];
@@ -323,8 +323,8 @@ export class TopicCategorizer {
       const result = await this.categorizeTopics(text);
       return [result.primary, ...result.secondary].slice(0, limit);
     } catch (error) {
-      console.error('Error getting topic suggestions:', error);
-      return ['business', 'technical', 'meeting'];
+      console.error("Error getting topic suggestions:", error);
+      return ["business", "technical", "meeting"];
     }
   }
 
@@ -350,7 +350,7 @@ export class TopicCategorizer {
     const dominantEntities = await this.entityExtractor.extractEntities({ text });
     
     const sentimentInfluence = result.categories[result.primary].reasoning
-      .find(r => r.includes('sentiment')) || 'No significant sentiment influence';
+      .find(r => r.includes("sentiment")) || "No significant sentiment influence";
     
     const confidenceFactors = result.categories[result.primary].reasoning;
     
@@ -370,14 +370,14 @@ export class TopicCategorizer {
    */
   private getDefaultTopicResult(): TopicResult {
     return {
-      primary: 'business',
+      primary: "business",
       secondary: [],
       confidence: 0.5,
       categories: {
         business: {
           score: 0.5,
           indicators: [],
-          reasoning: ['Default categorization due to analysis error']
+          reasoning: ["Default categorization due to analysis error"]
         }
       }
     };

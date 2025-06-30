@@ -1,12 +1,12 @@
 // Urgency Detection Service
 // Specialized service for detecting urgency levels in communications
 
-import { SentimentAnalyzer } from './SentimentAnalyzer';
-import { EntityExtractor } from './EntityExtractor';
-import { ExtractionInput } from '../types/ml-extraction';
+import { SentimentAnalyzer } from "./SentimentAnalyzer";
+import { EntityExtractor } from "./EntityExtractor";
+import { ExtractionInput } from "../types/ml-extraction";
 
 export interface UrgencyResult {
-  level: 'high' | 'medium' | 'low';
+  level: "high" | "medium" | "low";
   score: number;
   indicators: {
     keywords: string[];
@@ -26,15 +26,15 @@ export class UrgencyDetector {
   private entityExtractor: EntityExtractor;
   
   private urgencyKeywords = {
-    high: ['urgent', 'asap', 'immediately', 'emergency', 'critical', 'crisis', 'deadline today'],
-    medium: ['soon', 'priority', 'important', 'deadline', 'time-sensitive', 'rush', 'quick'],
-    low: ['when possible', 'eventually', 'sometime', 'no rush', 'low priority']
+    high: ["urgent", "asap", "immediately", "emergency", "critical", "crisis", "deadline today"],
+    medium: ["soon", "priority", "important", "deadline", "time-sensitive", "rush", "quick"],
+    low: ["when possible", "eventually", "sometime", "no rush", "low priority"]
   };
 
   private timeKeywords = {
-    high: ['now', 'today', 'this morning', 'this afternoon', 'end of day', 'eod'],
-    medium: ['tomorrow', 'this week', 'by friday', 'next few days', 'soon'],
-    low: ['next week', 'next month', 'when convenient', 'no deadline']
+    high: ["now", "today", "this morning", "this afternoon", "end of day", "eod"],
+    medium: ["tomorrow", "this week", "by friday", "next few days", "soon"],
+    low: ["next week", "next month", "when convenient", "no deadline"]
   };
 
   constructor(region?: string) {
@@ -107,7 +107,7 @@ export class UrgencyDetector {
       };
 
     } catch (error) {
-      console.error('Error detecting urgency:', error);
+      console.error("Error detecting urgency:", error);
       return this.getDefaultUrgencyResult();
     }
   }
@@ -115,7 +115,7 @@ export class UrgencyDetector {
   /**
    * Analyze urgency keywords in text
    */
-  private analyzeKeywords(text: string): { score: number; foundKeywords: string[]; level: 'high' | 'medium' | 'low' } {
+  private analyzeKeywords(text: string): { score: number; foundKeywords: string[]; level: "high" | "medium" | "low" } {
     const lowerText = text.toLowerCase();
     const foundKeywords: string[] = [];
     let highCount = 0, mediumCount = 0, lowCount = 0;
@@ -146,20 +146,20 @@ export class UrgencyDetector {
 
     // Calculate score
     let score = 0;
-    let level: 'high' | 'medium' | 'low' = 'low';
+    let level: "high" | "medium" | "low" = "low";
 
     if (highCount > 0) {
       score = 0.8 + (highCount * 0.1);
-      level = 'high';
+      level = "high";
     } else if (mediumCount > 0) {
       score = 0.5 + (mediumCount * 0.1);
-      level = 'medium';
+      level = "medium";
     } else if (lowCount > 0) {
       score = 0.2;
-      level = 'low';
+      level = "low";
     } else {
       score = 0.3; // Default medium-low
-      level = 'low';
+      level = "low";
     }
 
     return { score: Math.min(1, score), foundKeywords, level };
@@ -168,7 +168,7 @@ export class UrgencyDetector {
   /**
    * Analyze time references for urgency
    */
-  private analyzeTimeReferences(text: string): { score: number; foundReferences: string[]; level: 'high' | 'medium' | 'low' } {
+  private analyzeTimeReferences(text: string): { score: number; foundReferences: string[]; level: "high" | "medium" | "low" } {
     const lowerText = text.toLowerCase();
     const foundReferences: string[] = [];
     let highCount = 0, mediumCount = 0, lowCount = 0;
@@ -198,17 +198,17 @@ export class UrgencyDetector {
     });
 
     let score = 0.3; // Default
-    let level: 'high' | 'medium' | 'low' = 'low';
+    let level: "high" | "medium" | "low" = "low";
 
     if (highCount > 0) {
       score = 0.9;
-      level = 'high';
+      level = "high";
     } else if (mediumCount > 0) {
       score = 0.6;
-      level = 'medium';
+      level = "medium";
     } else if (lowCount > 0) {
       score = 0.1;
-      level = 'low';
+      level = "low";
     }
 
     return { score, foundReferences, level };
@@ -221,23 +221,23 @@ export class UrgencyDetector {
     const factors: string[] = [];
     let score = 0.3; // Default
 
-    if (sentimentAnalysis.emotionalTone.includes('urgent')) {
-      factors.push('urgent tone detected');
+    if (sentimentAnalysis.emotionalTone.includes("urgent")) {
+      factors.push("urgent tone detected");
       score += 0.4;
     }
 
-    if (sentimentAnalysis.emotionalTone.includes('concerned')) {
-      factors.push('concerned tone');
+    if (sentimentAnalysis.emotionalTone.includes("concerned")) {
+      factors.push("concerned tone");
       score += 0.2;
     }
 
-    if (sentimentAnalysis.emotionalTone.includes('frustrated')) {
-      factors.push('frustrated tone');
+    if (sentimentAnalysis.emotionalTone.includes("frustrated")) {
+      factors.push("frustrated tone");
       score += 0.3;
     }
 
-    if (sentimentAnalysis.overall === 'negative' && sentimentAnalysis.confidence > 0.7) {
-      factors.push('strong negative sentiment');
+    if (sentimentAnalysis.overall === "negative" && sentimentAnalysis.confidence > 0.7) {
+      factors.push("strong negative sentiment");
       score += 0.2;
     }
 
@@ -259,18 +259,18 @@ export class UrgencyDetector {
     }
 
     // Check for authority figures
-    const authorityKeywords = ['manager', 'director', 'ceo', 'president', 'boss', 'supervisor'];
+    const authorityKeywords = ["manager", "director", "ceo", "president", "boss", "supervisor"];
     const hasAuthority = authorityKeywords.some(keyword => lowerText.includes(keyword));
     if (hasAuthority) {
-      factors.push('authority figure mentioned');
+      factors.push("authority figure mentioned");
       score += 0.3;
     }
 
     // Check for escalation keywords
-    const escalationKeywords = ['escalate', 'escalation', 'complaint', 'issue', 'problem'];
+    const escalationKeywords = ["escalate", "escalation", "complaint", "issue", "problem"];
     const hasEscalation = escalationKeywords.some(keyword => lowerText.includes(keyword));
     if (hasEscalation) {
-      factors.push('escalation indicators');
+      factors.push("escalation indicators");
       score += 0.4;
     }
 
@@ -287,8 +287,8 @@ export class UrgencyDetector {
     // Check subject line for urgency (if available)
     if (metadata?.subject) {
       const subjectLower = metadata.subject.toLowerCase();
-      if (subjectLower.includes('urgent') || subjectLower.includes('asap')) {
-        factors.push('urgent subject line');
+      if (subjectLower.includes("urgent") || subjectLower.includes("asap")) {
+        factors.push("urgent subject line");
         score += 0.4;
       }
     }
@@ -296,14 +296,14 @@ export class UrgencyDetector {
     // Check for multiple exclamation marks
     const exclamationCount = (text.match(/!/g) || []).length;
     if (exclamationCount > 2) {
-      factors.push('multiple exclamation marks');
+      factors.push("multiple exclamation marks");
       score += 0.2;
     }
 
     // Check for ALL CAPS sections
     const capsWords = text.match(/\b[A-Z]{3,}\b/g) || [];
     if (capsWords.length > 2) {
-      factors.push('excessive capitalization');
+      factors.push("excessive capitalization");
       score += 0.2;
     }
 
@@ -333,10 +333,10 @@ export class UrgencyDetector {
   /**
    * Determine urgency level from score
    */
-  private determineUrgencyLevel(score: number): 'high' | 'medium' | 'low' {
-    if (score >= 0.7) return 'high';
-    if (score >= 0.4) return 'medium';
-    return 'low';
+  private determineUrgencyLevel(score: number): "high" | "medium" | "low" {
+    if (score >= 0.7) return "high";
+    if (score >= 0.4) return "medium";
+    return "low";
   }
 
   /**
@@ -349,11 +349,11 @@ export class UrgencyDetector {
     const levels = [
       analysis.keywordAnalysis.level,
       analysis.timeAnalysis.level,
-      analysis.sentimentFactors.factors.length > 0 ? 'high' : 'low'
+      analysis.sentimentFactors.factors.length > 0 ? "high" : "low"
     ];
 
-    const highCount = levels.filter(l => l === 'high').length;
-    const mediumCount = levels.filter(l => l === 'medium').length;
+    const highCount = levels.filter(l => l === "high").length;
+    const mediumCount = levels.filter(l => l === "medium").length;
 
     if (highCount >= 2) confidence = 0.9;
     else if (highCount >= 1 && mediumCount >= 1) confidence = 0.8;
@@ -369,23 +369,23 @@ export class UrgencyDetector {
     const reasoning: string[] = [];
 
     if (analysis.keywordAnalysis.foundKeywords.length > 0) {
-      reasoning.push(`Found urgency keywords: ${analysis.keywordAnalysis.foundKeywords.join(', ')}`);
+      reasoning.push(`Found urgency keywords: ${analysis.keywordAnalysis.foundKeywords.join(", ")}`);
     }
 
     if (analysis.timeAnalysis.foundReferences.length > 0) {
-      reasoning.push(`Time references indicate ${analysis.timeAnalysis.level} urgency: ${analysis.timeAnalysis.foundReferences.join(', ')}`);
+      reasoning.push(`Time references indicate ${analysis.timeAnalysis.level} urgency: ${analysis.timeAnalysis.foundReferences.join(", ")}`);
     }
 
     if (analysis.sentimentFactors.factors.length > 0) {
-      reasoning.push(`Sentiment analysis: ${analysis.sentimentFactors.factors.join(', ')}`);
+      reasoning.push(`Sentiment analysis: ${analysis.sentimentFactors.factors.join(", ")}`);
     }
 
     if (analysis.entityFactors.factors.length > 0) {
-      reasoning.push(`Context factors: ${analysis.entityFactors.factors.join(', ')}`);
+      reasoning.push(`Context factors: ${analysis.entityFactors.factors.join(", ")}`);
     }
 
     if (reasoning.length === 0) {
-      reasoning.push('No strong urgency indicators found, defaulting to low urgency');
+      reasoning.push("No strong urgency indicators found, defaulting to low urgency");
     }
 
     return reasoning;
@@ -396,7 +396,7 @@ export class UrgencyDetector {
    */
   private getDefaultUrgencyResult(): UrgencyResult {
     return {
-      level: 'low',
+      level: "low",
       score: 0.3,
       indicators: {
         keywords: [],
@@ -405,7 +405,7 @@ export class UrgencyDetector {
         entityFactors: []
       },
       confidence: 0.5,
-      reasoning: ['Unable to analyze urgency, defaulting to low']
+      reasoning: ["Unable to analyze urgency, defaulting to low"]
     };
   }
 }

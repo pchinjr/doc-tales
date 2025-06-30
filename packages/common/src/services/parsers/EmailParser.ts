@@ -35,12 +35,12 @@ export class EmailParser {
       
       // Extract basic email information
       const id = rawEmail.id;
-      const timestamp = this.getHeaderValue(headers, 'Date') || new Date().toISOString();
-      const subject = this.getHeaderValue(headers, 'Subject') || "(No Subject)";
+      const timestamp = this.getHeaderValue(headers, "Date") || new Date().toISOString();
+      const subject = this.getHeaderValue(headers, "Subject") || "(No Subject)";
       const content = body;
       
       // Extract sender information
-      const from = this.getHeaderValue(headers, 'From') || '';
+      const from = this.getHeaderValue(headers, "From") || "";
       const { senderName, senderEmail } = this.parseSender(from);
       
       // Extract attachments
@@ -86,7 +86,7 @@ export class EmailParser {
     // Split the email into headers and body
     const parts = rawEmail.split(/\r?\n\r?\n/);
     const headerSection = parts[0];
-    const bodySection = parts.slice(1).join('\n\n');
+    const bodySection = parts.slice(1).join("\n\n");
     
     // Parse headers
     const headers: EmailHeader[] = [];
@@ -96,7 +96,7 @@ export class EmailParser {
     for (const line of headerLines) {
       // If the line starts with whitespace, it's a continuation of the previous header
       if (/^\s+/.test(line) && currentHeader) {
-        currentHeader.value += ' ' + line.trim();
+        currentHeader.value += " " + line.trim();
         continue;
       }
       
@@ -151,28 +151,28 @@ export class EmailParser {
     const attachments: EmailAttachment[] = [];
     
     // Check for Content-Type: multipart/mixed
-    if (rawEmail.includes('Content-Type: multipart/mixed')) {
+    if (rawEmail.includes("Content-Type: multipart/mixed")) {
       // Find boundary
       const boundaryMatch = rawEmail.match(/boundary="([^"]+)"/);
       if (boundaryMatch) {
         const boundary = boundaryMatch[1];
-        const parts = rawEmail.split('--' + boundary);
+        const parts = rawEmail.split("--" + boundary);
         
         // Skip the first part (headers) and the last part (boundary end)
         for (let i = 1; i < parts.length - 1; i++) {
           const part = parts[i];
           
           // Check if this part is an attachment
-          if (part.includes('Content-Disposition: attachment') || 
-              (part.includes('Content-Type:') && !part.includes('text/plain') && !part.includes('text/html'))) {
+          if (part.includes("Content-Disposition: attachment") || 
+              (part.includes("Content-Type:") && !part.includes("text/plain") && !part.includes("text/html"))) {
             
             // Extract filename
             const filenameMatch = part.match(/filename="([^"]+)"/);
-            const filename = filenameMatch ? filenameMatch[1] : 'attachment';
+            const filename = filenameMatch ? filenameMatch[1] : "attachment";
             
             // Extract content type
             const contentTypeMatch = part.match(/Content-Type:\s*([^;]+)/);
-            const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : 'application/octet-stream';
+            const contentType = contentTypeMatch ? contentTypeMatch[1].trim() : "application/octet-stream";
             
             attachments.push({
               filename,
@@ -193,15 +193,15 @@ export class EmailParser {
    */
   private hasImages(content: string): boolean {
     // Check for HTML img tags
-    return content.includes('<img') || content.includes('Content-Type: image/');
+    return content.includes("<img") || content.includes("Content-Type: image/");
   }
   
   /**
    * Extract recipients from headers
    */
   private extractRecipients(headers: EmailHeader[]): any[] {
-    const to = this.getHeaderValue(headers, 'To') || '';
-    return to.split(',').map(recipient => {
+    const to = this.getHeaderValue(headers, "To") || "";
+    return to.split(",").map(recipient => {
       const { senderName, senderEmail } = this.parseSender(recipient);
       return {
         name: senderName,
@@ -255,7 +255,7 @@ export class EmailParser {
     }
     
     // Check subject for urgency indicators
-    const subject = this.getHeaderValue(headers, 'Subject') || '';
+    const subject = this.getHeaderValue(headers, "Subject") || "";
     if (subject.toLowerCase().includes("urgent") || 
         subject.toLowerCase().includes("important") || 
         subject.toLowerCase().includes("asap") ||

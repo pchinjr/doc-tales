@@ -4,29 +4,29 @@
  * Updated to use AWS SDK v3 for better performance.
  */
 
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-const https = require('https');
-const http = require('http');
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand, GetCommand, DeleteCommand } = require("@aws-sdk/lib-dynamodb");
+const https = require("https");
+const http = require("http");
 
 // Configure AWS SDK v3
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || "us-east-1" });
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function makeRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
-        const protocol = url.startsWith('https:') ? https : http;
+        const protocol = url.startsWith("https:") ? https : http;
         
         const req = protocol.request(url, {
-            method: options.method || 'GET',
+            method: options.method || "GET",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
                 ...options.headers
             }
         }, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
+            let data = "";
+            res.on("data", chunk => data += chunk);
+            res.on("end", () => {
                 try {
                     const parsed = data ? JSON.parse(data) : {};
                     resolve({ statusCode: res.statusCode, data: parsed });
@@ -36,7 +36,7 @@ async function makeRequest(url, options = {}) {
             });
         });
         
-        req.on('error', reject);
+        req.on("error", reject);
         
         if (options.body) {
             req.write(JSON.stringify(options.body));
@@ -47,28 +47,28 @@ async function makeRequest(url, options = {}) {
 }
 
 async function testUserProfile() {
-    console.log('👤 Testing User Profile Management...');
+    console.log("👤 Testing User Profile Management...");
     
     const testUserId = `test-user-${Date.now()}`;
     const tableName = process.env.USER_PROFILES_TABLE;
     const apiEndpoint = process.env.API_ENDPOINT;
     
     if (!tableName || !apiEndpoint) {
-        throw new Error('Required environment variables not set');
+        throw new Error("Required environment variables not set");
     }
     
     try {
         // Test 1: Create user profile directly in DynamoDB
-        console.log('  📝 Creating test user profile...');
+        console.log("  📝 Creating test user profile...");
         
         const testProfile = {
             PK: `USER#${testUserId}`,
             userId: testUserId,
-            email: 'test@example.com',
-            name: 'Test User',
-            archetype: 'analytical',
+            email: "test@example.com",
+            name: "Test User",
+            archetype: "analytical",
             preferences: {
-                theme: 'light',
+                theme: "light",
                 notifications: true,
                 priorityThreshold: 70
             },
@@ -82,10 +82,10 @@ async function testUserProfile() {
         });
         await dynamodb.send(putCommand);
         
-        console.log('  ✅ User profile created');
+        console.log("  ✅ User profile created");
         
         // Test 2: Retrieve user profile via DynamoDB
-        console.log('  🔍 Retrieving user profile from DynamoDB...');
+        console.log("  🔍 Retrieving user profile from DynamoDB...");
         
         const getCommand = new GetCommand({
             TableName: tableName,
@@ -96,15 +96,15 @@ async function testUserProfile() {
         const getResult = await dynamodb.send(getCommand);
         
         if (!getResult.Item) {
-            throw new Error('User profile not found in DynamoDB');
+            throw new Error("User profile not found in DynamoDB");
         }
         
-        console.log('  ✅ User profile retrieved from DynamoDB');
+        console.log("  ✅ User profile retrieved from DynamoDB");
         
         // Test 3: Validate archetype data
-        console.log('  🎭 Validating archetype configuration...');
+        console.log("  🎭 Validating archetype configuration...");
         
-        const validArchetypes = ['analytical', 'creative', 'practical'];
+        const validArchetypes = ["analytical", "creative", "practical"];
         if (!validArchetypes.includes(getResult.Item.archetype)) {
             throw new Error(`Invalid archetype: ${getResult.Item.archetype}`);
         }
@@ -112,19 +112,19 @@ async function testUserProfile() {
         console.log(`  ✅ Archetype '${getResult.Item.archetype}' is valid`);
         
         // Test 4: Test archetype-specific preferences
-        console.log('  ⚙️  Testing archetype preferences...');
+        console.log("  ⚙️  Testing archetype preferences...");
         
         const preferences = getResult.Item.preferences;
-        if (preferences && typeof preferences.priorityThreshold === 'number') {
+        if (preferences && typeof preferences.priorityThreshold === "number") {
             console.log(`  ✅ Priority threshold: ${preferences.priorityThreshold}`);
         }
         
         // Test 5: Update user profile
-        console.log('  📝 Testing profile update...');
+        console.log("  📝 Testing profile update...");
         
         const updatedProfile = {
             ...testProfile,
-            archetype: 'creative',
+            archetype: "creative",
             preferences: {
                 ...testProfile.preferences,
                 priorityThreshold: 80
@@ -147,41 +147,41 @@ async function testUserProfile() {
         });
         const updatedResult = await dynamodb.send(getUpdateCommand);
         
-        if (updatedResult.Item.archetype !== 'creative') {
-            throw new Error('Profile update failed');
+        if (updatedResult.Item.archetype !== "creative") {
+            throw new Error("Profile update failed");
         }
         
-        console.log('  ✅ Profile updated successfully');
+        console.log("  ✅ Profile updated successfully");
         
         // Test 6: Test API integration (if profile endpoint exists)
-        console.log('  🌐 Testing API integration...');
+        console.log("  🌐 Testing API integration...");
         
         try {
             const profileUrl = `${apiEndpoint}profile/${testUserId}`;
             const apiResponse = await makeRequest(profileUrl);
             
             if (apiResponse.statusCode === 200) {
-                console.log('  ✅ Profile accessible via API');
+                console.log("  ✅ Profile accessible via API");
             } else if (apiResponse.statusCode === 404) {
-                console.log('  ℹ️  Profile API endpoint not implemented (expected for MVP)');
+                console.log("  ℹ️  Profile API endpoint not implemented (expected for MVP)");
             } else {
                 console.log(`  ⚠️  Unexpected API response: ${apiResponse.statusCode}`);
             }
         } catch (apiError) {
-            console.log('  ℹ️  Profile API not available (expected for MVP)');
+            console.log("  ℹ️  Profile API not available (expected for MVP)");
         }
         
-        console.log('🎉 User Profile Test: PASSED');
+        console.log("🎉 User Profile Test: PASSED");
         return true;
         
     } catch (error) {
-        console.error('❌ User Profile Test: FAILED');
-        console.error('Error:', error.message);
+        console.error("❌ User Profile Test: FAILED");
+        console.error("Error:", error.message);
         throw error;
     } finally {
         // Cleanup: Remove test user profile
         try {
-            console.log('  🧹 Cleaning up test user profile...');
+            console.log("  🧹 Cleaning up test user profile...");
             
             const deleteCommand = new DeleteCommand({
                 TableName: tableName,
@@ -191,9 +191,9 @@ async function testUserProfile() {
             });
             await dynamodb.send(deleteCommand);
             
-            console.log('  ✅ Cleanup completed');
+            console.log("  ✅ Cleanup completed");
         } catch (cleanupError) {
-            console.warn('  ⚠️  Cleanup failed:', cleanupError.message);
+            console.warn("  ⚠️  Cleanup failed:", cleanupError.message);
         }
     }
 }

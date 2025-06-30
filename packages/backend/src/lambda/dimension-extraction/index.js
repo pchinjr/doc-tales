@@ -223,14 +223,14 @@ async function extractKeyInsights(content) {
     // Extract key phrases
     const keyPhrasesCommand = new DetectKeyPhrasesCommand({
       Text: content.substring(0, 5000),
-      LanguageCode: 'en'
+      LanguageCode: "en"
     });
     const keyPhrasesResult = await comprehend.send(keyPhrasesCommand);
 
     // Extract entities
     const entitiesCommand = new DetectEntitiesCommand({
       Text: content.substring(0, 5000),
-      LanguageCode: 'en'
+      LanguageCode: "en"
     });
     const entitiesResult = await comprehend.send(entitiesCommand);
 
@@ -242,19 +242,19 @@ async function extractKeyInsights(content) {
         .slice(0, 10),
       
       people: entitiesResult.Entities
-        .filter(entity => entity.Type === 'PERSON' && entity.Score > 0.8)
+        .filter(entity => entity.Type === "PERSON" && entity.Score > 0.8)
         .map(entity => entity.Text),
       
       organizations: entitiesResult.Entities
-        .filter(entity => entity.Type === 'ORGANIZATION' && entity.Score > 0.8)
+        .filter(entity => entity.Type === "ORGANIZATION" && entity.Score > 0.8)
         .map(entity => entity.Text),
       
       locations: entitiesResult.Entities
-        .filter(entity => entity.Type === 'LOCATION' && entity.Score > 0.8)
+        .filter(entity => entity.Type === "LOCATION" && entity.Score > 0.8)
         .map(entity => entity.Text),
       
       dates: entitiesResult.Entities
-        .filter(entity => entity.Type === 'DATE' && entity.Score > 0.8)
+        .filter(entity => entity.Type === "DATE" && entity.Score > 0.8)
         .map(entity => entity.Text),
       
       topics: inferTopics(keyPhrasesResult.KeyPhrases),
@@ -264,7 +264,7 @@ async function extractKeyInsights(content) {
     console.log("Successfully extracted insights:", JSON.stringify(insights, null, 2));
     return insights;
   } catch (error) {
-    console.error('Error extracting insights:', error);
+    console.error("Error extracting insights:", error);
     return {
       keyPhrases: [],
       people: [],
@@ -287,7 +287,7 @@ async function analyzeSentimentAndPriority(content, metadata) {
     
     const sentimentCommand = new DetectSentimentCommand({
       Text: content.substring(0, 5000),
-      LanguageCode: 'en'
+      LanguageCode: "en"
     });
     const sentimentResult = await comprehend.send(sentimentCommand);
 
@@ -295,22 +295,22 @@ async function analyzeSentimentAndPriority(content, metadata) {
     let priorityScore = 50;
 
     // Sentiment impact
-    if (sentimentResult.Sentiment === 'NEGATIVE') {
+    if (sentimentResult.Sentiment === "NEGATIVE") {
       priorityScore += 20;
-    } else if (sentimentResult.Sentiment === 'POSITIVE') {
+    } else if (sentimentResult.Sentiment === "POSITIVE") {
       priorityScore += 5;
     }
 
     // Urgency impact
-    if (metadata.urgency === 'high') {
+    if (metadata.urgency === "high") {
       priorityScore += 25;
-    } else if (metadata.urgency === 'low') {
+    } else if (metadata.urgency === "low") {
       priorityScore -= 15;
     }
 
     // Content-based priority indicators
-    const urgentKeywords = ['urgent', 'asap', 'immediately', 'deadline', 'critical'];
-    const actionKeywords = ['please', 'need', 'required', 'must', 'should'];
+    const urgentKeywords = ["urgent", "asap", "immediately", "deadline", "critical"];
+    const actionKeywords = ["please", "need", "required", "must", "should"];
     
     urgentKeywords.forEach(keyword => {
       if (content.toLowerCase().includes(keyword)) {
@@ -330,18 +330,18 @@ async function analyzeSentimentAndPriority(content, metadata) {
       sentiment: sentimentResult.Sentiment,
       sentimentScores: sentimentResult.SentimentScore,
       priorityScore,
-      priorityLevel: priorityScore > 75 ? 'HIGH' : priorityScore > 50 ? 'MEDIUM' : 'LOW',
+      priorityLevel: priorityScore > 75 ? "HIGH" : priorityScore > 50 ? "MEDIUM" : "LOW",
       mlConfidence: sentimentResult.SentimentScore[sentimentResult.Sentiment]
     };
 
     console.log("Sentiment analysis complete:", JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
-    console.error('Error in sentiment analysis:', error);
+    console.error("Error in sentiment analysis:", error);
     return {
-      sentiment: 'NEUTRAL',
+      sentiment: "NEUTRAL",
       priorityScore: 50,
-      priorityLevel: 'MEDIUM',
+      priorityLevel: "MEDIUM",
       error: error.message
     };
   }
@@ -352,16 +352,16 @@ async function analyzeSentimentAndPriority(content, metadata) {
  */
 function inferTopics(keyPhrases) {
   const topicCategories = {
-    'finance': ['budget', 'money', 'cost', 'payment', 'invoice', 'financial', 'bank'],
-    'project': ['project', 'task', 'deadline', 'milestone', 'deliverable', 'timeline'],
-    'meeting': ['meeting', 'call', 'conference', 'discussion', 'agenda', 'schedule'],
-    'travel': ['travel', 'flight', 'hotel', 'trip', 'vacation', 'booking'],
-    'legal': ['contract', 'agreement', 'legal', 'terms', 'conditions', 'compliance'],
-    'hr': ['employee', 'hiring', 'interview', 'performance', 'review', 'benefits']
+    "finance": ["budget", "money", "cost", "payment", "invoice", "financial", "bank"],
+    "project": ["project", "task", "deadline", "milestone", "deliverable", "timeline"],
+    "meeting": ["meeting", "call", "conference", "discussion", "agenda", "schedule"],
+    "travel": ["travel", "flight", "hotel", "trip", "vacation", "booking"],
+    "legal": ["contract", "agreement", "legal", "terms", "conditions", "compliance"],
+    "hr": ["employee", "hiring", "interview", "performance", "review", "benefits"]
   };
 
   const detectedTopics = [];
-  const content = keyPhrases.map(phrase => phrase.Text.toLowerCase()).join(' ');
+  const content = keyPhrases.map(phrase => phrase.Text.toLowerCase()).join(" ");
 
   Object.entries(topicCategories).forEach(([topic, keywords]) => {
     const matches = keywords.filter(keyword => content.includes(keyword));
@@ -397,7 +397,7 @@ function extractActionItems(content) {
     while ((match = pattern.exec(content)) !== null) {
       actionItems.push({
         text: match[1].trim(),
-        type: 'extracted',
+        type: "extracted",
         confidence: 0.8
       });
     }
@@ -455,14 +455,14 @@ async function extractTemporalDimension(communication, mlInsights) {
     communication.content.toLowerCase().includes("action");
   
   // Determine urgency level based on multiple factors
-  let urgencyLevel = communication.metadata.urgency || 'normal';
+  let urgencyLevel = communication.metadata.urgency || "normal";
   if (daysUntilDeadline !== undefined) {
     if (daysUntilDeadline <= 1) {
-      urgencyLevel = 'critical';
+      urgencyLevel = "critical";
     } else if (daysUntilDeadline <= 3) {
-      urgencyLevel = 'high';
+      urgencyLevel = "high";
     } else if (daysUntilDeadline <= 7) {
-      urgencyLevel = 'medium';
+      urgencyLevel = "medium";
     }
   }
   
@@ -494,10 +494,10 @@ function calculateUrgencyScore(urgencyLevel, daysUntilDeadline) {
   
   // Urgency level impact
   switch (urgencyLevel) {
-    case 'critical': score += 40; break;
-    case 'high': score += 25; break;
-    case 'medium': score += 10; break;
-    case 'low': score -= 15; break;
+    case "critical": score += 40; break;
+    case "high": score += 25; break;
+    case "medium": score += 10; break;
+    case "low": score -= 15; break;
   }
   
   // Days until deadline impact

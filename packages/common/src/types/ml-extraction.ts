@@ -1,8 +1,8 @@
 // ML Dimension Extraction Types
 // Types specific to the ML-powered dimension extraction process
 
-import { Entity, SentimentScore } from '@aws-sdk/client-comprehend';
-import { Dimensions } from './dimensions';
+import { Entity, SentimentScore } from "@aws-sdk/client-comprehend";
+import { Dimensions } from "./dimensions";
 
 /**
  * Raw output from AWS Comprehend services
@@ -26,7 +26,7 @@ export interface ExtractionResults {
   urgencyIndicators: {
     keywords: string[];
     score: number;
-    level: 'high' | 'medium' | 'low';
+    level: "high" | "medium" | "low";
   };
   topicCategories: {
     primary: string;
@@ -41,7 +41,7 @@ export interface ExtractionResults {
     concepts: string[];
   };
   sentimentAnalysis: {
-    overall: 'positive' | 'neutral' | 'negative';
+    overall: "positive" | "neutral" | "negative";
     confidence: number;
     emotionalTone: string[];
   };
@@ -72,7 +72,7 @@ export interface DimensionExtractionResult {
   extractionMetadata: {
     processingTime: number;
     confidenceScore: number;
-    extractionMethod: 'ml' | 'rule-based' | 'hybrid';
+    extractionMethod: "ml" | "rule-based" | "hybrid";
     errors?: string[];
     warnings?: string[];
   };

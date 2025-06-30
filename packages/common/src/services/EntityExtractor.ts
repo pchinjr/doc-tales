@@ -1,9 +1,9 @@
 // Entity Extraction Service
 // Processes Comprehend entities and maps them to Doc-Tales entity structure
 
-import { Entity } from '@aws-sdk/client-comprehend';
-import { ComprehendService } from './ComprehendService';
-import { ExtractionInput, ExtractionResults } from '../types/ml-extraction';
+import { Entity } from "@aws-sdk/client-comprehend";
+import { ComprehendService } from "./ComprehendService";
+import { ExtractionInput, ExtractionResults } from "../types/ml-extraction";
 
 /**
  * Service for extracting and processing entities from communications
@@ -18,12 +18,12 @@ export class EntityExtractor {
   /**
    * Extract entities from text and map to Doc-Tales structure
    */
-  async extractEntities(input: ExtractionInput): Promise<ExtractionResults['entityMappings']> {
+  async extractEntities(input: ExtractionInput): Promise<ExtractionResults["entityMappings"]> {
     try {
       const comprehendResults = await this.comprehendService.extractComprehendResults(input);
       return this.mapEntitiesToDocTales(comprehendResults.entities);
     } catch (error) {
-      console.error('Error extracting entities:', error);
+      console.error("Error extracting entities:", error);
       return {
         people: [],
         organizations: [],
@@ -37,8 +37,8 @@ export class EntityExtractor {
   /**
    * Map Comprehend entities to Doc-Tales entity structure
    */
-  private mapEntitiesToDocTales(entities: Entity[]): ExtractionResults['entityMappings'] {
-    const mappings: ExtractionResults['entityMappings'] = {
+  private mapEntitiesToDocTales(entities: Entity[]): ExtractionResults["entityMappings"] {
+    const mappings: ExtractionResults["entityMappings"] = {
       people: [],
       organizations: [],
       locations: [],
@@ -54,34 +54,34 @@ export class EntityExtractor {
       const text = entity.Text.trim();
       
       switch (entity.Type) {
-        case 'PERSON':
+        case "PERSON":
           if (!mappings.people.includes(text)) {
             mappings.people.push(text);
           }
           break;
           
-        case 'ORGANIZATION':
+        case "ORGANIZATION":
           if (!mappings.organizations.includes(text)) {
             mappings.organizations.push(text);
           }
           break;
           
-        case 'LOCATION':
+        case "LOCATION":
           if (!mappings.locations.includes(text)) {
             mappings.locations.push(text);
           }
           break;
           
-        case 'DATE':
+        case "DATE":
           if (!mappings.dates.includes(text)) {
             mappings.dates.push(text);
           }
           break;
           
-        case 'EVENT':
-        case 'TITLE':
-        case 'COMMERCIAL_ITEM':
-        case 'OTHER':
+        case "EVENT":
+        case "TITLE":
+        case "COMMERCIAL_ITEM":
+        case "OTHER":
           if (!mappings.concepts.includes(text)) {
             mappings.concepts.push(text);
           }
@@ -143,7 +143,7 @@ export class EntityExtractor {
 
       return stats;
     } catch (error) {
-      console.error('Error getting extraction stats:', error);
+      console.error("Error getting extraction stats:", error);
       return {
         totalEntities: 0,
         entitiesByType: {},

@@ -5,15 +5,15 @@
  * and updates the DynamoDB record with the extracted dimensions.
  */
 
-import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from 'aws-lambda';
-import { DynamoDBClient, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
-import { DimensionMapper } from '@doc-tales/common';
+import { APIGatewayProxyEvent, APIGatewayProxyResult, Context } from "aws-lambda";
+import { DynamoDBClient, UpdateItemCommand } from "@aws-sdk/client-dynamodb";
+import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
+import { DimensionMapper } from "@doc-tales/common";
 
 // Initialize AWS clients
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
-const s3Client = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-const dimensionMapper = new DimensionMapper(process.env.AWS_REGION || 'us-east-1');
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || "us-east-1" });
+const s3Client = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
+const dimensionMapper = new DimensionMapper(process.env.AWS_REGION || "us-east-1");
 
 /**
  * Lambda handler for dimension extraction
@@ -22,14 +22,14 @@ export const handler = async (
   event: APIGatewayProxyEvent,
   context: Context
 ): Promise<APIGatewayProxyResult> => {
-  console.log('Dimension extraction started', { event, context });
+  console.log("Dimension extraction started", { event, context });
 
   try {
     // Parse the event - could be from S3 trigger or direct API call
     const { communicationId, s3Bucket, s3Key, text } = parseEvent(event);
 
     if (!communicationId) {
-      return createErrorResponse(400, 'Missing communicationId');
+      return createErrorResponse(400, "Missing communicationId");
     }
 
     // Get communication text
@@ -39,24 +39,24 @@ export const handler = async (
     }
 
     if (!communicationText) {
-      return createErrorResponse(400, 'No communication text available');
+      return createErrorResponse(400, "No communication text available");
     }
 
     // Extract dimensions using ML services
-    console.log('Extracting dimensions for communication:', communicationId);
+    console.log("Extracting dimensions for communication:", communicationId);
     const extractionResult = await dimensionMapper.extractDimensions(
       communicationText,
       { 
         communicationId,
         timestamp: new Date().toISOString(),
-        source: 'lambda-extraction'
+        source: "lambda-extraction"
       }
     );
 
     // Update DynamoDB with extracted dimensions
     await updateCommunicationWithDimensions(communicationId, extractionResult);
 
-    console.log('Dimension extraction completed successfully', {
+    console.log("Dimension extraction completed successfully", {
       communicationId,
       processingTime: extractionResult.extractionMetadata.processingTime,
       confidenceScore: extractionResult.extractionMetadata.confidenceScore
@@ -65,8 +65,8 @@ export const handler = async (
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify({
         success: true,
@@ -77,12 +77,12 @@ export const handler = async (
     };
 
   } catch (error) {
-    console.error('Error in dimension extraction:', error);
+    console.error("Error in dimension extraction:", error);
     
     return createErrorResponse(
       500, 
-      'Internal server error during dimension extraction',
-      error instanceof Error ? error.message : 'Unknown error'
+      "Internal server error during dimension extraction",
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 };
@@ -107,7 +107,7 @@ function parseEvent(event: APIGatewayProxyEvent): {
         text: body.text
       };
     } catch (error) {
-      console.error('Error parsing request body:', error);
+      console.error("Error parsing request body:", error);
     }
   }
 
@@ -127,7 +127,7 @@ function parseEvent(event: APIGatewayProxyEvent): {
     if (s3Record) {
       return {
         s3Bucket: s3Record.bucket.name,
-        s3Key: decodeURIComponent(s3Record.object.key.replace(/\+/g, ' ')),
+        s3Key: decodeURIComponent(s3Record.object.key.replace(/\+/g, " ")),
         communicationId: extractCommunicationIdFromS3Key(s3Record.object.key)
       };
     }
@@ -145,7 +145,7 @@ async function getTextFromS3(bucket: string, key: string): Promise<string> {
     const response = await s3Client.send(command);
     
     if (!response.Body) {
-      throw new Error('No content in S3 object');
+      throw new Error("No content in S3 object");
     }
 
     // Convert stream to string
@@ -153,13 +153,13 @@ async function getTextFromS3(bucket: string, key: string): Promise<string> {
     const stream = response.Body as any;
     
     return new Promise((resolve, reject) => {
-      stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-      stream.on('error', reject);
-      stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+      stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+      stream.on("error", reject);
+      stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")));
     });
     
   } catch (error) {
-    console.error('Error reading from S3:', error);
+    console.error("Error reading from S3:", error);
     throw new Error(`Failed to read S3 object: ${bucket}/${key}`);
   }
 }
@@ -173,7 +173,7 @@ async function updateCommunicationWithDimensions(
 ): Promise<void> {
   try {
     const updateCommand = new UpdateItemCommand({
-      TableName: process.env.COMMUNICATIONS_TABLE || 'doc-tales-communications',
+      TableName: process.env.COMMUNICATIONS_TABLE || "doc-tales-communications",
       Key: {
         id: { S: communicationId }
       },
@@ -185,21 +185,21 @@ async function updateCommunicationWithDimensions(
           #status = :status
       `,
       ExpressionAttributeNames: {
-        '#status': 'status'
+        "#status": "status"
       },
       ExpressionAttributeValues: {
-        ':dimensions': { S: JSON.stringify(extractionResult.dimensions) },
-        ':metadata': { S: JSON.stringify(extractionResult.extractionMetadata) },
-        ':timestamp': { S: new Date().toISOString() },
-        ':status': { S: 'processed' }
+        ":dimensions": { S: JSON.stringify(extractionResult.dimensions) },
+        ":metadata": { S: JSON.stringify(extractionResult.extractionMetadata) },
+        ":timestamp": { S: new Date().toISOString() },
+        ":status": { S: "processed" }
       }
     });
 
     await dynamoClient.send(updateCommand);
-    console.log('Successfully updated DynamoDB record:', communicationId);
+    console.log("Successfully updated DynamoDB record:", communicationId);
     
   } catch (error) {
-    console.error('Error updating DynamoDB:', error);
+    console.error("Error updating DynamoDB:", error);
     throw new Error(`Failed to update communication ${communicationId}: ${error}`);
   }
 }
@@ -209,8 +209,8 @@ async function updateCommunicationWithDimensions(
  */
 function extractCommunicationIdFromS3Key(s3Key: string): string {
   // Assume S3 key format: communications/{communicationId}/content.txt
-  const parts = s3Key.split('/');
-  return parts.length > 1 ? parts[1] : s3Key.replace(/\.[^/.]+$/, '');
+  const parts = s3Key.split("/");
+  return parts.length > 1 ? parts[1] : s3Key.replace(/\.[^/.]+$/, "");
 }
 
 /**
@@ -224,8 +224,8 @@ function createErrorResponse(
   return {
     statusCode,
     headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
     },
     body: JSON.stringify({
       success: false,

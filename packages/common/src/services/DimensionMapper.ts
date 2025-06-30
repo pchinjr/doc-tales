@@ -1,11 +1,11 @@
 // Dimension Mapper Utility
 // Maps ML extraction results to Doc-Tales dimension structure
 
-import { Dimensions } from '../types/dimensions';
-import { ExtractionResults, DimensionExtractionResult } from '../types/ml-extraction';
-import { ComprehendService } from './ComprehendService';
-import { EntityExtractor } from './EntityExtractor';
-import { SentimentAnalyzer } from './SentimentAnalyzer';
+import { Dimensions } from "../types/dimensions";
+import { ExtractionResults, DimensionExtractionResult } from "../types/ml-extraction";
+import { ComprehendService } from "./ComprehendService";
+import { EntityExtractor } from "./EntityExtractor";
+import { SentimentAnalyzer } from "./SentimentAnalyzer";
 
 /**
  * Service that maps ML extraction results to Doc-Tales dimensions
@@ -44,7 +44,7 @@ export class DimensionMapper {
         extractionMetadata: {
           processingTime,
           confidenceScore: this.calculateOverallConfidence(dimensions),
-          extractionMethod: 'ml',
+          extractionMethod: "ml",
           errors: [],
           warnings: []
         },
@@ -53,21 +53,21 @@ export class DimensionMapper {
       
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      console.error('Error in dimension extraction:', error);
+      console.error("Error in dimension extraction:", error);
       
       return {
         dimensions: this.getDefaultDimensions(),
         extractionMetadata: {
           processingTime,
           confidenceScore: 0,
-          extractionMethod: 'ml',
-          errors: [error instanceof Error ? error.message : 'Unknown error'],
-          warnings: ['Falling back to default dimensions']
+          extractionMethod: "ml",
+          errors: [error instanceof Error ? error.message : "Unknown error"],
+          warnings: ["Falling back to default dimensions"]
         },
         rawResults: {
           entities: [],
           sentiment: {
-            sentiment: 'NEUTRAL',
+            sentiment: "NEUTRAL",
             sentimentScore: { Positive: 0, Negative: 0, Neutral: 1, Mixed: 0 }
           },
           keyPhrases: []
@@ -131,7 +131,7 @@ export class DimensionMapper {
       timeContext: {
         isRecent: true,
         isPast: false,
-        requiresAction: results.urgencyIndicators.level !== 'low',
+        requiresAction: results.urgencyIndicators.level !== "low",
         daysUntilDeadline: this.calculateDaysUntilDeadline(results.temporalMarkers.deadlines[0])
       }
     };
@@ -146,7 +146,7 @@ export class DimensionMapper {
     
     return {
       connectionStrength: this.determineConnectionStrength(metadata?.sender, results.sentimentAnalysis),
-      frequency: 'occasional', // Would need historical data to determine
+      frequency: "occasional", // Would need historical data to determine
       lastInteraction: metadata?.timestamp,
       networkPosition: {
         isDirectConnection: true,
@@ -154,12 +154,12 @@ export class DimensionMapper {
         relevanceScore: Math.min(0.8, (peopleCount + orgCount) * 0.2)
       },
       context: {
-        personal: results.sentimentAnalysis.emotionalTone.includes('grateful') || 
-                 results.sentimentAnalysis.emotionalTone.includes('friendly'),
-        professional: results.sentimentAnalysis.emotionalTone.includes('professional') ||
+        personal: results.sentimentAnalysis.emotionalTone.includes("grateful") || 
+                 results.sentimentAnalysis.emotionalTone.includes("friendly"),
+        professional: results.sentimentAnalysis.emotionalTone.includes("professional") ||
                      results.entityMappings.organizations.length > 0,
-        projectSpecific: results.topicCategories.primary === 'project' ||
-                        results.entityMappings.concepts.some(c => c.toLowerCase().includes('project'))
+        projectSpecific: results.topicCategories.primary === "project" ||
+                        results.entityMappings.concepts.some(c => c.toLowerCase().includes("project"))
       }
     };
   }
@@ -169,11 +169,11 @@ export class DimensionMapper {
    */
   private mapVisualDimension(text: string, metadata?: any): any {
     const hasAttachments = metadata?.attachments?.length > 0;
-    const hasImages = text.toLowerCase().includes('image') || text.toLowerCase().includes('photo');
+    const hasImages = text.toLowerCase().includes("image") || text.toLowerCase().includes("photo");
     
     return {
       hasImages,
-      documentType: metadata?.documentType || 'text',
+      documentType: metadata?.documentType || "text",
       visualElements: {
         charts: 0,
         tables: 0,
@@ -185,7 +185,7 @@ export class DimensionMapper {
         coordinates: undefined,
         relatedLocations: []
       },
-      visualCategory: hasAttachments ? 'mixed' : 'text-only'
+      visualCategory: hasAttachments ? "mixed" : "text-only"
     };
   }
 
@@ -218,16 +218,16 @@ export class DimensionMapper {
   /**
    * Extract urgency indicators from text
    */
-  private extractUrgencyIndicators(text: string): ExtractionResults['urgencyIndicators'] {
-    const urgentKeywords = ['urgent', 'asap', 'immediately', 'critical', 'emergency', 'deadline', 'rush'];
+  private extractUrgencyIndicators(text: string): ExtractionResults["urgencyIndicators"] {
+    const urgentKeywords = ["urgent", "asap", "immediately", "critical", "emergency", "deadline", "rush"];
     const lowerText = text.toLowerCase();
     
     const foundKeywords = urgentKeywords.filter(keyword => lowerText.includes(keyword));
     const score = foundKeywords.length / urgentKeywords.length;
     
-    let level: 'high' | 'medium' | 'low' = 'low';
-    if (score > 0.3) level = 'high';
-    else if (score > 0.1) level = 'medium';
+    let level: "high" | "medium" | "low" = "low";
+    if (score > 0.3) level = "high";
+    else if (score > 0.1) level = "medium";
     
     return {
       keywords: foundKeywords,
@@ -239,21 +239,21 @@ export class DimensionMapper {
   /**
    * Extract topic categories
    */
-  private extractTopicCategories(text: string, entities: any): ExtractionResults['topicCategories'] {
-    const categories = ['business', 'technical', 'personal', 'meeting', 'project', 'support'];
+  private extractTopicCategories(text: string, entities: any): ExtractionResults["topicCategories"] {
+    const categories = ["business", "technical", "personal", "meeting", "project", "support"];
     const lowerText = text.toLowerCase();
     
-    let primary = 'business';
+    let primary = "business";
     const secondary: string[] = [];
     
-    if (lowerText.includes('meeting') || lowerText.includes('schedule')) {
-      primary = 'meeting';
-    } else if (lowerText.includes('project') || lowerText.includes('task')) {
-      primary = 'project';
-    } else if (lowerText.includes('support') || lowerText.includes('help')) {
-      primary = 'support';
+    if (lowerText.includes("meeting") || lowerText.includes("schedule")) {
+      primary = "meeting";
+    } else if (lowerText.includes("project") || lowerText.includes("task")) {
+      primary = "project";
+    } else if (lowerText.includes("support") || lowerText.includes("help")) {
+      primary = "support";
     } else if (entities.organizations.length > 0) {
-      primary = 'business';
+      primary = "business";
     }
     
     return {
@@ -266,10 +266,10 @@ export class DimensionMapper {
   /**
    * Extract temporal markers
    */
-  private extractTemporalMarkers(text: string, dates: string[]): ExtractionResults['temporalMarkers'] {
-    const deadlineKeywords = ['deadline', 'due', 'by', 'before'];
-    const timeKeywords = ['today', 'tomorrow', 'next week', 'monday', 'friday'];
-    const urgencyKeywords = ['urgent', 'asap', 'immediately'];
+  private extractTemporalMarkers(text: string, dates: string[]): ExtractionResults["temporalMarkers"] {
+    const deadlineKeywords = ["deadline", "due", "by", "before"];
+    const timeKeywords = ["today", "tomorrow", "next week", "monday", "friday"];
+    const urgencyKeywords = ["urgent", "asap", "immediately"];
     
     const lowerText = text.toLowerCase();
     
@@ -306,11 +306,11 @@ export class DimensionMapper {
     return Math.min(1, results.sentimentAnalysis.confidence + 0.2);
   }
 
-  private determineConnectionStrength(sender?: string, sentiment?: any): 'strong' | 'medium' | 'weak' {
-    if (sentiment?.emotionalTone.includes('grateful') || sentiment?.overall === 'positive') {
-      return 'strong';
+  private determineConnectionStrength(sender?: string, sentiment?: any): "strong" | "medium" | "weak" {
+    if (sentiment?.emotionalTone.includes("grateful") || sentiment?.overall === "positive") {
+      return "strong";
     }
-    return 'medium';
+    return "medium";
   }
 
   private extractFollowUpDate(timeReferences: string[]): string | undefined {
@@ -329,38 +329,38 @@ export class DimensionMapper {
     }
   }
 
-  private calculateComplexity(text: string): 'high' | 'medium' | 'low' {
+  private calculateComplexity(text: string): "high" | "medium" | "low" {
     const avgWordLength = text.split(/\s+/).reduce((sum, word) => sum + word.length, 0) / text.split(/\s+/).length;
-    if (avgWordLength > 6) return 'high';
-    if (avgWordLength > 4) return 'medium';
-    return 'low';
+    if (avgWordLength > 6) return "high";
+    if (avgWordLength > 4) return "medium";
+    return "low";
   }
 
   private getDefaultDimensions(): Dimensions {
     const now = new Date().toISOString();
     return {
       temporal: {
-        urgency: 'low',
+        urgency: "low",
         chronology: { created: now },
         timeContext: { isRecent: true, isPast: false, requiresAction: false }
       },
       relationship: {
-        connectionStrength: 'medium',
-        frequency: 'occasional',
+        connectionStrength: "medium",
+        frequency: "occasional",
         networkPosition: { isDirectConnection: true, sharedConnections: 0, relevanceScore: 0.5 },
         context: { personal: false, professional: true, projectSpecific: false }
       },
       visual: {
         hasImages: false,
         visualElements: { charts: 0, tables: 0, images: 0, attachments: 0 },
-        visualCategory: 'text-only'
+        visualCategory: "text-only"
       },
       analytical: {
-        categories: ['business'],
+        categories: ["business"],
         tags: [],
-        sentiment: 'neutral',
+        sentiment: "neutral",
         entities: { people: [], organizations: [], locations: [], dates: [], concepts: [] },
-        metrics: { wordCount: 0, readingTime: 0, complexity: 'low', informationDensity: 0 },
+        metrics: { wordCount: 0, readingTime: 0, complexity: "low", informationDensity: 0 },
         structure: { hasHeadings: false, hasBulletPoints: false, hasNumberedLists: false, paragraphCount: 1 }
       },
       confidenceScores: { temporal: 0.3, relationship: 0.3, visual: 0.3, analytical: 0.3 }

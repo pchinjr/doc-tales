@@ -69,13 +69,13 @@ class S3Service {
     // Map v2 operation names to v3 commands
     let command;
     switch (operation) {
-      case 'getObject':
+      case "getObject":
         command = new GetObjectCommand({
           Bucket: this.bucketName,
           ...params
         });
         break;
-      case 'putObject':
+      case "putObject":
         command = new PutObjectCommand({
           Bucket: this.bucketName,
           ...params

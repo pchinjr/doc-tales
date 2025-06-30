@@ -1,7 +1,7 @@
 // Schema Migration Utility
 // Helps migrate existing communications to support ML dimensions
 
-import { DynamoDBClient, ScanCommand, UpdateItemCommand, BatchWriteItemCommand } from '@aws-sdk/client-dynamodb';
+import { DynamoDBClient, ScanCommand, UpdateItemCommand, BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
 
 export interface MigrationConfig {
   tableName: string;
@@ -52,12 +52,12 @@ export class SchemaMigrator {
         // Scan for communications that need migration
         const scanCommand = new ScanCommand({
           TableName: this.config.tableName,
-          FilterExpression: 'begins_with(PK, :pk) AND attribute_not_exists(#status)',
+          FilterExpression: "begins_with(PK, :pk) AND attribute_not_exists(#status)",
           ExpressionAttributeNames: {
-            '#status': 'status'
+            "#status": "status"
           },
           ExpressionAttributeValues: {
-            ':pk': { S: 'COMM#' }
+            ":pk": { S: "COMM#" }
           },
           Limit: this.config.batchSize,
           ExclusiveStartKey: lastEvaluatedKey
@@ -86,12 +86,12 @@ export class SchemaMigrator {
       } while (lastEvaluatedKey);
 
     } catch (error) {
-      console.error('Migration error:', error);
-      result.errors.push(`Migration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Migration error:", error);
+      result.errors.push(`Migration failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 
     result.duration = Date.now() - startTime;
-    console.log('Migration completed:', result);
+    console.log("Migration completed:", result);
     
     return result;
   }
@@ -117,7 +117,7 @@ export class SchemaMigrator {
         }
       } catch (error) {
         result.failed++;
-        const errorMsg = `Failed to update ${item.PK?.S}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        const errorMsg = `Failed to update ${item.PK?.S}: ${error instanceof Error ? error.message : "Unknown error"}`;
         result.errors.push(errorMsg);
         console.error(errorMsg);
       }
@@ -134,7 +134,7 @@ export class SchemaMigrator {
     const sk = item.SK?.S;
     
     if (!pk || !sk) {
-      throw new Error('Invalid item: missing PK or SK');
+      throw new Error("Invalid item: missing PK or SK");
     }
 
     // Add status and dimension-related fields
@@ -152,13 +152,13 @@ export class SchemaMigrator {
           GSI1SK = if_not_exists(GSI1SK, :gsi1sk)
       `,
       ExpressionAttributeNames: {
-        '#status': 'status'
+        "#status": "status"
       },
       ExpressionAttributeValues: {
-        ':status': { S: 'ingested' },
-        ':never': { S: 'never' },
-        ':gsi1pk': { S: 'STATUS#ingested' },
-        ':gsi1sk': { S: (item.timestamp?.S as string) || new Date().toISOString() }
+        ":status": { S: "ingested" },
+        ":never": { S: "never" },
+        ":gsi1pk": { S: "STATUS#ingested" },
+        ":gsi1sk": { S: (item.timestamp?.S as string) || new Date().toISOString() }
       }
     });
 
@@ -187,9 +187,9 @@ export class SchemaMigrator {
       do {
         const scanCommand = new ScanCommand({
           TableName: this.config.tableName,
-          FilterExpression: 'begins_with(PK, :pk)',
+          FilterExpression: "begins_with(PK, :pk)",
           ExpressionAttributeValues: {
-            ':pk': { S: 'COMM#' }
+            ":pk": { S: "COMM#" }
           },
           Limit: 100,
           ExclusiveStartKey: lastEvaluatedKey
@@ -212,7 +212,7 @@ export class SchemaMigrator {
             result.withDimensions++;
           }
           
-          if (item.status?.S === 'ingested' || !item.status?.S) {
+          if (item.status?.S === "ingested" || !item.status?.S) {
             result.needsProcessing++;
           }
         }
@@ -222,7 +222,7 @@ export class SchemaMigrator {
       } while (lastEvaluatedKey);
 
     } catch (error) {
-      console.error('Validation error:', error);
+      console.error("Validation error:", error);
     }
 
     return result;
@@ -249,12 +249,12 @@ export class SchemaMigrator {
       do {
         const scanCommand = new ScanCommand({
           TableName: this.config.tableName,
-          FilterExpression: 'begins_with(PK, :pk) AND attribute_exists(#status)',
+          FilterExpression: "begins_with(PK, :pk) AND attribute_exists(#status)",
           ExpressionAttributeNames: {
-            '#status': 'status'
+            "#status": "status"
           },
           ExpressionAttributeValues: {
-            ':pk': { S: 'COMM#' }
+            ":pk": { S: "COMM#" }
           },
           Limit: this.config.batchSize,
           ExclusiveStartKey: lastEvaluatedKey
@@ -279,7 +279,7 @@ export class SchemaMigrator {
             }
           } catch (error) {
             result.totalFailed++;
-            const errorMsg = `Failed to rollback ${item.PK?.S}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+            const errorMsg = `Failed to rollback ${item.PK?.S}: ${error instanceof Error ? error.message : "Unknown error"}`;
             result.errors.push(errorMsg);
           }
         }
@@ -290,7 +290,7 @@ export class SchemaMigrator {
       } while (lastEvaluatedKey);
 
     } catch (error) {
-      result.errors.push(`Rollback failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      result.errors.push(`Rollback failed: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
 
     result.duration = Date.now() - startTime;
@@ -307,9 +307,9 @@ export class SchemaMigrator {
         PK: item.PK,
         SK: item.SK
       },
-      UpdateExpression: 'REMOVE #status, dimensions, extractionMetadata, lastProcessed, GSI1PK, GSI1SK, GSI2PK, GSI2SK',
+      UpdateExpression: "REMOVE #status, dimensions, extractionMetadata, lastProcessed, GSI1PK, GSI1SK, GSI2PK, GSI2SK",
       ExpressionAttributeNames: {
-        '#status': 'status'
+        "#status": "status"
       }
     });
 

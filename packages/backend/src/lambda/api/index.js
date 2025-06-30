@@ -501,8 +501,19 @@ exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(i
       Key: item.s3Key
     });
     
-    // In AWS SDK v3, Body is a stream that needs to be converted to string
-    const bodyContents = await s3Result.Body.transformToString();
+    // In AWS SDK v3, Body can be a stream or buffer depending on environment
+    let bodyContents;
+    if (Buffer.isBuffer(s3Result.Body)) {
+      // Handle Buffer (common in tests)
+      bodyContents = s3Result.Body.toString('utf-8');
+    } else if (s3Result.Body && typeof s3Result.Body[Symbol.asyncIterator] === 'function') {
+      // Handle ReadableStream (AWS SDK v3)
+      bodyContents = await streamToString(s3Result.Body);
+    } else {
+      // Fallback for other types
+      bodyContents = s3Result.Body.toString();
+    }
+    
     const fullCommunication = JSON.parse(bodyContents);
     
     // Merge with any dimensions from DynamoDB
@@ -516,6 +527,17 @@ exports.getFullCommunicationFromS3 = async function getFullCommunicationFromS3(i
     throw error;
   }
 };
+
+/**
+ * Convert a ReadableStream to string
+ */
+async function streamToString(stream) {
+  const chunks = [];
+  for await (const chunk of stream) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf-8');
+}
 
 /**
  * Get user profile from DynamoDB using the single-table design

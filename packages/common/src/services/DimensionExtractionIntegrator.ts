@@ -1,8 +1,8 @@
 // Dimension Extraction Integration Service
 // Integrates ML dimension extraction with existing communication processing pipeline
 
-import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda';
-import { DynamoDBClient, UpdateItemCommand, GetItemCommand } from '@aws-sdk/client-dynamodb';
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+import { DynamoDBClient, UpdateItemCommand, GetItemCommand } from "@aws-sdk/client-dynamodb";
 
 export interface IntegrationConfig {
   dimensionExtractionFunctionName: string;
@@ -45,7 +45,7 @@ export class DimensionExtractionIntegrator {
     error?: string;
   }> {
     try {
-      console.log('Processing communication for dimension extraction:', communication.id);
+      console.log("Processing communication for dimension extraction:", communication.id);
 
       // Store communication in DynamoDB first
       await this.storeCommunication(communication);
@@ -60,12 +60,12 @@ export class DimensionExtractionIntegrator {
       };
 
     } catch (error) {
-      console.error('Error processing communication:', error);
+      console.error("Error processing communication:", error);
       return {
         success: false,
         communicationId: communication.id,
         dimensionExtractionTriggered: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : "Unknown error"
       };
     }
   }
@@ -92,23 +92,23 @@ export class DimensionExtractionIntegrator {
           updatedAt = :timestamp
       `,
       ExpressionAttributeNames: {
-        '#source': 'source',
-        '#timestamp': 'timestamp',
-        '#status': 'status'
+        "#source": "source",
+        "#timestamp": "timestamp",
+        "#status": "status"
       },
       ExpressionAttributeValues: {
-        ':content': { S: communication.content },
-        ':source': { S: communication.source },
-        ':timestamp': { S: communication.timestamp },
-        ':sender': { S: communication.sender || '' },
-        ':subject': { S: communication.subject || '' },
-        ':metadata': { S: JSON.stringify(communication.metadata || {}) },
-        ':status': { S: 'ingested' }
+        ":content": { S: communication.content },
+        ":source": { S: communication.source },
+        ":timestamp": { S: communication.timestamp },
+        ":sender": { S: communication.sender || "" },
+        ":subject": { S: communication.subject || "" },
+        ":metadata": { S: JSON.stringify(communication.metadata || {}) },
+        ":status": { S: "ingested" }
       }
     });
 
     await this.dynamoClient.send(updateCommand);
-    console.log('Communication stored in DynamoDB:', communication.id);
+    console.log("Communication stored in DynamoDB:", communication.id);
   }
 
   /**
@@ -132,35 +132,35 @@ export class DimensionExtractionIntegrator {
         // Asynchronous invocation
         const invokeCommand = new InvokeCommand({
           FunctionName: this.config.dimensionExtractionFunctionName,
-          InvocationType: 'Event', // Async
+          InvocationType: "Event", // Async
           Payload: JSON.stringify(payload)
         });
 
         await this.lambdaClient.send(invokeCommand);
-        console.log('Dimension extraction triggered asynchronously for:', communication.id);
+        console.log("Dimension extraction triggered asynchronously for:", communication.id);
         return true;
 
       } else {
         // Synchronous invocation
         const invokeCommand = new InvokeCommand({
           FunctionName: this.config.dimensionExtractionFunctionName,
-          InvocationType: 'RequestResponse', // Sync
+          InvocationType: "RequestResponse", // Sync
           Payload: JSON.stringify(payload)
         });
 
         const response = await this.lambdaClient.send(invokeCommand);
         
         if (response.StatusCode === 200) {
-          console.log('Dimension extraction completed synchronously for:', communication.id);
+          console.log("Dimension extraction completed synchronously for:", communication.id);
           return true;
         } else {
-          console.error('Dimension extraction failed:', response.StatusCode);
+          console.error("Dimension extraction failed:", response.StatusCode);
           return false;
         }
       }
 
     } catch (error) {
-      console.error('Error triggering dimension extraction:', error);
+      console.error("Error triggering dimension extraction:", error);
       return false;
     }
   }
@@ -175,7 +175,7 @@ export class DimensionExtractionIntegrator {
         Key: {
           id: { S: communicationId }
         },
-        ProjectionExpression: '#status, dimensions'
+        ProjectionExpression: "#status, dimensions"
       });
 
       const response = await this.dynamoClient.send(getCommand);
@@ -187,10 +187,10 @@ export class DimensionExtractionIntegrator {
       const status = response.Item.status?.S;
       const hasDimensions = !!response.Item.dimensions?.S;
 
-      return status === 'processed' && hasDimensions;
+      return status === "processed" && hasDimensions;
 
     } catch (error) {
-      console.error('Error checking processing status:', error);
+      console.error("Error checking processing status:", error);
       return false;
     }
   }
@@ -246,15 +246,15 @@ export class DimensionExtractionIntegrator {
       const response = await this.dynamoClient.send(getCommand);
       
       if (!response.Item) {
-        console.error('Communication not found:', communicationId);
+        console.error("Communication not found:", communicationId);
         return false;
       }
 
       // Reconstruct communication record
       const communication: CommunicationRecord = {
         id: communicationId,
-        content: response.Item.content?.S || '',
-        source: response.Item.source?.S || '',
+        content: response.Item.content?.S || "",
+        source: response.Item.source?.S || "",
         timestamp: response.Item.timestamp?.S || new Date().toISOString(),
         sender: response.Item.sender?.S,
         subject: response.Item.subject?.S,
@@ -265,7 +265,7 @@ export class DimensionExtractionIntegrator {
       return await this.triggerDimensionExtraction(communication);
 
     } catch (error) {
-      console.error('Error reprocessing communication:', error);
+      console.error("Error reprocessing communication:", error);
       return false;
     }
   }

@@ -40,7 +40,7 @@ export class DimensionExtractor {
    */
   private extractTemporalDimension(communication: Communication): TemporalDimension {
     // Extract deadline from content using simple pattern matching
-    const content = communication.content || '';
+    const content = communication.content || "";
     const deadlineMatch = content.match(/deadline[:\s]*([\w\s,]+)/i);
     const deadline = deadlineMatch ? deadlineMatch[1].trim() : undefined;
     

@@ -4,31 +4,31 @@
  * Updated to use AWS SDK v3 for better performance.
  */
 
-const { S3Client, PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, QueryCommand, DeleteCommand, PutCommand } = require('@aws-sdk/lib-dynamodb');
-const https = require('https');
-const http = require('http');
+const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, QueryCommand, DeleteCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
+const https = require("https");
+const http = require("http");
 
 // Configure AWS SDK v3
-const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || 'us-east-1' });
+const s3 = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
+const dynamoClient = new DynamoDBClient({ region: process.env.AWS_REGION || "us-east-1" });
 const dynamodb = DynamoDBDocumentClient.from(dynamoClient);
 
 async function makeRequest(url, options = {}) {
     return new Promise((resolve, reject) => {
-        const protocol = url.startsWith('https:') ? https : http;
+        const protocol = url.startsWith("https:") ? https : http;
         
         const req = protocol.request(url, {
-            method: options.method || 'GET',
+            method: options.method || "GET",
             headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
                 ...options.headers
             }
         }, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => {
+            let data = "";
+            res.on("data", chunk => data += chunk);
+            res.on("end", () => {
                 try {
                     const parsed = data ? JSON.parse(data) : {};
                     resolve({ statusCode: res.statusCode, data: parsed });
@@ -38,7 +38,7 @@ async function makeRequest(url, options = {}) {
             });
         });
         
-        req.on('error', reject);
+        req.on("error", reject);
         
         if (options.body) {
             req.write(JSON.stringify(options.body));
@@ -53,7 +53,7 @@ async function sleep(ms) {
 }
 
 async function testDemoScenario() {
-    console.log('🎬 Testing End-to-End Demo Scenario...');
+    console.log("🎬 Testing End-to-End Demo Scenario...");
     
     const testId = `demo-${Date.now()}`;
     const bucketName = process.env.RAW_BUCKET;
@@ -62,7 +62,7 @@ async function testDemoScenario() {
     const apiEndpoint = process.env.API_ENDPOINT;
     
     if (!bucketName || !commTableName || !userTableName || !apiEndpoint) {
-        throw new Error('Required environment variables not set');
+        throw new Error("Required environment variables not set");
     }
     
     const testCommunications = [];
@@ -70,23 +70,23 @@ async function testDemoScenario() {
     
     try {
         // Test 1: Create demo user profiles for different archetypes
-        console.log('  👥 Creating demo user profiles...');
+        console.log("  👥 Creating demo user profiles...");
         
         const archetypes = [
             {
                 id: `analytical-${testId}`,
-                archetype: 'analytical',
-                name: 'Sarah Analytics'
+                archetype: "analytical",
+                name: "Sarah Analytics"
             },
             {
                 id: `creative-${testId}`,
-                archetype: 'creative',
-                name: 'Alex Creative'
+                archetype: "creative",
+                name: "Alex Creative"
             },
             {
                 id: `practical-${testId}`,
-                archetype: 'practical',
-                name: 'Pat Practical'
+                archetype: "practical",
+                name: "Pat Practical"
             }
         ];
         
@@ -98,10 +98,10 @@ async function testDemoScenario() {
                 name: user.name,
                 archetype: user.archetype,
                 preferences: {
-                    theme: 'light',
+                    theme: "light",
                     notifications: true,
-                    priorityThreshold: user.archetype === 'analytical' ? 60 : 
-                                     user.archetype === 'creative' ? 80 : 70
+                    priorityThreshold: user.archetype === "analytical" ? 60 : 
+                                     user.archetype === "creative" ? 80 : 70
                 },
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
@@ -118,35 +118,35 @@ async function testDemoScenario() {
         }
         
         // Test 2: Upload demo communications with varying priorities
-        console.log('  📨 Uploading demo communications...');
+        console.log("  📨 Uploading demo communications...");
         
         const demoCommunications = [
             {
                 id: `high-priority-${testId}`,
-                type: 'email',
-                subject: 'URGENT: Client presentation moved to tomorrow 9am',
-                content: 'Hi team, the Johnson & Associates presentation has been moved to tomorrow at 9am. We need the final slides, budget projections, and Sarah needs to prepare the demo. This is a $2M deal - we cannot miss this.',
-                sender: 'project.manager@company.com',
-                recipients: ['team@company.com'],
-                metadata: { urgency: 'high', expectedPriority: 90 }
+                type: "email",
+                subject: "URGENT: Client presentation moved to tomorrow 9am",
+                content: "Hi team, the Johnson & Associates presentation has been moved to tomorrow at 9am. We need the final slides, budget projections, and Sarah needs to prepare the demo. This is a $2M deal - we cannot miss this.",
+                sender: "project.manager@company.com",
+                recipients: ["team@company.com"],
+                metadata: { urgency: "high", expectedPriority: 90 }
             },
             {
                 id: `medium-priority-${testId}`,
-                type: 'document',
-                subject: 'Q3 Performance Review',
-                content: 'Overall performance metrics show 15% growth in user engagement. Revenue targets met at 102%. Areas for improvement include customer support response times and mobile app stability.',
-                sender: 'analytics@company.com',
-                recipients: ['management@company.com'],
-                metadata: { urgency: 'medium', expectedPriority: 60 }
+                type: "document",
+                subject: "Q3 Performance Review",
+                content: "Overall performance metrics show 15% growth in user engagement. Revenue targets met at 102%. Areas for improvement include customer support response times and mobile app stability.",
+                sender: "analytics@company.com",
+                recipients: ["management@company.com"],
+                metadata: { urgency: "medium", expectedPriority: 60 }
             },
             {
                 id: `low-priority-${testId}`,
-                type: 'social',
-                subject: 'Team Pizza Party Friday',
-                content: 'Great job everyone on the product launch! Pizza party Friday at 5pm to celebrate. 🍕',
-                sender: 'hr@company.com',
-                recipients: ['all@company.com'],
-                metadata: { urgency: 'low', expectedPriority: 20 }
+                type: "social",
+                subject: "Team Pizza Party Friday",
+                content: "Great job everyone on the product launch! Pizza party Friday at 5pm to celebrate. 🍕",
+                sender: "hr@company.com",
+                recipients: ["all@company.com"],
+                metadata: { urgency: "low", expectedPriority: 20 }
             }
         ];
         
@@ -161,7 +161,7 @@ async function testDemoScenario() {
                 Bucket: bucketName,
                 Key: s3Key,
                 Body: JSON.stringify(communication),
-                ContentType: 'application/json'
+                ContentType: "application/json"
             });
             await s3.send(putS3Command);
             
@@ -170,11 +170,11 @@ async function testDemoScenario() {
         }
         
         // Test 3: Wait for processing
-        console.log('  ⏳ Waiting for communication processing...');
+        console.log("  ⏳ Waiting for communication processing...");
         await sleep(15000); // Wait 15 seconds for processing
         
         // Test 4: Verify communications are processed
-        console.log('  🔍 Verifying processed communications...');
+        console.log("  🔍 Verifying processed communications...");
         
         let processedCount = 0;
         const maxAttempts = 6;
@@ -186,10 +186,10 @@ async function testDemoScenario() {
                 try {
                     const queryCommand = new QueryCommand({
                         TableName: commTableName,
-                        KeyConditionExpression: 'PK = :pk AND SK = :sk',
+                        KeyConditionExpression: "PK = :pk AND SK = :sk",
                         ExpressionAttributeValues: {
-                            ':pk': 'COMM',
-                            ':sk': `COMM#${commId}`
+                            ":pk": "COMM",
+                            ":sk": `COMM#${commId}`
                         }
                     });
                     const result = await dynamodb.send(queryCommand);
@@ -215,7 +215,7 @@ async function testDemoScenario() {
         console.log(`  ✅ ${processedCount}/${testCommunications.length} communications processed`);
         
         // Test 5: Test API retrieval
-        console.log('  🌐 Testing API communication retrieval...');
+        console.log("  🌐 Testing API communication retrieval...");
         
         const apiResponse = await makeRequest(`${apiEndpoint}communications`);
         
@@ -231,7 +231,7 @@ async function testDemoScenario() {
         console.log(`  ✅ ${foundCommunications.length}/${testCommunications.length} communications found via API`);
         
         // Test 6: Verify priority scoring (if available)
-        console.log('  📊 Checking priority scoring...');
+        console.log("  📊 Checking priority scoring...");
         
         let scoredCommunications = 0;
         for (const comm of apiCommunications) {
@@ -244,34 +244,34 @@ async function testDemoScenario() {
         if (scoredCommunications > 0) {
             console.log(`  ✅ ${scoredCommunications} communications have priority scores`);
         } else {
-            console.log('  ℹ️  Priority scoring not available (ML services may not be configured)');
+            console.log("  ℹ️  Priority scoring not available (ML services may not be configured)");
         }
         
         // Test 7: Test archetype-specific filtering (if implemented)
-        console.log('  🎭 Testing archetype functionality...');
+        console.log("  🎭 Testing archetype functionality...");
         
         // This would test archetype-specific views if implemented
-        console.log('  ℹ️  Archetype-specific views ready for frontend implementation');
+        console.log("  ℹ️  Archetype-specific views ready for frontend implementation");
         
-        console.log('🎉 Demo Scenario Test: PASSED');
-        console.log('🚀 Demo is ready for presentation!');
+        console.log("🎉 Demo Scenario Test: PASSED");
+        console.log("🚀 Demo is ready for presentation!");
         
         return true;
         
     } catch (error) {
-        console.error('❌ Demo Scenario Test: FAILED');
-        console.error('Error:', error.message);
+        console.error("❌ Demo Scenario Test: FAILED");
+        console.error("Error:", error.message);
         throw error;
     } finally {
         // Cleanup: Remove all test data
         try {
-            console.log('  🧹 Cleaning up demo test data...');
+            console.log("  🧹 Cleaning up demo test data...");
             
             // Remove communications from S3
             for (const commId of testCommunications) {
                 try {
-                    const type = commId.includes('high') ? 'email' : 
-                                commId.includes('medium') ? 'document' : 'social';
+                    const type = commId.includes("high") ? "email" : 
+                                commId.includes("medium") ? "document" : "social";
                     const deleteS3Command = new DeleteObjectCommand({
                         Bucket: bucketName,
                         Key: `raw/${type}/${commId}.json`
@@ -288,7 +288,7 @@ async function testDemoScenario() {
                     const deleteCommCommand = new DeleteCommand({
                         TableName: commTableName,
                         Key: {
-                            PK: 'COMM',
+                            PK: "COMM",
                             SK: `COMM#${commId}`
                         }
                     });
@@ -313,9 +313,9 @@ async function testDemoScenario() {
                 }
             }
             
-            console.log('  ✅ Cleanup completed');
+            console.log("  ✅ Cleanup completed");
         } catch (cleanupError) {
-            console.warn('  ⚠️  Cleanup failed:', cleanupError.message);
+            console.warn("  ⚠️  Cleanup failed:", cleanupError.message);
         }
     }
 }

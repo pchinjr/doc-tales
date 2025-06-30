@@ -1,9 +1,9 @@
 // Sentiment Analysis Service
 // Processes Comprehend sentiment data and maps to Doc-Tales sentiment structure
 
-import { SentimentScore } from '@aws-sdk/client-comprehend';
-import { ComprehendService } from './ComprehendService';
-import { ExtractionInput, ExtractionResults } from '../types/ml-extraction';
+import { SentimentScore } from "@aws-sdk/client-comprehend";
+import { ComprehendService } from "./ComprehendService";
+import { ExtractionInput, ExtractionResults } from "../types/ml-extraction";
 
 /**
  * Service for analyzing sentiment and emotional tone of communications
@@ -18,7 +18,7 @@ export class SentimentAnalyzer {
   /**
    * Analyze sentiment and extract emotional dimensions
    */
-  async analyzeSentiment(input: ExtractionInput): Promise<ExtractionResults['sentimentAnalysis']> {
+  async analyzeSentiment(input: ExtractionInput): Promise<ExtractionResults["sentimentAnalysis"]> {
     try {
       const comprehendResults = await this.comprehendService.extractComprehendResults(input);
       return this.processSentimentResults(
@@ -27,9 +27,9 @@ export class SentimentAnalyzer {
         input.text
       );
     } catch (error) {
-      console.error('Error analyzing sentiment:', error);
+      console.error("Error analyzing sentiment:", error);
       return {
-        overall: 'neutral',
+        overall: "neutral",
         confidence: 0,
         emotionalTone: []
       };
@@ -43,7 +43,7 @@ export class SentimentAnalyzer {
     sentiment: string,
     sentimentScore: SentimentScore,
     text: string
-  ): ExtractionResults['sentimentAnalysis'] {
+  ): ExtractionResults["sentimentAnalysis"] {
     // Map AWS sentiment to Doc-Tales format
     const overall = this.mapSentimentToDocTales(sentiment);
     
@@ -63,16 +63,16 @@ export class SentimentAnalyzer {
   /**
    * Map AWS Comprehend sentiment to Doc-Tales format
    */
-  private mapSentimentToDocTales(sentiment: string): 'positive' | 'neutral' | 'negative' {
+  private mapSentimentToDocTales(sentiment: string): "positive" | "neutral" | "negative" {
     switch (sentiment.toUpperCase()) {
-      case 'POSITIVE':
-        return 'positive';
-      case 'NEGATIVE':
-        return 'negative';
-      case 'NEUTRAL':
-      case 'MIXED':
+      case "POSITIVE":
+        return "positive";
+      case "NEGATIVE":
+        return "negative";
+      case "NEUTRAL":
+      case "MIXED":
       default:
-        return 'neutral';
+        return "neutral";
     }
   }
 
@@ -104,53 +104,53 @@ export class SentimentAnalyzer {
 
     // Positive tone indicators
     if ((sentimentScore.Positive || 0) > 0.6) {
-      if (lowerText.includes('thank') || lowerText.includes('appreciate')) {
-        tones.push('grateful');
+      if (lowerText.includes("thank") || lowerText.includes("appreciate")) {
+        tones.push("grateful");
       }
-      if (lowerText.includes('excited') || lowerText.includes('great') || lowerText.includes('excellent')) {
-        tones.push('enthusiastic');
+      if (lowerText.includes("excited") || lowerText.includes("great") || lowerText.includes("excellent")) {
+        tones.push("enthusiastic");
       }
-      if (lowerText.includes('please') || lowerText.includes('kindly')) {
-        tones.push('polite');
+      if (lowerText.includes("please") || lowerText.includes("kindly")) {
+        tones.push("polite");
       }
     }
 
     // Negative tone indicators
     if ((sentimentScore.Negative || 0) > 0.6) {
-      if (lowerText.includes('urgent') || lowerText.includes('asap') || lowerText.includes('immediately')) {
-        tones.push('urgent');
+      if (lowerText.includes("urgent") || lowerText.includes("asap") || lowerText.includes("immediately")) {
+        tones.push("urgent");
       }
-      if (lowerText.includes('concern') || lowerText.includes('worry') || lowerText.includes('problem')) {
-        tones.push('concerned');
+      if (lowerText.includes("concern") || lowerText.includes("worry") || lowerText.includes("problem")) {
+        tones.push("concerned");
       }
-      if (lowerText.includes('disappoint') || lowerText.includes('frustrat')) {
-        tones.push('frustrated');
+      if (lowerText.includes("disappoint") || lowerText.includes("frustrat")) {
+        tones.push("frustrated");
       }
     }
 
     // Neutral/Professional tone indicators
     if ((sentimentScore.Neutral || 0) > 0.7) {
-      if (lowerText.includes('meeting') || lowerText.includes('schedule') || lowerText.includes('agenda')) {
-        tones.push('professional');
+      if (lowerText.includes("meeting") || lowerText.includes("schedule") || lowerText.includes("agenda")) {
+        tones.push("professional");
       }
-      if (lowerText.includes('update') || lowerText.includes('status') || lowerText.includes('report')) {
-        tones.push('informational');
+      if (lowerText.includes("update") || lowerText.includes("status") || lowerText.includes("report")) {
+        tones.push("informational");
       }
     }
 
     // Mixed tone indicators
     if ((sentimentScore.Mixed || 0) > 0.5) {
-      tones.push('complex');
+      tones.push("complex");
     }
 
-    return tones.length > 0 ? tones : ['neutral'];
+    return tones.length > 0 ? tones : ["neutral"];
   }
 
   /**
    * Get detailed sentiment breakdown
    */
   async getDetailedSentiment(text: string): Promise<{
-    overall: 'positive' | 'neutral' | 'negative';
+    overall: "positive" | "neutral" | "negative";
     scores: {
       positive: number;
       negative: number;
@@ -159,7 +159,7 @@ export class SentimentAnalyzer {
     };
     confidence: number;
     emotionalTone: string[];
-    riskLevel: 'low' | 'medium' | 'high';
+    riskLevel: "low" | "medium" | "high";
   }> {
     try {
       const input: ExtractionInput = { text };
@@ -180,13 +180,13 @@ export class SentimentAnalyzer {
         riskLevel: this.calculateRiskLevel(sentimentScore, text)
       };
     } catch (error) {
-      console.error('Error getting detailed sentiment:', error);
+      console.error("Error getting detailed sentiment:", error);
       return {
-        overall: 'neutral',
+        overall: "neutral",
         scores: { positive: 0, negative: 0, neutral: 1, mixed: 0 },
         confidence: 0,
-        emotionalTone: ['neutral'],
-        riskLevel: 'low'
+        emotionalTone: ["neutral"],
+        riskLevel: "low"
       };
     }
   }
@@ -194,26 +194,26 @@ export class SentimentAnalyzer {
   /**
    * Calculate communication risk level based on sentiment and content
    */
-  private calculateRiskLevel(sentimentScore: SentimentScore, text: string): 'low' | 'medium' | 'high' {
+  private calculateRiskLevel(sentimentScore: SentimentScore, text: string): "low" | "medium" | "high" {
     const negativeScore = sentimentScore.Negative || 0;
     const lowerText = text.toLowerCase();
     
     // High risk indicators
     if (negativeScore > 0.8 || 
-        lowerText.includes('complaint') || 
-        lowerText.includes('legal') || 
-        lowerText.includes('lawsuit')) {
-      return 'high';
+        lowerText.includes("complaint") || 
+        lowerText.includes("legal") || 
+        lowerText.includes("lawsuit")) {
+      return "high";
     }
     
     // Medium risk indicators
     if (negativeScore > 0.6 || 
-        lowerText.includes('urgent') || 
-        lowerText.includes('escalate') || 
-        lowerText.includes('manager')) {
-      return 'medium';
+        lowerText.includes("urgent") || 
+        lowerText.includes("escalate") || 
+        lowerText.includes("manager")) {
+      return "medium";
     }
     
-    return 'low';
+    return "low";
   }
 }

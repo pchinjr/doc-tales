@@ -37,7 +37,7 @@ exports.handler = async (event) => {
   
   try {
     // S3 event
-    if (event.Records && event.Records[0] && event.Records[0].eventSource === 'aws:s3') {
+    if (event.Records && event.Records[0] && event.Records[0].eventSource === "aws:s3") {
       const results = [];
       
       for (const record of event.Records) {
