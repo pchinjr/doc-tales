@@ -14,53 +14,6 @@ Doc-Tales is a personalized communications sorter that unifies content from dive
 6. **Event-Driven Processing**: Handles asynchronous workflows
 
 ## Architecture Diagram
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      Frontend Application                        │
-├───────────┬───────────┬────────────┬────────────┬───────────────┤
-│ Prioritizer│ Connector │ Visualizer │  Analyst   │Configuration UI│
-│   View    │   View    │    View    │    View    │               │
-└─────┬─────┴─────┬─────┴─────┬──────┴─────┬──────┴───────┬───────┘
-      │           │           │            │              │
-      └───────────┴───────────┼────────────┴──────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      Data Service Layer                         │
-├─────────────────┬───────────────────────┬─────────────────────┬─┘
-│ Unified Data    │ Archetype Detection   │ Dimension Extraction │
-│ Service         │ Service               │ Service              │
-└────────┬────────┴───────────┬───────────┴──────────┬───────────┘
-         │                    │                      │
-         ▼                    │                      │
-┌──────────────────┐          │                      │
-│ Source Adapters  │          │                      │
-├──────────────────┤          │                      │
-│ - Email Adapter  │          │                      │
-│ - Document Adapter          │                      │
-│ - Social Adapter │          │                      │
-└────────┬─────────┘          │                      │
-         │                    │                      │
-         └────────────────────┼──────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      AWS Serverless Backend                     │
-├─────────────┬───────────────┬───────────────┬───────────────────┤
-│ API Gateway │ Lambda        │ S3            │ DynamoDB          │
-│             │ Functions     │ Buckets       │ Tables            │
-└─────────────┴───────┬───────┴───────────────┴───────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      External Data Sources                      │
-├─────────────┬───────────────┬───────────────┬───────────────────┤
-│ Email       │ Document      │ Social Media  │ Other             │
-│ Providers   │ Storage       │ Platforms     │ Sources           │
-└─────────────┴───────────────┴───────────────┴───────────────────┘
-```
-
 ``` mermaid
 graph TB
     %% User and Sources
