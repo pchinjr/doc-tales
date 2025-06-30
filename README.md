@@ -43,8 +43,8 @@ doc-tales/
 
 **Infrastructure:**
 - AWS SAM for Infrastructure as Code
-- GitHub Actions for CI/CD
 - AWS CloudFormation for resource management
+- Manual deployment scripts for CI/CD
 
 ## 🚀 Quick Start
 
