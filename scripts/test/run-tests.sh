@@ -22,7 +22,12 @@ run_unit_tests() {
     setup_test_env
     
     cd "$(dirname "$SCRIPT_DIR")/.."
-    npx tape 'packages/backend/src/lambda/tests/*.test.js' | npx tap-spec
+    
+    # Suppress expected error output from invalid-region tests
+    export NODE_OPTIONS="--no-warnings"
+    
+    # Redirect stderr to filter out expected AWS errors
+    npx tape 'packages/backend/src/lambda/tests/*.test.js' 2> >(grep -v "comprehend.invalid-region.amazonaws.com" >&2) | npx tap-spec
     local exit_code=$?
     
     if [ $exit_code -eq 0 ]; then
