@@ -30,3 +30,7 @@ package-lock.json
 !scripts/*.js
 !infrastructure/**/*.js
 !docs/**/*.js
+
+# Generated reports
+*-report.json
+reports/

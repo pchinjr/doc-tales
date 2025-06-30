@@ -288,7 +288,11 @@ async function runValidation() {
   console.log(`📈 Success Rate: ${successRate}%`);
   
   // Generate detailed report
-  const reportPath = path.join(process.cwd(), 'ml-validation-report.json');
+  const reportsDir = path.join(process.cwd(), 'reports');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
+  const reportPath = path.join(reportsDir, 'ml-validation-report.json');
   fs.writeFileSync(reportPath, JSON.stringify({
     summary: {
       passed: results.passed,

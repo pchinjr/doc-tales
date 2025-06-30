@@ -286,7 +286,11 @@ function generateReport() {
   console.log(`⏱️  Average Test Duration: ${results.summary.averageTime.toFixed(2)}ms`);
   
   // Save detailed report
-  const reportPath = path.join(process.cwd(), 'ml-performance-report.json');
+  const reportsDir = path.join(process.cwd(), 'reports');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
+  const reportPath = path.join(reportsDir, 'ml-performance-report.json');
   fs.writeFileSync(reportPath, JSON.stringify({
     summary: results.summary,
     tests: results.tests,
