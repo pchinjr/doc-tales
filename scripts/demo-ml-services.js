@@ -3,9 +3,9 @@
 // Interactive ML Services Demo
 // Shows how the ML dimension extraction services work
 
-const readline = require('readline');
+const readline = require("readline");
 
-console.log('🚀 Doc-Tales ML Dimension Extraction Demo\n');
+console.log("🚀 Doc-Tales ML Dimension Extraction Demo\n");
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -91,9 +91,9 @@ async function demoServices() {
       TopicCategorizer,
       EntityExtractor,
       SentimentAnalyzer
-    } = require('../packages/common/dist/index.js');
+    } = require("../packages/common/dist/index.js");
 
-    console.log('✅ Successfully loaded all ML services!\n');
+    console.log("✅ Successfully loaded all ML services!\n");
 
     // Create service instances
     const urgencyDetector = new UrgencyDetector('us-east-1');
