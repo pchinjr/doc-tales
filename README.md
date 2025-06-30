@@ -1,4 +1,4 @@
-# Doc-Tales: Smart Document & Feed Unification Processor
+# Doc-Tales: 🎶 oo Woo Oo 🎶
 
 ## 🏆 Hackathon Project Overview
 
